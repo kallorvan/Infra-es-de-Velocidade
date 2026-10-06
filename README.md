@@ -7,7 +7,8 @@ Painel HTML que lê as planilhas "Infrações de Velocidade" da telemetria (seco
 - **Importar planilhas**: envie a planilha do dia. Os eventos novos são somados ao mês; eventos já salvos (mesma data/hora, motorista, placa e velocidade) são ignorados.
 - **Cadastro de motoristas**: nome (igual ao da telemetria), matrícula e celular. Pode ser importado da planilha do RH (coluna A = nome, F = matrícula, K = celular, primeira aba); quem já existe tem matrícula e celular atualizados.
 - **Comunicado por WhatsApp** (aba Motorista ou botão "Enviar" na visão geral): gera uma imagem JPEG (1080×1420) com o layout do painel, para penalidade, alerta preventivo (a partir de 80% da tolerância) ou resumo do mês. Baixe ou copie a imagem e abra a conversa (`wa.me`, com um texto curto) para anexá-la; abrir a conversa registra o envio; um comunicado de penalidade ou alerta já registrado deixa de aparecer como pendente até surgir uma penalidade nova no mês.
-- No artefato do claude.ai, cadastro e registro de comunicados só podem ser lidos por quem tem acesso de Contribuidor ou acima.
+- **E-mail ao RH** (aba Motorista ou botão "Abrir" na coluna Comunicado): para advertência, suspensão e término. O painel monta para, cópia, assunto e mensagem para copiar e colar no e-mail; "Marcar como enviado" tira a pendência. O e-mail do RH fica em Cadastro de motoristas → E-mail do RH.
+- No artefato do claude.ai, cadastro, e-mail do RH e registro de comunicados só podem ser lidos por quem tem acesso de Contribuidor ou acima.
 
 - `src/painel.html` — código-fonte do painel (logos entram no build).
 - `assets/` — logos Grupo Dínamo / Tóliman e ícone.

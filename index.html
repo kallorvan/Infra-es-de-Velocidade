@@ -202,7 +202,7 @@ tbody tr.click:focus-visible{outline:2px solid var(--coral);outline-offset:-2px}
 footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
 
 /* cadastro e comunicado */
-#com-sec{scroll-margin-top:150px}
+#com-sec,#rh-card,#rhcfg-sec{scroll-margin-top:150px}
 .form-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px 12px;align-items:end}
 .fld{display:grid;gap:5px;min-width:0}
 .fld label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -215,6 +215,11 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 .com-tipos{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .com-img-wrap{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;place-items:center;min-height:200px}
 .com-img-wrap img{display:block;width:100%;max-width:440px;height:auto;border-radius:6px;box-shadow:0 4px 14px rgba(28,37,67,.12)}
+.rh-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.copyrow{display:flex;gap:6px}
+.copyrow input{flex:1}
+.copyrow .btn{padding:8px 12px;white-space:nowrap}
+#rh-corpo{min-height:320px}
 .passos{margin:12px 0 0;padding-left:20px;font-size:12.5px;color:var(--ink2);line-height:1.6}
 .wa{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:12.5px;font-weight:700;border-radius:8px;padding:10px 16px;background:var(--wa);color:#fff;border:1px solid var(--wa)}
 .wa:hover{background:var(--wa-d)}
@@ -235,7 +240,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 .mini-btn:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
 
 @media (max-width:820px){
-  .form-grid,.com-grid{grid-template-columns:1fr}
+  .form-grid,.com-grid,.rh-grid{grid-template-columns:1fr}
   .wrap{padding-inline:16px} .top-in{padding:16px 16px 0} nav.tabs{padding:14px 16px 0}
   .chart-grid{grid-template-columns:1fr}
   .tl{grid-template-columns:1fr;gap:6px} .tl .acc{text-align:left}
@@ -360,6 +365,22 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
             <div class="hist-com" id="com-hist"></div>
           </div>
         </div>
+        <div class="card pad" id="rh-card" style="margin-top:14px">
+          <div class="sec-h"><h2>E-mail ao RH</h2><span class="sec-note" id="rh-note"></span></div>
+          <div id="rh-body">
+            <div class="rh-grid">
+              <div class="fld"><label for="rh-para">Para</label><div class="copyrow"><input id="rh-para" readonly><button class="btn ghost" type="button" data-copy="rh-para">Copiar</button></div></div>
+              <div class="fld"><label for="rh-cc">Cópia</label><div class="copyrow"><input id="rh-cc" readonly><button class="btn ghost" type="button" data-copy="rh-cc">Copiar</button></div></div>
+            </div>
+            <div class="fld" style="margin-top:10px"><label for="rh-assunto">Assunto</label><div class="copyrow"><input id="rh-assunto"><button class="btn ghost" type="button" data-copy="rh-assunto">Copiar</button></div></div>
+            <div class="fld" style="margin-top:10px"><label for="rh-corpo">Mensagem (pode editar antes de copiar)</label><textarea id="rh-corpo"></textarea></div>
+            <div class="actions" style="align-items:center">
+              <button class="btn" type="button" data-copy="rh-corpo">Copiar mensagem</button>
+              <button class="btn ghost" type="button" id="rh-ok">Marcar como enviado</button>
+              <span class="sec-note" id="rh-hint"></span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="sec">
@@ -407,6 +428,16 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
           <button class="btn danger" type="button" id="cad-del" hidden>Remover cadastro</button>
         </div>
         <div id="cad-msg"></div>
+      </form>
+    </div>
+    <div class="sec" id="rhcfg-sec">
+      <div class="sec-h"><h2>E-mail do RH</h2><span class="sec-note">Destino dos e-mails de advertência, suspensão e término</span></div>
+      <form class="card pad" id="rhcfg-form" novalidate>
+        <div class="rh-grid">
+          <div class="fld"><label for="rhcfg-para">Para</label><input id="rhcfg-para" type="text" inputmode="email" placeholder="rh@empresa.com.br" autocomplete="off"><span class="err" id="rhcfg-para-err"></span></div>
+          <div class="fld"><label for="rhcfg-cc">Cópia (opcional)</label><input id="rhcfg-cc" type="text" inputmode="email" placeholder="gestor@empresa.com.br; frota@empresa.com.br" autocomplete="off"><span class="err" id="rhcfg-cc-err"></span></div>
+        </div>
+        <div class="actions"><button class="btn" type="submit" id="rhcfg-save">Salvar e-mail do RH</button><span class="sec-note" id="rhcfg-msg"></span></div>
       </form>
     </div>
     <div class="sec" id="cadimp-sec">
@@ -528,11 +559,11 @@ const dataBR = iso => { const [d,t]=iso.split(' '); const [y,m,dd]=d.split('-');
 /* ================= ARMAZENAMENTO ================= */
 // No claude.ai: banco compartilhado do artefato (db). Fora dele (arquivo aberto localmente): localStorage.
 // meses: eventos por mês e condição · motoristas: cadastro · comunicados: registro de envios por WhatsApp
-const COLECOES = ['meses','motoristas','comunicados'];
+const COLECOES = ['meses','motoristas','comunicados','config'];
 const LS_KEY = c => c==='meses' ? 'infra-vel-meses-v1' : 'infra-vel-'+c+'-v1';
 const store = {
   mode:'loading', db:null, user:null, uid:null, canWrite:true,
-  data:{meses:{}, motoristas:{}, comunicados:{}},
+  data:{meses:{}, motoristas:{}, comunicados:{}, config:{}},
   get docs(){ return this.data.meses; },
   async init(onChange){
     let db = null;
@@ -645,7 +676,7 @@ function render(){
   if(store.mode==='db') setSync('on', ateTxt+' · compartilhado');
   else if(store.mode==='local') setSync('local', ateTxt+' · salvo só neste navegador');
   indexarComunicados();
-  renderGeral(); renderMot(); renderCad(); renderImp(); renderRegras();
+  renderGeral(); renderMot(); renderCad(); renderRhCfg(); renderImp(); renderRegras();
 }
 
 /* ---------- visão geral ---------- */
@@ -688,7 +719,7 @@ function renderGeral(){
     {c:'k-adv', lab:'Advertências', val:fmt(advMes), sub:'emitidas no mês'},
     {c:'k-sus', lab:'Suspensões', val:fmt(susMes), sub:fmt(L.reduce((a,x)=>a+x.r.susDir,0))+' por ≥ 100 km/h · '+fmt(L.reduce((a,x)=>a+x.r.susAdv,0))+' por reincidência'},
     {c:'k-ter', lab:'Términos de contrato', val:fmt(terMes), sub:'3 suspensões acumuladas'},
-    {c:'k-com', lab:'Comunicados pendentes', val:fmt(L.filter(x=>x.com&&x.com.pendente).length), sub:fmt(L.filter(x=>x.com&&x.com.pendente&&!(x.cad&&x.cad.celular)).length)+' sem celular cadastrado'}
+    {c:'k-com', lab:'Comunicados pendentes', val:fmt(L.filter(x=>x.com&&x.com.pendente).length), sub:fmt(L.filter(x=>x.com&&x.com.rhPendente).length)+' e-mails ao RH · '+fmt(L.filter(x=>x.com&&x.com.pendente&&!(x.cad&&x.cad.celular)).length)+' sem celular'}
   ];
   $('#kpis').innerHTML = kp.map(k => '<div class="kpi '+k.c+'"><div class="lab">'+k.lab+'</div><div class="val num">'+k.val+'</div><div class="sub">'+k.sub+'</div></div>').join('');
 
@@ -703,7 +734,7 @@ function renderGeral(){
     if(f==='sus') return x.s.k==='sus';
     if(f==='adv') return x.s.k==='adv';
     if(f==='tol') return x.s.k==='tol';
-    if(f==='com') return !!(x.com && x.com.pendente);
+    if(f==='com') return !!(x.com && (x.com.pendente || x.com.rhPendente));
     return true;
   });
   const val = (x,k) => k==='nome'?x.M.nome : k==='sit'?ST_ORD[x.s.k] : k==='vmax'?x.vmax : k==='advAc'?x.r.advAc : k==='susAc'?x.r.susAc : k==='com'?(x.com&&x.com.pendente==='pen'?2:x.com&&x.com.pendente==='alerta'?1:0) : x.c[k];
@@ -745,10 +776,11 @@ const fxLabel = fx => fx==='pre'?'Pré-infração 87–89 km/h':fx==='ch'?'Acima
 function celCom(x){
   if(!x.com) return '<span class="zero">—</span>';
   const btn = t => ' <button class="mini-btn" type="button" data-com-ir="'+esc(x.M.nome)+'" data-tipo="'+t+'">Enviar</button>';
-  if(x.com.pendente==='pen') return '<div class="com-cell"><span class="st adv">Penalidade</span>'+btn('pen')+'</div>';
-  if(x.com.pendente==='alerta') return '<div class="com-cell"><span class="st pre">Alerta</span>'+btn('alerta')+'</div>';
-  const ult = enviados(x.M.nome).find(e => e.mes===ui.mes);
-  return ult ? '<span class="sec-note">Enviado '+new Date(ult.enviadoEm).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+'</span>' : '<span class="zero">—</span>';
+  const rh = x.com.rhPendente ? '<div class="com-cell" style="margin-top:4px"><span class="st sus">E-mail RH</span> <button class="mini-btn" type="button" data-com-ir="'+esc(x.M.nome)+'" data-tipo="rh">Abrir</button></div>' : '';
+  if(x.com.pendente==='pen') return '<div class="com-cell"><span class="st adv">Penalidade</span>'+btn('pen')+'</div>'+rh;
+  if(x.com.pendente==='alerta') return '<div class="com-cell"><span class="st pre">Alerta</span>'+btn('alerta')+'</div>'+rh;
+  const ult = enviados(x.M.nome).find(e => e.mes===ui.mes && e.tipo!=='rh');
+  return (ult ? '<span class="sec-note">Enviado '+new Date(ult.enviadoEm).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+'</span>' : (rh?'':'<span class="zero">—</span>'))+rh;
 }
 function histograma(sel, lsel, cond, cont){
   const el = $(sel);
@@ -1013,6 +1045,7 @@ function renderCad(){
   const ro = !store.canWrite;
   $('#cad-ro').hidden = !ro;
   $('#cadimp-sec').hidden = ro;
+  $('#rhcfg-sec').hidden = ro && !rhCfg().para;
   ['#cad-nome','#cad-mat','#cad-cel','#cad-save','#cad-clear'].forEach(s0 => $(s0).disabled = ro);
   const tel = [...A.mot.values()].filter(M => !M.semId);
   $('#cad-nomes').innerHTML = tel.map(M => '<option value="'+esc(M.nome)+'">').join('');
@@ -1141,9 +1174,97 @@ async function salvarCadPend(){
   }
 }
 
+/* ---------- e-mail ao RH ---------- */
+const rhCfg = () => store.data.config.rh || {};
+const EMAIL_RE = /^[^\s@;,]+@[^\s@;,]+\.[^\s@;,]+$/;
+const listaEmails = v => String(v||'').split(/[;,\s]+/).map(x=>x.trim()).filter(Boolean);
+function renderRhCfg(){
+  const ro = !store.canWrite, cfg = rhCfg();
+  ['#rhcfg-para','#rhcfg-cc','#rhcfg-save'].forEach(s0 => $(s0).disabled = ro);
+  if(document.activeElement!==$('#rhcfg-para')) $('#rhcfg-para').value = cfg.para || '';
+  if(document.activeElement!==$('#rhcfg-cc')) $('#rhcfg-cc').value = cfg.cc || '';
+}
+async function salvarRhCfg(){
+  if(!store.canWrite) return;
+  const para = listaEmails($('#rhcfg-para').value), cc = listaEmails($('#rhcfg-cc').value);
+  const bad = l => l.find(e => !EMAIL_RE.test(e));
+  const bp = !para.length ? 'Informe pelo menos um e-mail.' : bad(para) ? 'E-mail inválido: '+bad(para) : '';
+  const bc = bad(cc) ? 'E-mail inválido: '+bad(cc) : '';
+  $('#rhcfg-para-err').textContent = bp; $('#rhcfg-cc-err').textContent = bc;
+  if(bp || bc) return;
+  try{
+    await store.put('config', 'rh', {para:para.join('; '), cc:cc.join('; '), atualizadoEm:new Date().toISOString(), atualizadoPor:store.uid||null});
+    $('#rhcfg-msg').textContent = 'Salvo.'; setTimeout(()=>{ $('#rhcfg-msg').textContent=''; }, 2500);
+    render();
+  }catch(e){ $('#rhcfg-msg').textContent = 'Não foi possível salvar ('+((e&&(e.code||e.message))||e)+').'; }
+}
+function montarEmailRH(M, mes){
+  const c = M.meses[mes], r = M.hist[mes], cad = cadDe(M.nome), info = comInfo(M, mes);
+  const s0 = situacao(r, M);
+  const rotulo = s0.k==='ter' ? 'Término de contrato' : s0.k==='sus' ? 'Suspensão' : 'Advertência';
+  const ate = A.ate[mes] ? dataBR(A.ate[mes]).slice(0,10) : '';
+  const assunto = 'Infração de velocidade · '+rotulo+' · '+M.nome+(cad&&cad.matricula?' · Matrícula '+cad.matricula:'')+' · '+mesNome(mes);
+  const susMes = r.susDir + r.susAdv;
+  const partes = [];
+  if(r.advs.length) partes.push(r.advs.length+' '+(r.advs.length===1?'advertência':'advertências'));
+  if(r.susDir) partes.push(r.susDir+' '+(r.susDir===1?'suspensão':'suspensões')+' por velocidade igual ou acima de 100 km/h');
+  const zap = enviados(M.nome).find(e => e.chave===info.chaves.pen);
+  const L = [
+    'Prezados,', '',
+    'Informamos penalidade por excesso de velocidade registrada pela telemetria.', '',
+    'Motorista: '+M.nome,
+    'Matrícula: '+(cad && cad.matricula ? cad.matricula : 'não cadastrada'),
+    'Período: '+mesNome(mes).toLowerCase()+(ate?' (dados até '+ate+')':''),
+    'Placas: '+[...c.placas].join(', '), '',
+    'Ocorrências no mês:'
+  ];
+  REGRAS.filter(g => c[g.id]>0).forEach(g => L.push('- '+REGRA_MSG[g.id]+': '+c[g.id]+' '+(c[g.id]===1?'pico':'picos')+(g.tol?' (tolerância de '+g.tol+')':' (sem tolerância)')));
+  L.push('- Velocidade máxima registrada: '+Math.max(c.vmax.seco, c.vmax.chuva)+' km/h', '');
+  L.push('Penalidade aplicada: perda de pontuação avaliativa'+(partes.length?' e '+partes.join(' e '):'')+'.');
+  if(r.susAdv) L.push('Com '+r.advAc+' advertências acumuladas, foi gerada '+(r.susAdv===1?'1 suspensão':r.susAdv+' suspensões')+' por reincidência.');
+  if(r.terminoNoMes) L.push('Com '+r.susAc+' suspensões acumuladas, o motorista atingiu o critério de término do contrato de trabalho.');
+  L.push('Situação acumulada: '+r.advAc+' '+(r.advAc===1?'advertência':'advertências')+' e '+r.susAc+' '+(r.susAc===1?'suspensão':'suspensões')+'.', '');
+  L.push('Comunicado ao motorista: '+(zap ? 'enviado por WhatsApp em '+new Date(zap.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+'.' : 'ainda não enviado.'), '');
+  L.push('Atenciosamente,', 'Gestão de Frota · Grupo Dínamo / Tóliman Transportes');
+  return {assunto, corpo:L.join('\n'), rotulo};
+}
+const rhUi = {chave:null};
+function renderRH(M, mes, info){
+  const card = $('#rh-card');
+  card.hidden = !info.chaves.rh;
+  if(!info.chaves.rh) return;
+  const cfg = rhCfg();
+  const chave = info.chaves.rh+'|'+(cadDe(M.nome)||{}).matricula+'|'+A.ate[mes]+'|'+enviados(M.nome).length;
+  if(rhUi.chave!==chave){
+    rhUi.chave = chave; const e = montarEmailRH(M, mes);
+    $('#rh-assunto').value = e.assunto; $('#rh-corpo').value = e.corpo;
+  }
+  $('#rh-para').value = cfg.para || ''; $('#rh-cc').value = cfg.cc || '';
+  const ult = enviados(M.nome).find(e => e.chave===info.chaves.rh);
+  $('#rh-note').innerHTML = ult ? 'Enviado em '+new Date(ult.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : '<span class="st sus">Pendente</span>';
+  $('#rh-hint').innerHTML = !cfg.para ? 'Defina o e-mail do RH. <button class="linkbtn" type="button" data-rhcfg-ir="1">Configurar</button>' : 'Copie e cole no seu e-mail. Depois marque como enviado.';
+  $('#rh-ok').disabled = !store.canWrite || !!ult;
+  $('#rh-ok').textContent = ult ? 'Já marcado como enviado' : 'Marcar como enviado';
+}
+async function marcarRH(){
+  const M = A.mot.get(comUi.motorista); if(!M) return;
+  const info = comInfo(M, ui.mes); if(!info || !info.chaves.rh) return;
+  const cfg = rhCfg();
+  try{
+    await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'rh', chave:info.chaves.rh, assunto:$('#rh-assunto').value, texto:$('#rh-corpo').value, email:cfg.para||'', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
+    render();
+  }catch(e){ $('#rh-hint').textContent = 'Não foi possível registrar ('+((e&&(e.code||e.message))||e)+').'; }
+}
+async function copiarCampo(id, btn){
+  const el = $('#'+id), orig = btn.textContent;
+  try{ await navigator.clipboard.writeText(el.value); btn.textContent = 'Copiado'; }
+  catch(e){ el.focus(); el.select(); btn.textContent = 'Selecionado: Ctrl+C'; }
+  setTimeout(() => { btn.textContent = orig; }, 1800);
+}
+
 /* ---------- comunicados por WhatsApp ---------- */
 const ALERTA_PCT = 0.8; // alerta preventivo a partir de 80% da tolerância
-const TIPO_COM = {pen:'Penalidade', alerta:'Alerta preventivo', resumo:'Resumo do mês'};
+const TIPO_COM = {pen:'Penalidade', alerta:'Alerta preventivo', resumo:'Resumo do mês', rh:'E-mail ao RH'};
 const REGRA_MSG = {b1:'Pista seca, de 90 a 95 km/h', b2:'Pista seca, de 96 a 99 km/h', b3:'Igual ou acima de 100 km/h', ch:'Chuva, acima de 70 km/h por mais de 1 minuto'};
 let comIdx = new Map();
 function indexarComunicados(){
@@ -1163,6 +1284,8 @@ function comInfo(M, mes){
   const info = {chaves:{pen, alerta, resumo:'resumo:'+mes}, perto, pendente:null};
   if(pen && !foiEnviado(M.nome, pen)) info.pendente = 'pen';
   else if(alerta && !foiEnviado(M.nome, alerta)) info.pendente = 'alerta';
+  info.chaves.rh = pen ? 'rh:'+pen : null;
+  info.rhPendente = !!(pen && !foiEnviado(M.nome, info.chaves.rh));
   return info;
 }
 function montarLegenda(M, mes, tipo){
@@ -1317,8 +1440,9 @@ function renderCom(x){
   $('#com-cad').innerHTML = cad
     ? '<dl class="kv"><dt>Matrícula</dt><dd class="mini-n">'+(cad.matricula?esc(cad.matricula):'—')+'</dd><dt>Celular</dt><dd class="mini-n">'+(cad.celular?fmtCel(cad.celular):'<span class="st adv">Sem celular</span>')+'</dd></dl><div style="margin-top:10px"><button class="linkbtn" type="button" data-cad-ir="'+esc(M.nome)+'">Editar cadastro</button></div>'
     : '<p class="sec-note" style="margin:0 0 10px">Motorista sem cadastro.</p><button class="btn ghost" type="button" data-cad-ir="'+esc(M.nome)+'">Cadastrar agora</button>';
+  renderRH(M, mes, info);
   const hist = enviados(M.nome);
-  $('#com-hist').innerHTML = hist.length ? hist.slice(0,12).map(h => '<div class="hc"><div><b>'+esc(TIPO_COM[h.tipo]||h.tipo)+'</b> · '+esc(mesNome(h.mes))+'<div class="when">'+new Date(h.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+' · para '+esc(fmtCel(h.celular))+(h.enviadoPor?' · <span class="who" data-id="'+esc(h.enviadoPor)+'">registrado</span>':'')+'</div></div><div>'+(store.canWrite?'<button class="linkbtn" type="button" data-com-del="'+esc(h.id)+'">'+(comArmado===h.id?'Confirmar':'Desfazer')+'</button>':'')+'</div></div>').join('')
+  $('#com-hist').innerHTML = hist.length ? hist.slice(0,12).map(h => '<div class="hc"><div><b>'+esc(TIPO_COM[h.tipo]||h.tipo)+'</b> · '+esc(mesNome(h.mes))+'<div class="when">'+new Date(h.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+' · para '+esc(h.tipo==='rh' ? (h.email||'RH') : fmtCel(h.celular))+(h.enviadoPor?' · <span class="who" data-id="'+esc(h.enviadoPor)+'">registrado</span>':'')+'</div></div><div>'+(store.canWrite?'<button class="linkbtn" type="button" data-com-del="'+esc(h.id)+'">'+(comArmado===h.id?'Confirmar':'Desfazer')+'</button>':'')+'</div></div>').join('')
     : '<p class="sec-note" style="margin:6px 0 0">Nenhum comunicado registrado para este motorista.</p>';
   nomesQuemEnviou();
 }
@@ -1426,9 +1550,10 @@ $('#saved').addEventListener('click', async e => {
 });
 $('#tbody').addEventListener('click', e => {
   const b = e.target.closest('[data-com-ir]'); if(!b) return;
-  e.stopPropagation(); comUi.pedido = b.dataset.tipo; comUi.chave = null;
+  e.stopPropagation(); const rh = b.dataset.tipo==='rh';
+  if(!rh){ comUi.pedido = b.dataset.tipo; comUi.chave = null; }
   ui.motorista = b.dataset.comIr; renderMot(); setTab('mot');
-  $('#com-sec').scrollIntoView({block:'start'});
+  $(rh ? '#rh-card' : '#com-sec').scrollIntoView({block:'start'});
 }, true);
 $('#com-tipos').addEventListener('click', e => { const b=e.target.closest('[data-tipo]'); if(!b || b.disabled) return; comUi.tipo=b.dataset.tipo; renderMot(); });
 $('#com-leg').addEventListener('input', e => { comUi.texto = e.target.value; atualizarLinkWa(); });
@@ -1452,6 +1577,12 @@ const cadDrop = $('#cad-drop');
 ['dragleave','drop'].forEach(t => cadDrop.addEventListener(t, e => { e.preventDefault(); cadDrop.classList.remove('over'); }));
 cadDrop.addEventListener('drop', e => { const f=(e.dataTransfer&&e.dataTransfer.files||[])[0]; if(f) arquivoCadastro(f); });
 $('#cadimp-prev').addEventListener('click', e => { if(e.target.id==='cadimp-ok') salvarCadPend(); if(e.target.id==='cadimp-cancel'){ cadPend=null; renderCadPend(); } });
+$('#rhcfg-form').addEventListener('submit', e => { e.preventDefault(); salvarRhCfg(); });
+$('#rh-ok').addEventListener('click', marcarRH);
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-copy]'); if(b) copiarCampo(b.dataset.copy, b);
+  if(e.target.closest('[data-rhcfg-ir]')){ setTab('cad'); $('#rhcfg-sec').scrollIntoView({block:'start'}); $('#rhcfg-para').focus(); }
+});
 $('#cad-form').addEventListener('submit', e => { e.preventDefault(); cadSalvar(); });
 $('#cad-clear').addEventListener('click', () => cadCarregar(''));
 $('#cad-del').addEventListener('click', async () => {
