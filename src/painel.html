@@ -196,7 +196,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 
 /* cadastro e comunicado */
 #com-sec,#rh-card,#rhcfg-sec{scroll-margin-top:150px}
-.form-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px 12px;align-items:end}
+.form-grid{display:grid;grid-template-columns:2fr 1fr 1.2fr 1fr;gap:10px 12px;align-items:end}
 .fld{display:grid;gap:5px;min-width:0}
 .fld label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .fld input,.fld textarea{font-family:inherit;font-size:13px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px;min-width:0;width:100%}
@@ -414,13 +414,14 @@ td.env .zero{display:inline-block;width:132px;text-align:center}
   <!-- CADASTRO -->
   <section id="v-cad" role="tabpanel" aria-labelledby="tab-cad" hidden>
     <div class="sec">
-      <div class="sec-h"><h2 id="cad-title">Cadastrar motorista</h2><span class="sec-note">O nome precisa ser igual ao que aparece na telemetria</span></div>
+      <div class="sec-h"><h2 id="cad-title">Cadastrar motorista</h2><span class="sec-note">Para corrigir um motorista sem esperar o próximo PDF</span></div>
       <div id="cad-ro" class="msg info" hidden>Só quem tem permissão de edição consegue alterar o cadastro.</div>
       <form class="card pad" id="cad-form" novalidate>
         <div class="form-grid">
           <div class="fld"><label for="cad-nome">Nome (como na telemetria)</label><input id="cad-nome" list="cad-nomes" autocomplete="off" required><span class="err" id="cad-nome-err"></span></div>
-          <div class="fld"><label for="cad-mat">Matrícula</label><input id="cad-mat" autocomplete="off"><span class="err"></span></div>
-          <div class="fld"><label for="cad-cel">Celular (WhatsApp)</label><input id="cad-cel" inputmode="tel" placeholder="(11) 98765-4321" autocomplete="off"><span class="err" id="cad-cel-err"></span></div>
+          <div class="fld"><label for="cad-cod">Código</label><input id="cad-cod" inputmode="numeric" autocomplete="off"><span class="err" id="cad-cod-err"></span></div>
+          <div class="fld"><label for="cad-cel">Celular (WhatsApp)</label><input id="cad-cel" inputmode="tel" placeholder="(13) 99159-9111" autocomplete="off"><span class="err" id="cad-cel-err"></span></div>
+          <div class="fld"><label for="cad-sit">Situação</label><select class="inp" id="cad-sit" style="padding:9px 11px;font-size:13px"><option>Ativo</option><option>Inativo</option></select><span class="err"></span></div>
         </div>
         <datalist id="cad-nomes"></datalist>
         <div class="actions">
@@ -442,11 +443,11 @@ td.env .zero{display:inline-block;width:132px;text-align:center}
       </form>
     </div>
     <div class="sec" id="cadimp-sec">
-      <div class="sec-h"><h2>Importar cadastro do RH</h2><span class="sec-note">Coluna A = nome, F = matrícula, K = celular</span></div>
+      <div class="sec-h"><h2>Importar cadastro (PDF)</h2><span class="sec-note">Relatório "Cadastro de Motoristas - Detalhado", ativos e inativos</span></div>
       <label class="drop" id="cad-drop" for="cad-file" style="padding:22px 20px">
-        <span class="big">Arraste a planilha do RH aqui ou clique para escolher</span>
-        <span class="small">Lê a primeira aba. Linhas sem nome são ignoradas. Motoristas que já existem têm matrícula e celular atualizados; celular vazio na planilha mantém o que já estava cadastrado.</span>
-        <input type="file" id="cad-file" accept=".xlsx,.xls,.xlsm,.csv" hidden>
+        <span class="big">Arraste o PDF do cadastro aqui ou clique para escolher</span>
+        <span class="small">Lê Código, Nome do Motorista, Celular e Situação de cada página. O código identifica o motorista: quem já existe é atualizado, quem é novo é incluído. Nada é salvo antes da sua conferência.</span>
+        <input type="file" id="cad-file" accept=".pdf,application/pdf" hidden>
       </label>
       <div id="cadimp-msg"></div>
       <div id="cadimp-prev"></div>
@@ -454,17 +455,19 @@ td.env .zero{display:inline-block;width:132px;text-align:center}
     <div class="sec">
       <div class="sec-h"><h2>Motoristas</h2><span class="sec-note" id="cad-note"></span></div>
       <div class="tools">
-        <input type="search" id="cad-q" placeholder="Buscar nome, matrícula ou celular" aria-label="Buscar no cadastro">
+        <input type="search" id="cad-q" placeholder="Buscar nome, código ou celular" aria-label="Buscar no cadastro">
         <div style="display:flex;gap:6px;flex-wrap:wrap" id="cad-chips">
           <button class="chip" type="button" data-f="todos" aria-pressed="true">Todos</button>
           <button class="chip" type="button" data-f="falta" aria-pressed="false">Falta cadastrar</button>
           <button class="chip" type="button" data-f="semcel" aria-pressed="false">Sem celular</button>
-          <button class="chip" type="button" data-f="ok" aria-pressed="false">Cadastrados</button>
+          <button class="chip" type="button" data-f="tel" aria-pressed="false">Na telemetria</button>
+          <button class="chip" type="button" data-f="ativo" aria-pressed="false">Ativos</button>
+          <button class="chip" type="button" data-f="inativo" aria-pressed="false">Inativos</button>
         </div>
       </div>
       <div class="tbl-scroll">
         <table id="cad-tbl" style="min-width:760px">
-          <thead><tr><th>Nome</th><th>Matrícula</th><th>Celular</th><th>Cadastro</th><th>Último evento</th></tr></thead>
+          <thead><tr><th>Nome</th><th>Código</th><th>Celular</th><th>Situação</th><th>Envio</th><th>Último evento</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -784,7 +787,7 @@ function celWa(x){
   const p = x.com.pendente;
   if(p){
     const semCel = !(x.cad && x.cad.celular);
-    return '<button class="send wa-s" type="button" data-com-ir="'+esc(x.M.nome)+'" data-tipo="'+p+'"'+(semCel?' title="Motorista sem celular cadastrado"':'')+'>'+ICO_WA+(p==='pen'?'Penalidade':'Alerta')+'</button>'+(semCel?'<div class="env-sub">sem celular</div>':'');
+    return '<button class="send wa-s" type="button" data-com-ir="'+esc(x.M.nome)+'" data-tipo="'+p+'"'+(semCel?' title="Motorista sem celular cadastrado"':'')+'>'+ICO_WA+(p==='pen'?'Penalidade':'Alerta')+'</button>'+(semCel?'<div class="env-sub">sem celular</div>':x.cad && !ativo(x.cad)?'<div class="env-sub" style="color:var(--muted)">cadastro inativo</div>':'');
   }
   const ult = enviados(x.M.nome).find(e => e.mes===ui.mes && e.tipo!=='rh');
   return ult ? feito(ult.enviadoEm) : '<span class="zero">—</span>';
@@ -864,6 +867,8 @@ function renderMot(){
   if(r.pontuacao) pills.push('<span class="pill warn">Perde pontuação avaliativa</span>');
   if(r.advs.length) pills.push('<span class="pill">'+r.advs.length+' '+(r.advs.length===1?'advertência':'advertências')+' no mês</span>');
   if(susMes) pills.push('<span class="pill">'+susMes+' '+(susMes===1?'suspensão':'suspensões')+' no mês</span>');
+  const cadM = cadDe(M.nome);
+  if(cadM && !ativo(cadM)) pills.push('<span class="pill">Cadastro inativo · código '+esc(cadM.codigo)+'</span>');
   pills.push('<span class="pill">Placas: <b class="num">'+esc(x.placas.join(', '))+'</b></span>');
   pills.push('<span class="pill">Vel. máx.: <b class="num">'+x.vmax+' km/h</b></span>');
   $('#m-hero').innerHTML = '<div class="cod">'+mesNome(ui.mes)+' · '+(idx+1)+' de '+L.length+'</div><h3>'+esc(M.nome)+'</h3><div class="meta">'+pills.join('')+'</div>';
@@ -1044,11 +1049,13 @@ async function salvarPendente(){
 }
 
 /* ---------- cadastro ---------- */
+// Cadastro vem do relatório "Cadastro de Motoristas - Detalhado" (PDF): Código, Nome do Motorista, Celular, Situação.
+// Cada motorista é um documento "c<código>"; o mesmo nome pode ter mais de um código (ativo e inativo).
 const slug = nome => norm(nome).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,150) || 'sem-nome';
-// Vínculo telemetria → cadastro: nome igual; senão, nome abreviado ou sem "de/da" que bata com um único cadastro
-// (ex.: "CARLOS ALBERTO NOGUEIRA DE R. BASTOS" → "CARLOS ALBERTO NOGUEIRA DE REZENDE BASTOS").
+const cadIdDe = codigo => 'c'+String(codigo).replace(/[^0-9A-Za-z]/g,'');
 const PARTICULAS = new Set(['DE','DA','DO','DOS','DAS','E']);
 const tokensNome = n => norm(n).toUpperCase().replace(/[^A-Z ]/g,' ').split(/\s+/).filter(t => t && !PARTICULAS.has(t));
+// nome da telemetria abreviado ou sem "de/da" (ex.: "CARLOS ALBERTO NOGUEIRA DE R. BASTOS")
 function casaNome(curto, longo){
   const a = tokensNome(curto), b = tokensNome(longo);
   if(a.length<2 || !b.length || a[0]!==b[0] || a[a.length-1].length>1 && !b[b.length-1].startsWith(a[a.length-1])) return false;
@@ -1056,23 +1063,38 @@ function casaNome(curto, longo){
   for(const w of a){ while(i<b.length && !b[i].startsWith(w)) i++; if(i===b.length) return false; i++; }
   return a.filter(w => w.length>1).length >= 2;
 }
-function casarEm(nome, lista){ // lista: [[id, nome]] → id ou null
-  const id = slug(nome);
-  if(lista.some(([k]) => k===id)) return id;
-  const c = lista.filter(([k,n]) => casaNome(nome, n));
-  return c.length===1 ? c[0][0] : null;
+const ativo = d => !d.situacao || norm(d.situacao)==='ativo';
+// entre vários cadastros do mesmo nome, vale o ativo; empatando, o de código mais alto (mais recente)
+const melhor = docs => docs.slice().sort((x,y) => (ativo(y[1])-ativo(x[1])) || ((+y[1].codigo||0)-(+x[1].codigo||0)))[0];
+function indiceNomes(entries){ // entries: [[id, doc]]
+  const porNome = new Map();
+  entries.forEach(e => { const k = slug(e[1].nome); if(!porNome.has(k)) porNome.set(k, []); porNome.get(k).push(e); });
+  return porNome;
+}
+function casarEm(nome, porNome){ // → [id, doc] ou null
+  const k = slug(nome);
+  if(porNome.has(k)) return melhor(porNome.get(k));
+  const c = [...porNome.keys()].filter(n => casaNome(nome, porNome.get(n)[0][1].nome));
+  return c.length===1 ? melhor(porNome.get(c[0])) : null;
 }
 let cadVinc = null;
-function vinculoId(nome){
-  if(!cadVinc) cadVinc = {lista:Object.entries(store.data.motoristas).map(([k,d]) => [k, d.nome]), cache:new Map()};
-  if(!cadVinc.cache.has(nome)) cadVinc.cache.set(nome, casarEm(nome, cadVinc.lista));
+function vinculo(nome){
+  if(!cadVinc) cadVinc = {porNome:indiceNomes(Object.entries(store.data.motoristas)), cache:new Map()};
+  if(!cadVinc.cache.has(nome)) cadVinc.cache.set(nome, casarEm(nome, cadVinc.porNome));
   return cadVinc.cache.get(nome);
 }
-const cadDe = nome => { const id = vinculoId(nome); return id ? store.data.motoristas[id] : null; };
+const cadDe = nome => { const v = vinculo(nome); return v ? v[1] : null; };
 const soDig = v => String(v==null?'':v).replace(/\D/g,'');
-function celNorm(c){ c=soDig(c).replace(/^0+/,''); if(c.length===10||c.length===11) return '55'+c; if((c.length===12||c.length===13) && c.startsWith('55')) return c; return null; }
-function fmtCel(c){ c=soDig(c); if(c.startsWith('55') && c.length>=12) c=c.slice(2); return c.length===11 ? '('+c.slice(0,2)+') '+c.slice(2,7)+'-'+c.slice(7) : c.length===10 ? '('+c.slice(0,2)+') '+c.slice(2,6)+'-'+c.slice(6) : c; }
+// WhatsApp precisa de celular: DDD + 9 dígitos começando com 9 (o relatório usa DDD com zero, ex.: (013)99159-9111)
+function celNorm(c){
+  c = soDig(c);
+  if(c.length===13 && c.startsWith('55')) c = c.slice(2);
+  c = c.replace(/^0+/, '');
+  return (c.length===11 && c[2]==='9') ? '55'+c : null;
+}
+function fmtCel(c){ c=soDig(c); if(c.startsWith('55') && c.length>=12) c=c.slice(2); return c.length===11 ? '('+c.slice(0,2)+') '+c.slice(2,7)+'-'+c.slice(7) : c; }
 const nomeProprio = n => String(n||'').toLowerCase().split(' ')[0].replace(/^./, x=>x.toUpperCase());
+const pillSit = d => !d ? '<span class="zero">—</span>' : ativo(d) ? '<span class="st ok">Ativo</span>' : '<span class="st" style="background:var(--track);color:var(--muted)">Inativo</span>';
 
 let cadEdit = null, cadArmado = false;
 const cadUi = {q:'', f:'todos'};
@@ -1082,28 +1104,33 @@ function renderCad(){
   $('#cad-ro').hidden = !ro;
   $('#cadimp-sec').hidden = ro;
   $('#rhcfg-sec').hidden = ro && !rhCfg().para;
-  ['#cad-nome','#cad-mat','#cad-cel','#cad-save','#cad-clear'].forEach(s0 => $(s0).disabled = ro);
+  ['#cad-nome','#cad-cod','#cad-cel','#cad-sit','#cad-save','#cad-clear'].forEach(s0 => $(s0).disabled = ro);
   const tel = [...A.mot.values()].filter(M => !M.semId);
   $('#cad-nomes').innerHTML = tel.map(M => '<option value="'+esc(M.nome)+'">').join('');
-  const linhas = new Map();
-  const usados = new Set();
-  tel.forEach(M => { const id = vinculoId(M.nome); if(id) usados.add(id); linhas.set(slug(M.nome), {nome:M.nome, cad:id?store.data.motoristas[id]:null, ult:ultimoEventoDe(M), tel:true}); });
-  Object.entries(store.data.motoristas).forEach(([id,d]) => { if(!usados.has(id) && !linhas.has(id)) linhas.set(id, {nome:d.nome, cad:d, ult:''}); });
+  const linhas = [], usados = new Set();
+  tel.forEach(M => { const v = vinculo(M.nome); if(v) usados.add(v[0]); linhas.push({key:'t:'+M.nome, nome:M.nome, id:v?v[0]:null, cad:v?v[1]:null, ult:ultimoEventoDe(M), tel:true}); });
+  Object.entries(store.data.motoristas).forEach(([id,d]) => { if(!usados.has(id)) linhas.push({key:id, nome:d.nome, id, cad:d, ult:''}); });
   const st = l => !l.cad ? 'falta' : !l.cad.celular ? 'semcel' : 'ok';
-  const all = [...linhas.values()];
-  const nFalta = all.filter(l=>st(l)==='falta').length, nSemCel = all.filter(l=>st(l)==='semcel').length;
-  $('#cad-note').textContent = (all.length-nFalta)+' cadastrados · '+nFalta+' da telemetria sem cadastro · '+nSemCel+' sem celular';
+  const nCad = Object.keys(store.data.motoristas).length, nAt = Object.values(store.data.motoristas).filter(ativo).length;
+  const nFalta = linhas.filter(l=>st(l)==='falta').length;
+  $('#cad-note').textContent = nCad+' no cadastro ('+nAt+' ativos) · '+nFalta+' da telemetria sem cadastro · '+linhas.filter(l=>l.tel&&st(l)==='semcel').length+' da telemetria sem celular';
   const q = norm(cadUi.q), qd = soDig(cadUi.q);
-  const rows = all.filter(l => {
-    if(cadUi.f!=='todos' && st(l)!==cadUi.f) return false;
+  const rows = linhas.filter(l => {
+    const f = cadUi.f;
+    if(f==='falta' && st(l)!=='falta') return false;
+    if(f==='semcel' && st(l)!=='semcel') return false;
+    if(f==='tel' && !l.tel) return false;
+    if(f==='ativo' && !(l.cad && ativo(l.cad))) return false;
+    if(f==='inativo' && !(l.cad && !ativo(l.cad))) return false;
     if(!q) return true;
     if(norm(l.nome).includes(q)) return true;
-    if(l.cad && (norm(l.cad.matricula).includes(q) || (qd && soDig(l.cad.celular).includes(qd)))) return true;
+    if(l.cad && (String(l.cad.codigo||'')===cadUi.q.trim() || (qd.length>=4 && soDig(l.cad.celular).includes(qd)))) return true;
     return false;
-  }).sort((a,b) => ({falta:0,semcel:1,ok:2}[st(a)] - {falta:0,semcel:1,ok:2}[st(b)]) || a.nome.localeCompare(b.nome,'pt-BR'));
-  const pill = {falta:'<span class="st pre">Falta cadastrar</span>', semcel:'<span class="st adv">Sem celular</span>', ok:'<span class="st ok">Cadastrado</span>'};
-  $('#cad-tbl tbody').innerHTML = rows.length ? rows.map(l => '<tr class="click" tabindex="0" data-cad="'+esc(l.nome)+'"'+(cadEdit===slug(l.nome)?' style="background:var(--hover)"':'')+'><td><div class="nm">'+esc(l.nome)+'</div>'+(l.cad && slug(l.cad.nome)!==slug(l.nome)?'<div style="font-size:10.5px;color:var(--muted)">No RH: '+esc(l.cad.nome)+'</div>':'')+'</td><td class="mini-n">'+(l.cad&&l.cad.matricula?esc(l.cad.matricula):'<span class="zero">—</span>')+'</td><td class="mini-n">'+(l.cad&&l.cad.celular?fmtCel(l.cad.celular):'<span class="zero">—</span>')+'</td><td>'+pill[st(l)]+'</td><td class="mini-n">'+(l.ult?dataBR(l.ult).slice(0,10):'<span class="zero">sem eventos</span>')+'</td></tr>').join('')
-    : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:22px">'+(all.length?'Nenhum motorista com esse filtro.':'Nenhum motorista ainda. Importe uma planilha ou cadastre acima.')+'</td></tr>';
+  }).sort((a,b) => (!!b.tel-!!a.tel) || ({falta:0,semcel:1,ok:2}[st(a)] - {falta:0,semcel:1,ok:2}[st(b)]) || a.nome.localeCompare(b.nome,'pt-BR'));
+  const MAX = 300;
+  const pill = {falta:'<span class="st pre">Falta cadastrar</span>', semcel:'<span class="st adv">Sem celular</span>', ok:'<span class="st ok">Pronto para envio</span>'};
+  $('#cad-tbl tbody').innerHTML = rows.length ? rows.slice(0,MAX).map(l => '<tr class="click" tabindex="0" data-cad-id="'+esc(l.id||'')+'" data-cad="'+esc(l.nome)+'"'+(l.id && cadEdit===l.id?' style="background:var(--hover)"':'')+'><td><div class="nm">'+esc(l.nome)+'</div>'+(l.cad && slug(l.cad.nome)!==slug(l.nome)?'<div style="font-size:10.5px;color:var(--muted)">No cadastro: '+esc(l.cad.nome)+'</div>':'')+'</td><td class="mini-n">'+(l.cad&&l.cad.codigo?esc(l.cad.codigo):'<span class="zero">—</span>')+'</td><td class="mini-n">'+(l.cad&&l.cad.celular?fmtCel(l.cad.celular):(l.cad&&l.cad.celularOriginal?'<span class="zero" title="Não é um celular válido para WhatsApp">'+esc(l.cad.celularOriginal)+'</span>':'<span class="zero">—</span>'))+'</td><td>'+pillSit(l.cad)+'</td><td>'+pill[st(l)]+'</td><td class="mini-n">'+(l.ult?dataBR(l.ult).slice(0,10):'<span class="zero">sem eventos</span>')+'</td></tr>').join('')+(rows.length>MAX?'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:14px">Mostrando '+MAX+' de '+rows.length+'. Use a busca para encontrar os demais.</td></tr>':'')
+    : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:22px">'+(linhas.length?'Nenhum motorista com esse filtro.':'Nenhum motorista ainda. Importe o PDF do cadastro abaixo.')+'</td></tr>';
   document.querySelectorAll('#cad-chips .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f===cadUi.f)));
   const ed = cadEdit && store.data.motoristas[cadEdit];
   $('#cad-title').textContent = ed ? 'Editar cadastro' : 'Cadastrar motorista';
@@ -1111,13 +1138,14 @@ function renderCad(){
   $('#cad-del').textContent = cadArmado ? 'Confirmar remoção' : 'Remover cadastro';
   $('#cad-del').classList.toggle('armed', cadArmado);
 }
-function cadCarregar(nome){
-  const d = cadDe(nome);
-  cadEdit = d ? slug(d.nome) : null; cadArmado = false;
+function cadCarregar(nome, id){
+  const d = id && store.data.motoristas[id] ? store.data.motoristas[id] : cadDe(nome);
+  cadEdit = d ? (id && store.data.motoristas[id] ? id : vinculo(nome)[0]) : null; cadArmado = false;
   $('#cad-nome').value = d ? d.nome : nome || '';
-  $('#cad-mat').value = d ? (d.matricula||'') : '';
+  $('#cad-cod').value = d ? (d.codigo||'') : '';
   $('#cad-cel').value = d && d.celular ? fmtCel(d.celular) : '';
-  ['nome','cel'].forEach(k => { $('#cad-'+k+'-err').textContent=''; $('#cad-'+k).removeAttribute('aria-invalid'); });
+  $('#cad-sit').value = d && !ativo(d) ? 'Inativo' : 'Ativo';
+  ['nome','cod','cel'].forEach(k => { $('#cad-'+k+'-err').textContent=''; $('#cad-'+k).removeAttribute('aria-invalid'); });
   $('#cad-msg').innerHTML = '';
   renderCad();
 }
@@ -1125,16 +1153,17 @@ function cadErro(k, t){ $('#cad-'+k+'-err').textContent = t; if(t) $('#cad-'+k).
 async function cadSalvar(){
   if(!store.canWrite) return;
   const nome = $('#cad-nome').value.trim().replace(/\s+/g,' ').toUpperCase();
-  const mat = $('#cad-mat').value.trim(), celIn = $('#cad-cel').value.trim();
+  const cod = $('#cad-cod').value.trim(), celIn = $('#cad-cel').value.trim(), sit = $('#cad-sit').value;
   const cel = celIn ? celNorm(celIn) : '';
-  const id = slug(nome);
+  const id = cod ? cadIdDe(cod) : null;
   let ok = true;
-  ok = cadErro('nome', !nome ? 'Informe o nome.' : (id!==cadEdit && store.data.motoristas[id]) ? 'Já existe um cadastro com esse nome.' : '') && ok;
-  ok = cadErro('cel', celIn && !cel ? 'Use DDD + número, por exemplo (11) 98765-4321.' : '') && ok;
+  ok = cadErro('nome', !nome ? 'Informe o nome.' : '') && ok;
+  ok = cadErro('cod', !cod ? 'Informe o código do motorista.' : !/^\d+$/.test(cod) ? 'Use só números.' : (id!==cadEdit && store.data.motoristas[id]) ? 'Código já usado por '+store.data.motoristas[id].nome+'.' : '') && ok;
+  ok = cadErro('cel', celIn && !cel ? 'Informe um celular com DDD, por exemplo (13) 99159-9111.' : '') && ok;
   if(!ok) return;
   const btn = $('#cad-save'); btn.disabled = true; btn.textContent = 'Salvando…';
   try{
-    await store.put('motoristas', id, {nome, matricula:mat, celular:cel||'', atualizadoEm:new Date().toISOString(), atualizadoPor:store.uid||null});
+    await store.put('motoristas', id, {codigo:cod, nome, celular:cel||'', celularOriginal:celIn, situacao:sit, atualizadoEm:new Date().toISOString(), atualizadoPor:store.uid||null, origem:'manual'});
     if(cadEdit && cadEdit!==id) await store.del('motoristas', cadEdit);
     cadEdit = id;
     $('#cad-msg').innerHTML = '<div class="msg ok">Cadastro de '+esc(nome)+' salvo.</div>';
@@ -1144,77 +1173,112 @@ async function cadSalvar(){
   }finally{ btn.disabled = false; btn.textContent = 'Salvar cadastro'; }
 }
 
-/* importação do cadastro (planilha do RH: A = nome, F = matrícula, K = celular) */
-let cadPend = null;
-function textoCelula(v){ if(v==null) return ''; if(typeof v==='number') return String(Math.round(v)); return String(v).trim(); }
-function lerCadastro(buf){
-  const wb = XLSX.read(buf, {type:'array'});
-  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, raw:true, defval:null});
-  const out = [], vistos = new Map();
-  rows.forEach((r, i) => {
-    if(!r) return;
-    const nome = textoCelula(r[0]).replace(/\s+/g,' ').toUpperCase();
-    if(!nome || /^(NOME|MOTORISTA|COLABORADOR|FUNCIONARIO)\b/.test(norm(nome).toUpperCase())) return;
-    const mat = textoCelula(r[5]), celBruto = textoCelula(r[10]);
-    const cel = celBruto ? celNorm(celBruto) : '';
-    const item = {linha:i+1, nome, matricula:mat, celular:cel||'', celInvalido:!!(celBruto && !cel), celBruto};
-    if(vistos.has(slug(nome))) out[vistos.get(slug(nome))] = item; else { vistos.set(slug(nome), out.length); out.push(item); }
-  });
-  return out;
+/* importação do cadastro pelo PDF "Cadastro de Motoristas - Detalhado" */
+const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+let pdfjsPronto = null;
+function carregarScript(src){ return new Promise((ok, falha) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => falha(new Error('não carregou '+src)); document.head.appendChild(s); }); }
+function carregarPdfJs(){
+  // o worker roda na própria página (pdfjsWorker global), sem precisar de um Worker separado
+  if(!pdfjsPronto) pdfjsPronto = carregarScript(PDFJS+'pdf.worker.min.js').then(() => carregarScript(PDFJS+'pdf.min.js')).then(() => window.pdfjsLib);
+  return pdfjsPronto;
 }
+function linhasDaPagina(items){
+  const rows = [];
+  items.forEach(it => {
+    if(!it.str || !it.str.trim()) return;
+    const y = it.transform[5];
+    let r = rows.find(r => Math.abs(r.y - y) <= 2.5);
+    if(!r){ r = {y, its:[]}; rows.push(r); }
+    r.its.push(it);
+  });
+  return rows.sort((a,b) => b.y-a.y).map(r => r.its.sort((a,b) => a.transform[4]-b.transform[4]).map(i => i.str.trim()));
+}
+function campo(linhas, rotulo){
+  for(const l of linhas){
+    const i = l.findIndex(t => norm(t)===norm(rotulo));
+    if(i>=0){ const v = l[i+1]; return (v && !/:\s*$/.test(v)) ? v.trim() : ''; }
+  }
+  return null;
+}
+async function lerPdfCadastro(buf, progresso){
+  const lib = await carregarPdfJs();
+  const doc = await lib.getDocument({data:buf, isEvalSupported:false}).promise;
+  const out = [], falhas = [];
+  for(let p=1; p<=doc.numPages; p++){
+    const pg = await doc.getPage(p);
+    const ls = linhasDaPagina((await pg.getTextContent()).items);
+    const codigo = campo(ls, 'Código:'), nome = campo(ls, 'Nome do Motorista:');
+    if(codigo==null && nome==null) continue;
+    if(!codigo || !nome){ falhas.push(p); continue; }
+    const celBruto = campo(ls, 'Celular:') || '', sit = campo(ls, 'Situação:') || '';
+    const cel = celBruto ? celNorm(celBruto) : '';
+    out.push({pagina:p, codigo:soDig(codigo), nome:nome.replace(/\s+/g,' ').toUpperCase(), celular:cel||'', celularOriginal:celBruto, situacao:/^inativ/i.test(sit) ? 'Inativo' : 'Ativo', celInvalido:!!(celBruto && !cel)});
+    if(p%25===0) progresso(p, doc.numPages);
+  }
+  return {itens:out, falhas, paginas:doc.numPages};
+}
+let cadPend = null;
 function classificarCad(it){
-  const atual = store.data.motoristas[slug(it.nome)];
-  const novoCel = it.celular || (atual && atual.celular) || '';
-  if(!atual) return {st:'novo', cel:novoCel};
-  if((atual.matricula||'')===it.matricula && (atual.celular||'')===novoCel) return {st:'igual', cel:novoCel};
-  return {st:'atualiza', cel:novoCel};
+  const atual = store.data.motoristas[cadIdDe(it.codigo)];
+  if(!atual) return 'novo';
+  return (atual.nome===it.nome && (atual.celular||'')===it.celular && (atual.situacao||'Ativo')===it.situacao) ? 'igual' : 'atualiza';
 }
 async function arquivoCadastro(f){
   if(!store.canWrite || !f) return;
-  if(typeof XLSX==='undefined'){ $('#cadimp-msg').innerHTML='<div class="msg err">O leitor de planilhas não carregou. Recarregue a página.</div>'; return; }
+  if(!/\.pdf$/i.test(f.name)){ $('#cadimp-msg').innerHTML='<div class="msg err">Envie o PDF "Cadastro de Motoristas - Detalhado".</div>'; return; }
+  const msg = $('#cadimp-msg');
+  msg.innerHTML = '<div class="msg info">Lendo '+esc(f.name)+'…</div>';
   try{
-    const itens = lerCadastro(new Uint8Array(await f.arrayBuffer()));
-    if(!itens.length){ cadPend=null; renderCadPend(); $('#cadimp-msg').innerHTML='<div class="msg err">Nenhum motorista encontrado. Confira se os nomes estão na coluna A.</div>'; return; }
-    cadPend = {arquivo:f.name, itens}; $('#cadimp-msg').innerHTML=''; renderCadPend();
-  }catch(e){ $('#cadimp-msg').innerHTML='<div class="msg err">Não foi possível ler '+esc(f.name)+' ('+esc(e.message||e)+').</div>'; }
+    const r = await lerPdfCadastro(new Uint8Array(await f.arrayBuffer()), (p,t) => { msg.innerHTML = '<div class="msg info">Lendo página '+p+' de '+t+'…</div>'; });
+    if(!r.itens.length){ cadPend=null; renderCadPend(); msg.innerHTML='<div class="msg err">Nenhum motorista encontrado no PDF. Confira se é o relatório "Cadastro de Motoristas - Detalhado" com texto (não escaneado).</div>'; return; }
+    const porCod = new Map(); r.itens.forEach(it => porCod.set(it.codigo, it));
+    cadPend = {arquivo:f.name, itens:[...porCod.values()], falhas:r.falhas, paginas:r.paginas};
+    msg.innerHTML = ''; renderCadPend();
+  }catch(e){ cadPend=null; renderCadPend(); msg.innerHTML='<div class="msg err">Não foi possível ler '+esc(f.name)+' ('+esc(e.message||e)+').</div>'; }
 }
 function renderCadPend(){
   const el = $('#cadimp-prev');
   if(!cadPend){ el.innerHTML=''; return; }
-  const lista = cadPend.itens.map(it => [slug(it.nome), it.nome]);
-  const tel = new Set([...A.mot.values()].filter(M=>!M.semId).map(M => casarEm(M.nome, lista)).filter(Boolean));
-  const cl = cadPend.itens.map(it => Object.assign({}, it, classificarCad(it), {tel:tel.has(slug(it.nome))}));
+  const porNome = indiceNomes(cadPend.itens.map(it => [cadIdDe(it.codigo), it]));
+  const vinc = new Map(); const faltam = [];
+  [...A.mot.values()].filter(M => !M.semId).forEach(M => { const v = casarEm(M.nome, porNome); if(v) vinc.set(v[0], M.nome); else faltam.push(M.nome); });
+  const cl = cadPend.itens.map(it => Object.assign({}, it, {st:classificarCad(it), tel:vinc.get(cadIdDe(it.codigo))||null}));
   const n = k => cl.filter(x=>x.st===k).length;
-  const inval = cl.filter(x=>x.celInvalido).length, semTel = cl.filter(x=>!x.tel).length;
-  const faltam = [...A.mot.values()].filter(M => !M.semId && !casarEm(M.nome, lista)).map(M => M.nome);
+  const nAt = cl.filter(x=>x.situacao==='Ativo').length;
+  const legado = Object.entries(store.data.motoristas).filter(([id,d]) => !d.codigo).map(([id]) => id);
+  const telInat = cl.filter(x => x.tel && x.situacao==='Inativo');
   const pill = {novo:'<span class="st ok">Novo</span>', atualiza:'<span class="st adv">Atualiza</span>', igual:'<span class="st" style="background:var(--track);color:var(--muted)">Sem alteração</span>'};
-  el.innerHTML = '<div class="card pad" style="margin-top:12px"><div class="sec-h"><h2>Conferir antes de salvar</h2><span class="sec-note">'+esc(cadPend.arquivo)+'</span></div>'+
-    '<p style="margin:0 0 10px;font-size:13px"><b>'+cl.length+'</b> motoristas na planilha · <b>'+n('novo')+'</b> novos · <b>'+n('atualiza')+'</b> com alteração · '+n('igual')+' sem alteração'+(inval?' · <span style="color:var(--sus)"><b>'+inval+'</b> com celular inválido (ficam sem celular)</span>':'')+'</p>'+
-    '<div class="msg info" style="margin:0 0 10px">'+tel.size+' motoristas da telemetria encontrados nesta planilha'+(semTel?' · '+semTel+' pessoas sem eventos de velocidade até agora (são salvas mesmo assim)':'')+(faltam.length?'<br>Sem correspondência na planilha: '+faltam.map(esc).join(', '):'')+'</div>'+
-    '<div class="tbl-scroll" style="max-height:340px;overflow:auto"><table style="min-width:640px"><thead><tr><th>Linha</th><th>Nome</th><th>Matrícula</th><th>Celular</th><th>Ação</th><th>Telemetria</th></tr></thead><tbody>'+
-    cl.sort((a,b)=>({novo:0,atualiza:1,igual:2}[a.st]-{novo:0,atualiza:1,igual:2}[b.st]) || a.linha-b.linha).map(x => '<tr><td class="mini-n">'+x.linha+'</td><td class="nm">'+esc(x.nome)+'</td><td class="mini-n">'+(x.matricula?esc(x.matricula):'<span class="zero">—</span>')+'</td><td class="mini-n">'+(x.celInvalido?'<span style="color:var(--sus)">'+esc(x.celBruto)+' (inválido)</span>':x.cel?fmtCel(x.cel):'<span class="zero">—</span>')+'</td><td>'+pill[x.st]+'</td><td>'+(x.tel?'<span class="st ok">Encontrado</span>':'<span class="zero">sem eventos</span>')+'</td></tr>').join('')+
-    '</tbody></table></div><div class="actions"><button class="btn" type="button" id="cadimp-ok"'+(n('novo')+n('atualiza')?'':' disabled')+'>Salvar '+(n('novo')+n('atualiza'))+' no cadastro</button><button class="btn ghost" type="button" id="cadimp-cancel">Cancelar</button></div></div>';
+  const salvar = n('novo')+n('atualiza');
+  el.innerHTML = '<div class="card pad" style="margin-top:12px"><div class="sec-h"><h2>Conferir antes de salvar</h2><span class="sec-note">'+esc(cadPend.arquivo)+' · '+cadPend.paginas+' páginas</span></div>'+
+    '<p style="margin:0 0 10px;font-size:13px"><b>'+cl.length+'</b> motoristas · <b>'+nAt+'</b> ativos · '+(cl.length-nAt)+' inativos · <b>'+n('novo')+'</b> novos · <b>'+n('atualiza')+'</b> com alteração · '+n('igual')+' sem alteração · '+cl.filter(x=>!x.celular).length+' sem celular válido para WhatsApp</p>'+
+    '<div class="msg info" style="margin:0 0 10px"><b>'+vinc.size+'</b> motoristas da telemetria encontrados no PDF'+(telInat.length?' ('+telInat.length+' com cadastro inativo: '+telInat.map(x=>esc(x.tel)).join(', ')+')':'')+'.'+(faltam.length?'<br>Sem correspondência no PDF: '+faltam.map(esc).join(', '):'')+(legado.length?'<br>'+legado.length+' cadastros da importação anterior (planilha, sem código) serão removidos.':'')+(cadPend.falhas.length?'<br>Páginas sem código ou nome legível: '+cadPend.falhas.join(', '):'')+'</div>'+
+    '<div class="tbl-scroll" style="max-height:340px;overflow:auto"><table style="min-width:720px"><thead><tr><th>Código</th><th>Nome do motorista</th><th>Celular</th><th>Situação</th><th>Ação</th><th>Telemetria</th></tr></thead><tbody>'+
+    cl.sort((a,b) => (!!b.tel-!!a.tel) || ({novo:0,atualiza:1,igual:2}[a.st]-{novo:0,atualiza:1,igual:2}[b.st]) || a.nome.localeCompare(b.nome,'pt-BR')).map(x => '<tr><td class="mini-n">'+esc(x.codigo)+'</td><td class="nm">'+esc(x.nome)+'</td><td class="mini-n">'+(x.celular?fmtCel(x.celular):x.celularOriginal?'<span style="color:var(--sus)" title="Não é celular válido para WhatsApp">'+esc(x.celularOriginal)+'</span>':'<span class="zero">—</span>')+'</td><td>'+pillSit(x)+'</td><td>'+pill[x.st]+'</td><td>'+(x.tel?'<span class="st ok">Encontrado</span>':'<span class="zero">—</span>')+'</td></tr>').join('')+
+    '</tbody></table></div><div class="actions"><button class="btn" type="button" id="cadimp-ok"'+(salvar||legado.length?'':' disabled')+'>Salvar '+salvar+' no cadastro'+(legado.length?' e remover '+legado.length+' antigos':'')+'</button><button class="btn ghost" type="button" id="cadimp-cancel">Cancelar</button></div></div>';
+}
+async function comRetentativa(fn){
+  for(let t=0;;t++){
+    try{ return await fn(); }
+    catch(e){ if(t<5 && e && (e.code==='resource_exhausted' || e.code==='unavailable')){ await new Promise(r => setTimeout(r, 800*(t+1) + Math.random()*400)); continue; } throw e; }
+  }
 }
 async function salvarCadPend(){
   if(!cadPend) return;
   const btn = $('#cadimp-ok'); btn.disabled = true;
-  const alvo = cadPend.itens.map(it => Object.assign({it}, classificarCad(it))).filter(x => x.st!=='igual');
-  let feitos = 0;
-  try{
-    for(const x of alvo){
-      const body = {nome:x.it.nome, matricula:x.it.matricula, celular:x.cel, atualizadoEm:new Date().toISOString(), atualizadoPor:store.uid||null, origem:'planilha RH'};
-      for(let t=0;;t++){
-        try{ await store.put('motoristas', slug(x.it.nome), body); break; }
-        catch(e){ if(t<5 && e && (e.code==='resource_exhausted' || e.code==='unavailable')){ await new Promise(r => setTimeout(r, 800*(t+1) + Math.random()*400)); continue; } throw e; }
-      }
-      feitos++; btn.textContent = 'Salvando '+feitos+' de '+alvo.length+'…';
-    }
-    cadPend = null; renderCadPend(); render();
-    $('#cadimp-msg').innerHTML = '<div class="msg ok">'+feitos+' '+(feitos===1?'cadastro salvo':'cadastros salvos')+'.</div>';
-  }catch(e){
-    $('#cadimp-msg').innerHTML = '<div class="msg err">Parou em '+feitos+' de '+alvo.length+' ('+esc((e&&(e.code||e.message))||e)+'). Envie a planilha de novo para continuar: o que já foi salvo aparece como sem alteração.</div>';
+  const alvo = cadPend.itens.filter(it => classificarCad(it)!=='igual');
+  const legado = Object.entries(store.data.motoristas).filter(([id,d]) => !d.codigo).map(([id]) => id);
+  const tarefas = alvo.map(it => () => store.put('motoristas', cadIdDe(it.codigo), {codigo:it.codigo, nome:it.nome, celular:it.celular, celularOriginal:it.celularOriginal, situacao:it.situacao, atualizadoEm:new Date().toISOString(), atualizadoPor:store.uid||null, origem:'pdf'}))
+    .concat(legado.map(id => () => store.del('motoristas', id)));
+  let feitos = 0, erro = null, i = 0;
+  const trabalhador = async () => { while(!erro && i<tarefas.length){ const t = tarefas[i++]; try{ await comRetentativa(t); feitos++; btn.textContent = 'Salvando '+feitos+' de '+tarefas.length+'…'; }catch(e){ erro = e; } } };
+  await Promise.all([1,2,3,4].map(trabalhador));
+  if(erro){
+    $('#cadimp-msg').innerHTML = '<div class="msg err">Parou em '+feitos+' de '+tarefas.length+' ('+esc((erro.code||erro.message)||erro)+'). Envie o PDF de novo para continuar: o que já foi salvo aparece como sem alteração.</div>';
     btn.disabled = false; btn.textContent = 'Tentar de novo';
+    return;
   }
+  cadPend = null; renderCadPend(); render();
+  $('#cadimp-msg').innerHTML = '<div class="msg ok">Cadastro atualizado: '+alvo.length+' '+(alvo.length===1?'motorista salvo':'motoristas salvos')+(legado.length?', '+legado.length+' cadastros antigos removidos':'')+'.</div>';
 }
 
 /* ---------- e-mail ao RH ---------- */
@@ -1246,7 +1310,7 @@ function montarEmailRH(M, mes){
   const s0 = situacao(r, M);
   const rotulo = s0.k==='ter' ? 'Término de contrato' : s0.k==='sus' ? 'Suspensão' : 'Advertência';
   const ate = A.ate[mes] ? dataBR(A.ate[mes]).slice(0,10) : '';
-  const assunto = 'Infração de velocidade · '+rotulo+' · '+M.nome+(cad&&cad.matricula?' · Matrícula '+cad.matricula:'')+' · '+mesNome(mes);
+  const assunto = 'Infração de velocidade · '+rotulo+' · '+M.nome+(cad&&cad.codigo?' · Código '+cad.codigo:'')+' · '+mesNome(mes);
   const susMes = r.susDir + r.susAdv;
   const partes = [];
   if(r.advs.length) partes.push(r.advs.length+' '+(r.advs.length===1?'advertência':'advertências'));
@@ -1256,7 +1320,7 @@ function montarEmailRH(M, mes){
     'Prezados,', '',
     'Informamos penalidade por excesso de velocidade registrada pela telemetria.', '',
     'Motorista: '+M.nome,
-    'Matrícula: '+(cad && cad.matricula ? cad.matricula : 'não cadastrada'),
+    'Código: '+(cad && cad.codigo ? cad.codigo : 'não cadastrado')+(cad && !ativo(cad) ? ' (cadastro inativo)' : ''),
     'Período: '+mesNome(mes).toLowerCase()+(ate?' (dados até '+ate+')':''),
     'Placas: '+[...c.placas].join(', '), '',
     'Ocorrências no mês:'
@@ -1277,7 +1341,7 @@ function renderRH(M, mes, info){
   card.hidden = !info.chaves.rh;
   if(!info.chaves.rh) return;
   const cfg = rhCfg();
-  const chave = info.chaves.rh+'|'+(cadDe(M.nome)||{}).matricula+'|'+A.ate[mes]+'|'+enviados(M.nome).length;
+  const chave = info.chaves.rh+'|'+(cadDe(M.nome)||{}).codigo+'|'+A.ate[mes]+'|'+enviados(M.nome).length;
   if(rhUi.chave!==chave){
     rhUi.chave = chave; const e = montarEmailRH(M, mes);
     $('#rh-assunto').value = e.assunto; $('#rh-corpo').value = e.corpo;
@@ -1398,7 +1462,7 @@ async function desenharComunicado(M, mes, tipo){
   x.fillStyle = '#FFFFFF'; x.font = '800 40px '+FONTE;
   nl.forEach((l,i) => x.fillText(l, P+40, y+92+i*46));
   x.fillStyle = '#C9CDDB'; x.font = '500 22px '+FONTE;
-  x.fillText((cad && cad.matricula ? 'Matrícula '+cad.matricula+'   ·   ' : '')+'Placas '+[...c.placas].join(', '), P+40, y+hb-26);
+  x.fillText((cad && cad.codigo ? 'Código '+cad.codigo+'   ·   ' : '')+'Placas '+[...c.placas].join(', '), P+40, y+hb-26);
   y += hb + 28;
   // selo de situação
   const sl = selo(M, mes, tipo);
@@ -1471,7 +1535,7 @@ function renderCom(x){
   if(comUi.chave!==chave){ comUi.chave = chave; comUi.texto = montarLegenda(M, mes, comUi.tipo); }
   const leg = $('#com-leg'); if(document.activeElement!==leg) leg.value = comUi.texto;
   const c = x.c, r = x.r;
-  const imgKey = chave+'|'+(cad?cad.matricula:'')+'|'+A.ate[mes]+'|'+[c.b1,c.b2,c.b3,c.ch,r.advAc,r.susAc].join(',');
+  const imgKey = chave+'|'+(cad?cad.codigo:'')+'|'+A.ate[mes]+'|'+[c.b1,c.b2,c.b3,c.ch,r.advAc,r.susAc].join(',');
   if(comUi.imgKey!==imgKey){ comUi.imgKey = imgKey; gerarImagem(M, mes, comUi.tipo, imgKey); }
   const cel = cad && cad.celular;
   atualizarLinkWa();
@@ -1481,7 +1545,7 @@ function renderCom(x){
     : 'Ao abrir a conversa no WhatsApp, o envio fica registrado aqui.';
   $('#com-note').textContent = info.pendente ? 'Pendente: '+TIPO_COM[info.pendente].toLowerCase() : 'Nenhum comunicado pendente em '+mesNome(mes);
   $('#com-cad').innerHTML = cad
-    ? '<dl class="kv"><dt>Matrícula</dt><dd class="mini-n">'+(cad.matricula?esc(cad.matricula):'—')+'</dd><dt>Celular</dt><dd class="mini-n">'+(cad.celular?fmtCel(cad.celular):'<span class="st adv">Sem celular</span>')+'</dd></dl><div style="margin-top:10px"><button class="linkbtn" type="button" data-cad-ir="'+esc(M.nome)+'">Editar cadastro</button></div>'
+    ? '<dl class="kv"><dt>Código</dt><dd class="mini-n">'+(cad.codigo?esc(cad.codigo):'—')+'</dd><dt>Situação</dt><dd>'+pillSit(cad)+'</dd><dt>Celular</dt><dd class="mini-n">'+(cad.celular?fmtCel(cad.celular):'<span class="st adv">Sem celular</span>')+'</dd></dl><div style="margin-top:10px"><button class="linkbtn" type="button" data-cad-ir="'+esc(M.nome)+'">Editar cadastro</button></div>'
     : '<p class="sec-note" style="margin:0 0 10px">Motorista sem cadastro.</p><button class="btn ghost" type="button" data-cad-ir="'+esc(M.nome)+'">Cadastrar agora</button>';
   renderRH(M, mes, info);
   const hist = enviados(M.nome);
@@ -1605,7 +1669,7 @@ $('#com-wa').addEventListener('click', e => { if($('#com-wa').getAttribute('aria
 $('#com-copy').addEventListener('click', copiarImagem);
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-cad-ir]'); if(!b) return;
-  cadCarregar(b.dataset.cadIr); setTab('cad'); window.scrollTo({top:0}); $('#cad-mat').focus();
+  cadCarregar(b.dataset.cadIr); setTab('cad'); window.scrollTo({top:0}); $('#cad-cod').focus();
 });
 $('#com-hist').addEventListener('click', async e => {
   const b = e.target.closest('[data-com-del]'); if(!b) return;
@@ -1635,12 +1699,12 @@ $('#cad-del').addEventListener('click', async () => {
   try{ await store.del('motoristas', cadEdit); cadCarregar(''); render(); $('#cad-msg').innerHTML='<div class="msg ok">Cadastro removido.</div>'; }
   catch(err){ $('#cad-msg').innerHTML='<div class="msg err">Não foi possível remover.</div>'; }
 });
-$('#cad-nome').addEventListener('change', e => { const d = cadDe(e.target.value); if(d && slug(e.target.value)!==cadEdit) cadCarregar(e.target.value); });
+$('#cad-nome').addEventListener('change', e => { const v = vinculo(e.target.value); if(v && v[0]!==cadEdit) cadCarregar(e.target.value); });
 $('#cad-cel').addEventListener('blur', e => { const c = celNorm(e.target.value); if(c) e.target.value = fmtCel(c); });
 $('#cad-q').addEventListener('input', e => { cadUi.q = e.target.value; renderCad(); });
 $('#cad-chips').addEventListener('click', e => { const b=e.target.closest('.chip'); if(!b) return; cadUi.f=b.dataset.f; renderCad(); });
-$('#cad-tbl').addEventListener('click', e => { const tr=e.target.closest('tr[data-cad]'); if(tr){ cadCarregar(tr.dataset.cad); window.scrollTo({top:0, behavior:'smooth'}); } });
-$('#cad-tbl').addEventListener('keydown', e => { if(e.key!=='Enter') return; const tr=e.target.closest('tr[data-cad]'); if(tr) cadCarregar(tr.dataset.cad); });
+$('#cad-tbl').addEventListener('click', e => { const tr=e.target.closest('tr[data-cad]'); if(tr){ cadCarregar(tr.dataset.cad, tr.dataset.cadId); window.scrollTo({top:0, behavior:'smooth'}); } });
+$('#cad-tbl').addEventListener('keydown', e => { if(e.key!=='Enter') return; const tr=e.target.closest('tr[data-cad]'); if(tr) cadCarregar(tr.dataset.cad, tr.dataset.cadId); });
 const top = $('#top');
 addEventListener('scroll', () => top.classList.toggle('stuck', scrollY>4), {passive:true});
 
