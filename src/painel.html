@@ -239,6 +239,12 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 .ei.pend{background:var(--wa);color:#fff} .ei.pend svg{opacity:1}
 .env-sub{font-size:10.5px;color:var(--adv);margin-top:3px}
 .bloq{font-size:11px;font-weight:600;color:var(--muted);background:var(--track);border-radius:6px;padding:4px 8px;white-space:nowrap}
+.bkpc{display:grid;grid-template-columns:1fr auto;gap:12px 16px;align-items:center}
+.bkpc-t{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:4px}
+.bkpc-v{font-size:14px;font-weight:600}
+.aviso-topo{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px;background:var(--adv-bg);color:var(--ink);border:1px solid rgba(180,88,15,.35);border-radius:var(--r);padding:11px 14px;font-size:12.5px}
+.aviso-topo b{color:var(--adv)}
+@media (max-width:820px){ .bkpc{grid-template-columns:1fr} }
 .acum{font-size:12px;font-weight:600;white-space:nowrap}
 .acum i{font-style:normal;font-size:10px;color:var(--muted);font-weight:500;margin:0 2px 0 2px}
 .mini-btn{appearance:none;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;border-radius:6px;padding:4px 9px;border:1px solid var(--wa);background:var(--card);color:var(--wa-d)}
@@ -284,6 +290,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 </header>
 
 <main class="wrap">
+  <div id="bkpc-aviso"></div>
   <!-- VISÃO GERAL -->
   <section id="v-geral" role="tabpanel" aria-labelledby="tab-geral">
     <div id="geral-empty" class="card empty sec" hidden>
@@ -493,6 +500,19 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       <div id="imp-prev"></div>
     </div>
     <div class="sec">
+      <div class="sec-h"><h2>Backup completo</h2><span class="sec-note">Todos os meses, cadastro, envios e e-mail do RH em um arquivo só</span></div>
+      <div class="card pad bkpc">
+        <div><div class="bkpc-t">Último backup completo</div><div class="bkpc-v" id="bkpc-ult">—</div></div>
+        <div class="actions" style="margin:0">
+          <button class="btn" type="button" id="bkpc-btn">Fazer backup completo (.json)</button>
+          <label class="btn ghost" for="rest-file" id="rest-lbl" style="display:inline-flex;align-items:center">Restaurar backup (.json)</label>
+        </div>
+        <p class="sec-note" style="margin:0;grid-column:1/-1">Salve o arquivo na pasta do OneDrive. Os dados do painel ficam guardados neste navegador: em outro computador, outro navegador ou depois de limpar os dados de navegação, use "Restaurar backup" com o arquivo mais recente para voltar tudo como estava.</p>
+      </div>
+      <div id="bkpc-msg"></div>
+      <div id="rest-prev"></div>
+    </div>
+    <div class="sec">
       <div class="sec-h"><h2>Backup dos meses</h2><span class="sec-note">Baixe e guarde fora do painel quando o mês fechar</span></div>
       <div class="tbl-scroll">
         <table id="bkp" style="min-width:640px">
@@ -502,11 +522,9 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       </div>
       <div id="bkp-msg"></div>
       <div class="actions" id="rest-row">
-        <label class="btn ghost" for="rest-file" style="display:inline-flex;align-items:center">Restaurar backup (.json)</label>
         <input type="file" id="rest-file" accept=".json,application/json" hidden>
-        <span class="sec-note">O Excel é para consulta; o arquivo .json devolve o mês ao painel se ele for removido.</span>
+        <span class="sec-note">O Excel é para consulta. O .json do mês devolve aquele mês ao painel pelo botão "Restaurar backup" acima.</span>
       </div>
-      <div id="rest-prev"></div>
     </div>
     <div class="sec">
       <div class="sec-h"><h2>Meses salvos no painel</h2><span class="sec-note">O histórico de reincidência usa todos os meses desta lista</span></div>
@@ -938,6 +956,7 @@ function renderImp(){
   $('#saved tbody').innerHTML = docs.length ? docs.map(([id,d]) => '<tr><td style="font-weight:600">'+mesNome(d.mes)+'</td><td>'+(d.tipo==='chuva'?'Chuva':'Seco')+'</td><td class="r mini-n">'+fmt(d.ev.length)+'</td><td class="r mini-n">'+d.motoristas.length+'</td><td class="mini-n">'+(d.ev.length?dataBR(ultimoTs(d)).slice(0,10):'—')+'</td><td class="mini-n" title="'+esc(d.arquivo||'')+'">'+(d.importadoEm?new Date(d.importadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—')+'</td><td class="r">'+(store.canWrite?'<button class="btn danger'+(armado===id?' armed':'')+'" type="button" data-del="'+esc(id)+'">'+(armado===id?'Confirmar remoção':'Remover')+'</button>':'')+'</td></tr>').join('')
     : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:22px">Nenhum mês salvo. Importe a primeira planilha acima.</td></tr>';
   renderBackup();
+  renderBkpCompleto();
   renderPendente();
 }
 function renderPendente(){
@@ -1648,6 +1667,7 @@ const backups = () => store.data.config.backups || {};
 function renderBackup(){
   const meses = A.meses.slice().reverse();
   $('#rest-row').hidden = !store.canWrite;
+  $('#rest-lbl').hidden = !store.canWrite;
   $('#bkp tbody').innerHTML = meses.length ? meses.map(m => {
     const docs = Object.values(store.docs).filter(d => d.mes===m);
     const nEv = docs.reduce((a,d)=>a+d.ev.length,0);
@@ -1690,6 +1710,34 @@ function planilhaBackup(m){
   add(regras, 'Regras', [44,20,40]);
   return XLSX.write(wb, {bookType:'xlsx', type:'array'});
 }
+/* backup completo: tudo o que o painel guarda, para levar a outro navegador ou computador */
+const DIAS_AVISO_BKP = 7;
+const ultBkpCompleto = () => (store.data.config.backupCompleto || {}).em || null;
+function temDados(){ return Object.keys(store.data.meses).length || Object.keys(store.data.motoristas).length; }
+function renderBkpCompleto(){
+  const ult = ultBkpCompleto();
+  const dias = ult ? Math.floor((Date.now() - new Date(ult).getTime()) / 86400000) : null;
+  $('#bkpc-ult').innerHTML = ult ? new Date(ult).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+' <span class="sec-note">('+(dias===0?'hoje':dias===1?'há 1 dia':'há '+dias+' dias')+')</span>' : '<span style="color:var(--adv)">Nenhum backup completo ainda</span>';
+  const atrasado = temDados() && (dias===null || dias >= DIAS_AVISO_BKP);
+  $('#bkpc-aviso').innerHTML = atrasado ? '<div class="aviso-topo" role="status"><span><b>'+(dias===null?'Nenhum backup completo feito.':'Último backup completo há '+dias+' dias.')+'</b> Salve uma cópia na pasta do OneDrive para não perder os dados se o navegador for limpo.</span><button class="btn" type="button" data-bkpc="1" style="padding:6px 12px">Fazer backup agora</button></div>' : '';
+}
+function dadosCompletos(){
+  return {formato:'infracoes-velocidade-completo', versao:1, geradoEm:new Date().toISOString(),
+    meses:store.data.meses, motoristas:store.data.motoristas, comunicados:store.data.comunicados,
+    config:Object.fromEntries(Object.entries(store.data.config).filter(([k]) => k!=='backupCompleto'))};
+}
+async function fazerBackupCompleto(btn){
+  const msg = $('#bkpc-msg'); const orig = btn.textContent; btn.disabled = true;
+  const hoje = new Date(); const nome = 'backup-completo-infracoes-velocidade-'+hoje.getFullYear()+'-'+p2(hoje.getMonth()+1)+'-'+p2(hoje.getDate())+'.json';
+  try{
+    await salvarArquivo(nome, JSON.stringify(dadosCompletos()));
+    try{ await store.put('config', 'backupCompleto', {em:new Date().toISOString(), por:store.uid||null, arquivo:nome}); }catch(e){}
+    msg.innerHTML = '<div class="msg ok">Backup completo salvo como <b>'+esc(nome)+'</b>. Guarde-o na pasta do OneDrive.</div>';
+    render();
+  }catch(e){
+    if(!(e && e.code==='declined')) msg.innerHTML = '<div class="msg err">Não foi possível salvar o backup ('+esc((e&&(e.code||e.message))||e)+').</div>';
+  }finally{ btn.disabled = false; btn.textContent = orig; }
+}
 async function salvarArquivo(nome, dados){
   if(store.mode==='db'){
     const dl = await claude.use('downloads');
@@ -1728,6 +1776,7 @@ async function lerRestauracao(f){
   const el = $('#rest-prev');
   try{
     const d = JSON.parse(await f.text());
+    if(d && d.formato==='infracoes-velocidade-completo'){ prevCompleto(d, f.name); return; }
     if(!d || d.formato!=='infracoes-velocidade-backup' || !d.meses) throw new Error('não é um backup deste painel');
     const docs = Object.entries(d.meses), coms = Object.entries(d.comunicados||{});
     const existentes = docs.filter(([id]) => store.docs[id]).length;
@@ -1738,8 +1787,42 @@ async function lerRestauracao(f){
       '<div class="actions"><button class="btn" type="button" id="rest-ok">Restaurar no painel</button><button class="btn ghost" type="button" id="rest-cancel">Cancelar</button></div></div>';
   }catch(e){ restPend = null; el.innerHTML = '<div class="msg err">Não foi possível usar '+esc(f.name)+': '+esc(e.message||e)+'.</div>'; }
 }
+function prevCompleto(d, nome){
+  const meses = Object.values(d.meses||{}), mot = Object.keys(d.motoristas||{}).length, com = Object.keys(d.comunicados||{}).length;
+  const lista = [...new Set(meses.map(x=>x.mes))].sort();
+  restPend = {completo:true, d};
+  $('#rest-prev').innerHTML = '<div class="card pad" style="margin-top:12px"><div class="sec-h"><h2>Restaurar backup completo</h2><span class="sec-note">'+esc(nome)+' · gerado em '+(d.geradoEm?new Date(d.geradoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—')+'</span></div>'+
+    '<p style="margin:0 0 10px;font-size:13px">'+(lista.length?lista.map(mesNome).join(', '):'Nenhum mês')+' · '+fmt(meses.reduce((a,x)=>a+(x.ev||[]).length,0))+' eventos · '+mot+' motoristas no cadastro · '+com+' envios registrados'+(d.config&&d.config.rh&&d.config.rh.para?' · e-mail do RH':'')+'.</p>'+
+    '<div class="msg info" style="margin:0 0 10px">Nada que já está no painel é apagado: os eventos são somados sem duplicar, envios e cadastros que faltam são incluídos e, no cadastro, vale a versão mais recente de cada motorista.</div>'+
+    '<div class="actions"><button class="btn" type="button" id="rest-ok">Restaurar tudo</button><button class="btn ghost" type="button" id="rest-cancel">Cancelar</button></div></div>';
+}
+async function restaurarCompleto(d){
+  let n = {ev:0, mot:0, com:0};
+  for(const [id, x] of Object.entries(d.meses||{})){
+    const m = mesclar(store.docs[id], {id, mes:x.mes, tipo:x.tipo, arquivo:x.arquivo||'backup', motoristas:x.motoristas, ev:x.ev});
+    if(m.novos){ await comRetentativa(() => store.put('meses', id, m.body)); n.ev += m.novos; }
+  }
+  for(const [id, x] of Object.entries(d.motoristas||{})){
+    const at = store.data.motoristas[id];
+    if(!at || (x.atualizadoEm||'') > (at.atualizadoEm||'')){ await comRetentativa(() => store.put('motoristas', id, x)); n.mot++; }
+  }
+  for(const [id, x] of Object.entries(d.comunicados||{})){ if(!store.data.comunicados[id]){ await comRetentativa(() => store.put('comunicados', id, x)); n.com++; } }
+  const cfg = d.config || {};
+  if(cfg.rh && cfg.rh.para && !rhCfg().para) await comRetentativa(() => store.put('config', 'rh', cfg.rh));
+  if(cfg.backups) await comRetentativa(() => store.put('config', 'backups', Object.assign({}, cfg.backups, backups())));
+  return n;
+}
 async function restaurar(){
   if(!restPend) return;
+  if(restPend.completo){
+    const btn = $('#rest-ok'); btn.disabled = true; btn.textContent = 'Restaurando…';
+    try{
+      const n = await restaurarCompleto(restPend.d); restPend = null;
+      $('#rest-prev').innerHTML = '<div class="msg ok">Backup restaurado: '+fmt(n.ev)+' eventos, '+n.mot+' cadastros e '+n.com+' envios incluídos.</div>';
+      ui.mes = null; render();
+    }catch(e){ btn.disabled = false; btn.textContent = 'Tentar de novo'; $('#rest-prev').insertAdjacentHTML('beforeend', '<div class="msg err">Falhou ('+esc((e&&(e.code||e.message))||e)+'). O que já foi restaurado fica; tente de novo para completar.</div>'); }
+    return;
+  }
   const btn = $('#rest-ok'); btn.disabled = true; btn.textContent = 'Restaurando…';
   try{
     for(const [id, x] of restPend.docs){
@@ -1788,6 +1871,8 @@ $('#imp-prev').addEventListener('click', e => {
   if(e.target.id==='imp-ok') salvarPendente();
   if(e.target.id==='imp-cancel'){ pendente=null; renderPendente(); }
 });
+$('#bkpc-btn').addEventListener('click', e => fazerBackupCompleto(e.currentTarget));
+document.addEventListener('click', e => { const b = e.target.closest('[data-bkpc]'); if(b) fazerBackupCompleto(b); });
 $('#bkp').addEventListener('click', e => { const b = e.target.closest('[data-bkp]'); if(b) fazerBackup(b.dataset.bkp, b.dataset.fmt, b); });
 $('#rest-file').addEventListener('change', e => { const f = e.target.files[0]; e.target.value=''; if(f) lerRestauracao(f); });
 $('#rest-prev').addEventListener('click', e => { if(e.target.id==='rest-ok') restaurar(); if(e.target.id==='rest-cancel'){ restPend=null; $('#rest-prev').innerHTML=''; } });

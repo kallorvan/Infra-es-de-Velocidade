@@ -10,6 +10,8 @@ Painel HTML que lê as planilhas "Infrações de Velocidade" da telemetria (seco
 - **E-mail ao RH** (aba Motorista ou botão "Abrir" na coluna Comunicado): para advertência, suspensão e término. O painel monta para, cópia, assunto e mensagem para copiar e colar no e-mail; "Marcar como enviado" tira a pendência. O e-mail do RH fica em Cadastro de motoristas → E-mail do RH.
 - **Motoristas inativos**: envio por WhatsApp e e-mail ao RH bloqueado enquanto o cadastro estiver inativo.
 - **Backup do mês** (aba Importar planilhas): quando o mês fecha, o painel avisa e oferece o backup em Excel (resumo por motorista, eventos, comunicados, regras) e em .json, que restaura o mês no painel se ele for removido. O mês continua no painel depois do backup.
+- **Backup completo** (aba Importar planilhas): um .json com todos os meses, cadastro, envios e e-mail do RH. "Restaurar backup" traz tudo de volta em outro navegador ou computador, sem apagar o que já está no painel. O painel avisa no topo quando o último backup completo tem 7 dias ou mais.
+- **Uso pelo OneDrive**: os dados ficam no navegador de quem usa, não no arquivo HTML; trocar o HTML por uma versão nova mantém os dados. Use sempre o mesmo navegador e guarde o backup completo na pasta.
 - No artefato do claude.ai, cadastro, e-mail do RH e registro de comunicados só podem ser lidos por quem tem acesso de Contribuidor ou acima.
 
 - `src/painel.html` — código-fonte do painel (logos entram no build).
