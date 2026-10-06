@@ -79,7 +79,7 @@ h2{font-size:13px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
 .st.ter{background:var(--ter-bg);color:var(--ter)}
 
 /* medidor de tolerância */
-.meter{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;min-width:120px}
+.meter{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center;min-width:90px;max-width:120px}
 .mtrack{position:relative;height:10px;background:var(--track);border-radius:2px;overflow:hidden;transform:skewX(-11deg)}
 .mtrack .f{position:absolute;left:0;top:0;bottom:0;background:var(--ink3)}
 .mtrack.over .f{background:var(--coral)}
@@ -99,7 +99,9 @@ input[type=search]:focus,select.inp:focus{outline:2px solid var(--coral);outline
 .chip:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
 .tbl-scroll{overflow-x:auto;border-radius:var(--r);border:1px solid var(--line)}
 table{border-collapse:collapse;width:100%;font-size:12.5px;background:var(--card)}
-table.wide{min-width:1360px}
+table.wide{min-width:960px}
+#tbl td:first-child{white-space:normal;min-width:160px;max-width:240px}
+#tbl td,#tbl th{padding-left:10px;padding-right:10px}
 thead th{background:var(--ink);color:#fff;font-weight:600;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;text-align:left;padding:10px 12px;white-space:nowrap}
 thead th.s{cursor:pointer;user-select:none} thead th.s:hover{background:var(--ink2)}
 thead th .ar{opacity:.5;margin-left:4px}
@@ -228,16 +230,16 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 .linkbtn{appearance:none;border:0;background:none;padding:0;font:inherit;font-size:11.5px;font-weight:600;color:var(--coral);cursor:pointer;text-decoration:underline}
 .linkbtn:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
 .com-cell{display:flex;align-items:center;gap:8px}
-th.env,td.env{width:150px;min-width:150px;text-align:left}
-td.env{border-left:1px solid var(--line)}
-.send{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;width:132px;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;border-radius:7px;padding:7px 10px;border:1px solid transparent;color:#fff;white-space:nowrap}
-.send svg{width:14px;height:14px;fill:currentColor;flex:none}
-.send.wa-s{background:var(--wa);border-color:var(--wa)} .send.wa-s:hover{background:var(--wa-d)}
-.send.mail-s{background:var(--ink);border-color:var(--ink)} .send.mail-s:hover{background:var(--ink2)}
+.send{appearance:none;display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;border-radius:7px;padding:5px 10px 5px 7px;border:1px solid var(--ink);background:var(--ink);color:#fff;white-space:nowrap}
+.send:hover{background:var(--ink2)}
+.env-ok{font-size:11.5px;font-weight:600;color:var(--ok);white-space:nowrap}
 .send:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
-.env-ok{display:inline-flex;width:132px;justify-content:center;font-size:11.5px;font-weight:600;color:var(--ok);background:var(--ok-bg);border-radius:7px;padding:7px 10px;white-space:nowrap}
-.env-sub{font-size:10.5px;color:var(--adv);margin-top:4px;text-align:center;width:132px}
-td.env .zero{display:inline-block;width:132px;text-align:center}
+.ei{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;background:rgba(255,255,255,.12)}
+.ei svg{width:12px;height:12px;fill:currentColor;opacity:.45}
+.ei.pend{background:var(--wa);color:#fff} .ei.pend svg{opacity:1}
+.env-sub{font-size:10.5px;color:var(--adv);margin-top:3px}
+.acum{font-size:12px;font-weight:600;white-space:nowrap}
+.acum i{font-style:normal;font-size:10px;color:var(--muted);font-weight:500;margin:0 2px 0 2px}
 .mini-btn{appearance:none;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;border-radius:6px;padding:4px 9px;border:1px solid var(--wa);background:var(--card);color:var(--wa-d)}
 .mini-btn:hover{background:var(--wa);color:#fff}
 .mini-btn:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
@@ -702,9 +704,9 @@ function meter(n, tol, over){
   return '<div class="meter"><div class="mtrack'+(over?' over':'')+'"><span class="f" style="width:'+(n/scale*100).toFixed(1)+'%"></span><span class="tol" style="left:'+(tol/scale*100).toFixed(1)+'%"></span></div><b>'+n+'<small>/'+tol+'</small></b></div>';
 }
 const COLS = [
-  {k:'nome', t:'Motorista'}, {k:'sit', t:'Situação'}, {k:'wa', t:'WhatsApp', c:'env'}, {k:'rh', t:'E-mail RH', c:'env'},
+  {k:'nome', t:'Motorista'}, {k:'sit', t:'Situação'},
   {k:'b1', t:'Seco 90–95'}, {k:'b2', t:'Seco 96–99'}, {k:'b3', t:'≥ 100', c:'r'}, {k:'ch', t:'Chuva > 1 min'},
-  {k:'pre', t:'Pré-infração', c:'r'}, {k:'vmax', t:'Vel. máx.', c:'r'}, {k:'advAc', t:'Advert. acum.', c:'r'}, {k:'susAc', t:'Susp. acum.', c:'r'}
+  {k:'vmax', t:'Máx.', c:'r'}, {k:'acum', t:'Acumulado', c:'r'}, {k:'env', t:'Envio', c:'env'}
 ];
 function renderGeral(){
   const has = A.meses.length>0;
@@ -742,7 +744,7 @@ function renderGeral(){
     if(f==='com') return !!(x.com && (x.com.pendente || x.com.rhPendente));
     return true;
   });
-  const val = (x,k) => k==='nome'?x.M.nome : k==='sit'?ST_ORD[x.s.k] : k==='vmax'?x.vmax : k==='advAc'?x.r.advAc : k==='susAc'?x.r.susAc : k==='wa'?(x.com&&x.com.pendente==='pen'?2:x.com&&x.com.pendente==='alerta'?1:0) : k==='rh'?(x.com&&x.com.rhPendente?1:0) : x.c[k];
+  const val = (x,k) => k==='nome'?x.M.nome : k==='sit'?ST_ORD[x.s.k] : k==='vmax'?x.vmax : k==='advAc'?x.r.advAc : k==='susAc'?x.r.susAc : k==='env'?((x.com&&x.com.pendente?2:0)+(x.com&&x.com.rhPendente?1:0)) : k==='acum'?(x.r.susAc*10+x.r.advAc) : x.c[k];
   rows.sort((a,b) => {
     const va=val(a,ui.sort.k), vb=val(b,ui.sort.k);
     let d = typeof va==='string' ? va.localeCompare(vb,'pt-BR') : va-vb;
@@ -754,19 +756,16 @@ function renderGeral(){
   $('#tbody').innerHTML = rows.length ? rows.map(x => '<tr class="click" tabindex="0" data-m="'+esc(x.M.nome)+'">'+
     '<td><div class="nm">'+esc(x.M.nome)+'</div><div style="font-size:11px;color:var(--muted)">'+esc(x.placas.join(' · '))+'</div></td>'+
     '<td>'+stPill(x.s)+'</td>'+
-    '<td class="env">'+celWa(x)+'</td>'+
-    '<td class="env">'+celRh(x)+'</td>'+
     '<td>'+meter(x.c.b1, R.b1.tol, x.c.b1>R.b1.tol)+'</td>'+
     '<td>'+meter(x.c.b2, R.b2.tol, x.c.b2>R.b2.tol)+'</td>'+
     '<td class="r">'+meter(x.c.b3, 0)+'</td>'+
     '<td>'+meter(x.c.ch, R.ch.tol, x.c.ch>R.ch.tol)+(x.c.chc?'<div style="font-size:10.5px;color:var(--muted);margin-top:3px">+'+x.c.chc+' até 1 min</div>':'')+'</td>'+
-    '<td class="r mini-n">'+(x.c.pre||'<span class="zero">0</span>')+'</td>'+
-    '<td class="r mini-n">'+(x.vmax?x.vmax+' km/h':'—')+'</td>'+
-    '<td class="r mini-n">'+x.r.advAc+'</td>'+
-    '<td class="r mini-n">'+x.r.susAc+'</td></tr>').join('')
-    : '<tr><td colspan="12" style="text-align:center;color:var(--muted);padding:22px">Nenhum motorista com esse filtro.</td></tr>';
+    '<td class="r mini-n">'+(x.vmax||'—')+'</td>'+
+    '<td class="r"><span class="acum mini-n" title="'+x.r.advAc+' advertências e '+x.r.susAc+' suspensões acumuladas">'+x.r.advAc+'<i>adv</i> '+x.r.susAc+'<i>susp</i></span></td>'+
+    '<td class="env">'+celEnvio(x)+'</td></tr>').join('')
+    : '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:22px">Nenhum motorista com esse filtro.</td></tr>';
   $('#tbl-note').textContent = mesNome(ui.mes);
-  $('#tbl-foot').textContent = rows.length+' de '+L.length+' motoristas · barra = picos do mês, traço = tolerância · acumulados consideram todos os meses importados até '+mesNome(ui.mes)+'.';
+  $('#tbl-foot').textContent = rows.length+' de '+L.length+' motoristas · barra = picos do mês, traço = tolerância · máx. em km/h · acumulado soma todos os meses importados até '+mesNome(ui.mes)+' · no botão Enviar, cada ícone fica verde quando aquele envio está pendente.';
   document.querySelectorAll('#fchips .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f===ui.filtro)));
 
   // gráficos
@@ -782,21 +781,18 @@ const fxLabel = fx => fx==='pre'?'Pré-infração 87–89 km/h':fx==='ch'?'Acima
 const ICO_WA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2z"/></svg>';
 const ICO_MAIL = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm1 2.4V17h16V7.4l-8 5.3-8-5.3zM5.6 7l6.4 4.2L18.4 7H5.6z"/></svg>';
 const feito = d => '<span class="env-ok">✓ Enviado '+new Date(d).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+'</span>';
-function celWa(x){
+// um botão só: abre o motorista na parte de envio; os ícones mostram o que falta (WhatsApp e e-mail ao RH)
+function celEnvio(x){
   if(!x.com) return '<span class="zero">—</span>';
-  const p = x.com.pendente;
-  if(p){
-    const semCel = !(x.cad && x.cad.celular);
-    return '<button class="send wa-s" type="button" data-com-ir="'+esc(x.M.nome)+'" data-tipo="'+p+'"'+(semCel?' title="Motorista sem celular cadastrado"':'')+'>'+ICO_WA+(p==='pen'?'Penalidade':'Alerta')+'</button>'+(semCel?'<div class="env-sub">sem celular</div>':x.cad && !ativo(x.cad)?'<div class="env-sub" style="color:var(--muted)">cadastro inativo</div>':'');
-  }
-  const ult = enviados(x.M.nome).find(e => e.mes===ui.mes && e.tipo!=='rh');
-  return ult ? feito(ult.enviadoEm) : '<span class="zero">—</span>';
-}
-function celRh(x){
-  if(!x.com || !x.com.chaves.rh) return '<span class="zero">—</span>';
-  if(x.com.rhPendente) return '<button class="send mail-s" type="button" data-com-ir="'+esc(x.M.nome)+'" data-tipo="rh">'+ICO_MAIL+'Enviar ao RH</button>';
-  const ult = enviados(x.M.nome).find(e => e.chave===x.com.chaves.rh);
-  return ult ? feito(ult.enviadoEm) : '<span class="zero">—</span>';
+  const waP = !!x.com.pendente, rhP = !!x.com.rhPendente, temRh = !!x.com.chaves.rh;
+  const waFeito = !waP && enviados(x.M.nome).some(e => e.mes===ui.mes && e.tipo!=='rh');
+  const rhFeito = temRh && !rhP;
+  const ico = (svg, pend, feito, nome) => '<span class="ei'+(pend?' pend':feito?' feito':'')+'" title="'+nome+(pend?': pendente':feito?': enviado':': nada a enviar')+'">'+svg+'</span>';
+  const icones = ico(ICO_WA, waP, waFeito, 'WhatsApp') + ico(ICO_MAIL, rhP, rhFeito, 'E-mail ao RH');
+  const semCel = waP && !(x.cad && x.cad.celular);
+  const tipo = waP ? x.com.pendente : rhP ? 'rh' : 'resumo';
+  if(waP || rhP) return '<button class="send" type="button" data-com-ir="'+esc(x.M.nome)+'" data-tipo="'+tipo+'"'+(semCel?' title="Motorista sem celular cadastrado"':'')+'>'+icones+'<span>Enviar</span></button>'+(semCel?'<div class="env-sub">sem celular</div>':'');
+  return (waFeito||rhFeito) ? '<span class="env-ok" title="'+[waFeito?'WhatsApp enviado':'',rhFeito?'e-mail ao RH enviado':''].filter(Boolean).join(' e ')+'">✓ Enviado</span>' : '<span class="zero">—</span>';
 }
 function histograma(sel, lsel, cond, cont){
   const el = $(sel);
