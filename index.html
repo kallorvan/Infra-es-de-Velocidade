@@ -18,7 +18,7 @@
   color-scheme:light;
   --ink:#1C2543; --ink2:#363E58; --ink3:#5C6486;
   --coral:#DD4663; --mauve:#AE82B1; --sand:#F4D38D; --rose:#E88A9C;
-  --paper:#EFF0F5; --card:#FFFFFF; --line:#DCDEE8; --muted:#767B8D; --track:#E7E9F1; --hover:#F6F7FB;
+  --paper:#EFF0F5; --card:#FFFFFF; --line:#DCDEE8; --muted:#767B8D; --track:#E7E9F1; --track-ink:#B9BDCC; --hover:#F6F7FB;
   --ok:#1E8E5A; --ok-bg:rgba(30,142,90,.12);
   --pre:#C99A2E; --pre-bg:rgba(244,211,141,.45); --pre-ink:#6B4E0E;
   --b1:#8B5BB0; --b2:#E0405F; --b3:#9A0F3A;
@@ -361,7 +361,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
         <p style="margin:0 0 8px"><b>Igual ou acima de 100 km/h</b>: sem tolerância. Perda de pontuação avaliativa e uma suspensão a cada pico.</p>
         <p style="margin:0 0 8px"><b>3 advertências acumuladas</b> geram uma suspensão (na 3ª, 6ª, 9ª…).</p>
         <p style="margin:0"><b>3 suspensões acumuladas</b> (diretas ou vindas de advertências) levam ao término do contrato de trabalho.</p>
-        <p style="margin:12px 0 0;color:var(--muted);font-size:12px">A pré-infração (87 a 89 km/h no seco) é só informativa e não gera penalidade. Na chuva vale apenas a regra acima de 70 km/h.</p>
+        <p style="margin:12px 0 0;color:var(--muted);font-size:12px">A pré-infração (87 a 89 km/h no seco) é só informativa e não gera penalidade. Na chuva vale apenas a regra acima de 70 km/h, e só conta como pico o evento que fica acima dessa velocidade por mais de 1 minuto; eventos de até 1 minuto aparecem no painel, mas não contam.</p>
       </div>
     </div>
   </section>
@@ -379,13 +379,14 @@ const REGRAS = [
   {id:'b1', cond:'seco',  nome:'Seco · 90 a 95 km/h', faixa:'90–95 km/h', min:90, max:95, tol:35, pena:'adv', cor:'var(--b1)'},
   {id:'b2', cond:'seco',  nome:'Seco · 96 a 99 km/h', faixa:'96–99 km/h', min:96, max:99, tol:5,  pena:'adv', cor:'var(--b2)'},
   {id:'b3', cond:'seco',  nome:'Igual ou acima de 100 km/h', faixa:'≥ 100 km/h', min:100, max:Infinity, tol:0, pena:'sus', cor:'var(--b3)'},
-  {id:'ch', cond:'chuva', nome:'Chuva · acima de 70 km/h', faixa:'> 70 km/h', min:71, max:Infinity, tol:5, pena:'adv', cor:'var(--mauve)'}
+  {id:'ch', cond:'chuva', nome:'Chuva · acima de 70 km/h por mais de 1 min', faixa:'> 70 km/h e > 1 min', min:71, max:Infinity, tol:5, pena:'adv', cor:'var(--mauve)'}
 ];
 const PRE = {min:87, max:89};
 const ADV_P_SUS = 3, SUS_P_TER = 3;
 
-function faixa(cond, vel){
-  if(cond==='chuva') return vel>70 ? 'ch' : null;
+const CHUVA_MIN_S = 60; // na chuva, só conta pico que fica acima de 70 km/h por mais de 1 min
+function faixa(cond, vel, dur){
+  if(cond==='chuva') return vel>70 ? (dur>CHUVA_MIN_S ? 'ch' : 'chc') : null;
   if(vel>=100) return 'b3';
   if(vel>=96) return 'b2';
   if(vel>=90) return 'b1';
@@ -395,7 +396,7 @@ function faixa(cond, vel){
 const FAIXA_INFO = {
   pre:{nome:'Pré-infração', cor:'var(--pre)'},
   b1:{nome:'90–95', cor:'var(--b1)'}, b2:{nome:'96–99', cor:'var(--b2)'}, b3:{nome:'≥ 100', cor:'var(--b3)'},
-  ch:{nome:'Chuva > 70', cor:'var(--mauve)'}
+  ch:{nome:'Chuva > 1 min', cor:'var(--mauve)'}, chc:{nome:'Chuva ≤ 1 min', cor:'var(--track-ink)'}
 };
 
 /* ================= UTIL ================= */
@@ -458,8 +459,8 @@ function analisar(docs){
       const nome = doc.motoristas[e[0]]; if(!nome) return;
       if(!mot.has(nome)) mot.set(nome, {nome, meses:{}, semId:/^(SEM MOTORISTA|NAO IDENTIFICADO|N\/I)/.test(norm(nome).toUpperCase())});
       const M = mot.get(nome);
-      const mm = M.meses[doc.mes] || (M.meses[doc.mes] = {pre:0,b1:0,b2:0,b3:0,ch:0,ev:[],placas:new Set(),vmax:{seco:0,chuva:0}});
-      const ev = {ts:e[1], placa:e[2], vel:+e[3], dur:+e[4], cond:doc.tipo, fx:faixa(doc.tipo, +e[3])};
+      const mm = M.meses[doc.mes] || (M.meses[doc.mes] = {pre:0,b1:0,b2:0,b3:0,ch:0,chc:0,ev:[],placas:new Set(),vmax:{seco:0,chuva:0}});
+      const ev = {ts:e[1], placa:e[2], vel:+e[3], dur:+e[4], cond:doc.tipo, fx:faixa(doc.tipo, +e[3], +e[4])};
       mm.ev.push(ev); mm.placas.add(ev.placa);
       if(ev.fx) mm[ev.fx]++;
       if(ev.vel > mm.vmax[doc.tipo]) mm.vmax[doc.tipo] = ev.vel;
@@ -538,7 +539,7 @@ function meter(n, tol, over){
 }
 const COLS = [
   {k:'nome', t:'Motorista'}, {k:'sit', t:'Situação'},
-  {k:'b1', t:'Seco 90–95'}, {k:'b2', t:'Seco 96–99'}, {k:'b3', t:'≥ 100', c:'r'}, {k:'ch', t:'Chuva > 70'},
+  {k:'b1', t:'Seco 90–95'}, {k:'b2', t:'Seco 96–99'}, {k:'b3', t:'≥ 100', c:'r'}, {k:'ch', t:'Chuva > 1 min'},
   {k:'pre', t:'Pré-infração', c:'r'}, {k:'vmax', t:'Vel. máx.', c:'r'}, {k:'advAc', t:'Advert. acum.', c:'r'}, {k:'susAc', t:'Susp. acum.', c:'r'}
 ];
 function renderGeral(){
@@ -555,7 +556,7 @@ function renderGeral(){
   const kp = [
     {c:'', lab:'Motoristas com eventos', val:fmt(L.length), sub:fmt(comPen)+' perdem pontuação avaliativa'},
     {c:'k-b1', lab:'Picos no seco', val:fmt(sum('b1')+sum('b2')+sum('b3')), sub:fmt(sum('pre'))+' pré-infrações (87–89)'},
-    {c:'k-ch', lab:'Picos na chuva', val:fmt(sum('ch')), sub:'acima de 70 km/h'},
+    {c:'k-ch', lab:'Picos na chuva', val:fmt(sum('ch')), sub:'acima de 70 km/h por mais de 1 min · '+fmt(sum('chc'))+' curtos não contam'},
     {c:'k-adv', lab:'Advertências', val:fmt(advMes), sub:'emitidas no mês'},
     {c:'k-sus', lab:'Suspensões', val:fmt(susMes), sub:fmt(L.reduce((a,x)=>a+x.r.susDir,0))+' por ≥ 100 km/h · '+fmt(L.reduce((a,x)=>a+x.r.susAdv,0))+' por reincidência'},
     {c:'k-ter', lab:'Términos de contrato', val:fmt(terMes), sub:'3 suspensões acumuladas'}
@@ -590,7 +591,7 @@ function renderGeral(){
     '<td>'+meter(x.c.b1, R.b1.tol, x.c.b1>R.b1.tol)+'</td>'+
     '<td>'+meter(x.c.b2, R.b2.tol, x.c.b2>R.b2.tol)+'</td>'+
     '<td class="r">'+meter(x.c.b3, 0)+'</td>'+
-    '<td>'+meter(x.c.ch, R.ch.tol, x.c.ch>R.ch.tol)+'</td>'+
+    '<td>'+meter(x.c.ch, R.ch.tol, x.c.ch>R.ch.tol)+(x.c.chc?'<div style="font-size:10.5px;color:var(--muted);margin-top:3px">+'+x.c.chc+' até 1 min</div>':'')+'</td>'+
     '<td class="r mini-n">'+(x.c.pre||'<span class="zero">0</span>')+'</td>'+
     '<td class="r mini-n">'+(x.vmax?x.vmax+' km/h':'—')+'</td>'+
     '<td class="r mini-n">'+x.r.advAc+'</td>'+
@@ -602,46 +603,56 @@ function renderGeral(){
 
   // gráficos
   ['seco','chuva'].forEach(cond => {
-    const cont = {}; let tot=0;
-    L.forEach(x => x.c.ev.forEach(e => { if(e.cond===cond){ cont[e.vel]=(cont[e.vel]||0)+1; tot++; } }));
-    $('#cs-'+cond).textContent = tot ? fmt(tot)+' eventos em '+mesNome(ui.mes) : 'Sem eventos importados para '+mesNome(ui.mes);
+    const cont = {}; let tot=0, curtos=0;
+    L.forEach(x => x.c.ev.forEach(e => { if(e.cond!==cond) return; const k=e.fx||'_'; (cont[e.vel]||(cont[e.vel]={}))[k]=((cont[e.vel]||{})[k]||0)+1; tot++; if(e.fx==='chc') curtos++; }));
+    $('#cs-'+cond).textContent = tot ? fmt(tot)+' eventos em '+mesNome(ui.mes)+(cond==='chuva'?' · '+fmt(tot-curtos)+' acima de 1 min':'') : 'Sem eventos importados para '+mesNome(ui.mes);
     histograma('#ch-'+cond, '#lg-'+cond, cond, cont);
   });
 }
+const FX_ORD = ['ch','chc','pre','b1','b2','b3','_'];
+const fxLabel = fx => fx==='pre'?'Pré-infração 87–89 km/h':fx==='ch'?'Acima de 70 km/h por mais de 1 min':fx==='chc'?'Acima de 70 km/h por até 1 min (não conta)':fx==='_'?'Fora das faixas':'Faixa '+FAIXA_INFO[fx].nome+' km/h';
 function histograma(sel, lsel, cond, cont){
   const el = $(sel);
   const vs = Object.keys(cont).map(Number);
   if(!vs.length){ el.innerHTML = '<div style="padding:30px 0;text-align:center;color:var(--muted);font-size:12px">Importe a planilha '+(cond==='seco'?'do seco':'da chuva')+' deste mês.</div>'; $(lsel).innerHTML=''; return; }
+  const totV = v => Object.values(cont[v]||{}).reduce((a,b)=>a+b,0);
   const lo = cond==='seco' ? Math.min(PRE.min, Math.min(...vs)) : Math.min(71, Math.min(...vs));
   const hi = Math.max(cond==='seco'?100:80, Math.max(...vs));
   const n = hi-lo+1, W=560, H=210, pl=34, pr=8, pt=22, pb=26;
-  const bw = (W-pl-pr)/n, maxY = Math.max(...Object.values(cont));
+  const bw = (W-pl-pr)/n, maxY = Math.max(...vs.map(totV));
   const step = niceStep(maxY), top = Math.ceil(maxY/step)*step;
   const y = v => pt + (H-pt-pb) * (1 - v/top);
   let s = '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Distribuição de velocidades '+cond+'">';
   for(let t=0;t<=top;t+=step){ s += '<line class="grid" x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y(t)+'" y2="'+y(t)+'"/><text class="ax" x="'+(pl-6)+'" y="'+(y(t)+3)+'" text-anchor="end">'+t+'</text>'; }
-  // faixas
-  const zonas = cond==='seco' ? [['pre',PRE.min,PRE.max],['b1',90,95],['b2',96,99],['b3',100,hi]] : [['ch',71,hi]];
+  const zonas = cond==='seco' ? [['pre',PRE.min,PRE.max],['b1',90,95],['b2',96,99],['b3',100,hi]] : [];
   zonas.forEach(([fx,a,b]) => {
     if(b<lo || a>hi) return;
     const xa = pl+(Math.max(a,lo)-lo)*bw, xb = pl+(Math.min(b,hi)-lo+1)*bw;
     s += '<line x1="'+xa+'" x2="'+xa+'" y1="'+(pt-14)+'" y2="'+(H-pb)+'" style="stroke:var(--line)" stroke-dasharray="2 3"/>';
     if(xb-xa > 30) s += '<text class="zone" x="'+((xa+xb)/2)+'" y="'+(pt-6)+'" text-anchor="middle">'+FAIXA_INFO[fx].nome+'</text>';
   });
+  const usados = new Set();
   for(let v=lo; v<=hi; v++){
-    const c = cont[v]||0, fx = faixa(cond, v), x = pl+(v-lo)*bw+1, w = Math.max(bw-2,1);
-    if(c){ const yy=y(c), h=Math.max(H-pb-yy,1); s += '<path class="bar" data-v="'+v+'" data-c="'+c+'" data-fx="'+(fx||'')+'" style="fill:'+(fx?FAIXA_INFO[fx].cor:'var(--ink3)')+'" d="'+roundTop(x,yy,w,h,Math.min(3,w/2))+'"/>'; }
-    s += '<rect data-v="'+v+'" data-c="'+c+'" data-fx="'+(fx||'')+'" class="hit" x="'+(x-1)+'" y="'+pt+'" width="'+bw+'" height="'+(H-pt-pb)+'" fill="transparent"/>';
+    const parts = cont[v]||{}, tv = totV(v), x = pl+(v-lo)*bw+1, w = Math.max(bw-2,1);
+    let acc = 0; const segs = FX_ORD.filter(k=>parts[k]);
+    segs.forEach((k,i) => {
+      usados.add(k);
+      const y0 = y(acc), y1 = y(acc+parts[k]); acc += parts[k];
+      const h = Math.max(y0-y1-(i>0?2:0),1), last = i===segs.length-1;
+      const col = k==='_'?'var(--ink3)':FAIXA_INFO[k].cor;
+      s += last ? '<path class="bar" style="fill:'+col+'" d="'+roundTop(x,y1,w,h,Math.min(3,w/2))+'"/>' : '<rect class="bar" style="fill:'+col+'" x="'+x+'" y="'+(y0-h)+'" width="'+w+'" height="'+h+'"/>';
+    });
+    const tip = segs.map(k => parts[k]+' '+(k==='ch'?'acima de 1 min':k==='chc'?'até 1 min (não conta)':k==='_'?'fora das faixas':FAIXA_INFO[k].nome)).join(' · ');
+    s += '<rect data-v="'+v+'" data-c="'+tv+'" data-t="'+esc(tip)+'" class="hit" x="'+(x-1)+'" y="'+pt+'" width="'+bw+'" height="'+(H-pt-pb)+'" fill="transparent"/>';
     if(n<=24 || v%5===0) s += '<text class="ax" x="'+(x+w/2)+'" y="'+(H-pb+14)+'" text-anchor="middle">'+v+'</text>';
   }
   s += '<line class="base" x1="'+pl+'" x2="'+(W-pr)+'" y1="'+(H-pb)+'" y2="'+(H-pb)+'"/></svg>';
   el.innerHTML = s;
-  const used = zonas.map(z=>z[0]).filter(fx => Object.keys(cont).some(v => faixa(cond,+v)===fx));
-  $(lsel).innerHTML = used.map(fx => '<span><i style="background:'+FAIXA_INFO[fx].cor+'"></i>'+(fx==='pre'?'Pré-infração 87–89':fx==='ch'?'Acima de 70 km/h':FAIXA_INFO[fx].nome+' km/h')+'</span>').join('');
+  $(lsel).innerHTML = FX_ORD.filter(k=>usados.has(k)).map(fx => '<span><i style="background:'+(fx==='_'?'var(--ink3)':FAIXA_INFO[fx].cor)+'"></i>'+fxLabel(fx)+'</span>').join('');
   el.querySelectorAll('rect.hit').forEach(r => {
     r.addEventListener('mousemove', ev => {
-      const v=r.dataset.v, c=+r.dataset.c, fx=r.dataset.fx;
-      showTip(ev, '<b>'+v+' km/h</b> · '+c+' '+(c===1?'pico':'picos')+(fx?'<br>'+(fx==='pre'?'Pré-infração':fx==='ch'?'Chuva acima de 70':'Faixa '+FAIXA_INFO[fx].nome):''));
+      const c=+r.dataset.c; if(!c){ hideTip(); return; }
+      showTip(ev, '<b>'+r.dataset.v+' km/h</b> · '+c+' '+(c===1?'evento':'eventos')+'<br>'+esc(r.dataset.t));
     });
     r.addEventListener('mouseleave', hideTip);
   });
@@ -680,7 +691,7 @@ function renderMot(){
     return '<div class="rule-box"><div class="rh"><span class="rt"><span class="band-tag"><i style="background:'+g.cor+'"></i>'+esc(g.nome)+'</span></span><span class="rr">'+(g.tol?'tolerância '+g.tol+'/mês':'sem tolerância')+'</span></div>'+
       (g.tol ? meter(n, g.tol, over) : '<div class="mini-n" style="font-size:20px;font-weight:600;color:'+(n?'var(--sus)':'var(--muted)')+'">'+n+'</div>')+
       '<div class="outcome">'+(over?'<span class="st '+(g.pena==='sus'?'sus':'adv')+'">'+esc(res)+'</span>':esc(res))+'</div></div>';
-  }).join('') + '<div class="rule-box"><div class="rh"><span class="rt"><span class="band-tag"><i style="background:var(--pre)"></i>Pré-infração · 87 a 89 km/h</span></span><span class="rr">informativo</span></div><div class="mini-n" style="font-size:20px;font-weight:600">'+c.pre+'</div><div class="outcome">Não gera penalidade</div></div>';
+  }).join('') + '<div class="rule-box"><div class="rh"><span class="rt"><span class="band-tag"><i style="background:var(--pre)"></i>Pré-infração · 87 a 89 km/h</span></span><span class="rr">informativo</span></div><div class="mini-n" style="font-size:20px;font-weight:600">'+c.pre+'</div><div class="outcome">Não gera penalidade</div></div>' + '<div class="rule-box"><div class="rh"><span class="rt"><span class="band-tag"><i style="background:var(--track-ink)"></i>Chuva · acima de 70 km/h por até 1 min</span></span><span class="rr">informativo</span></div><div class="mini-n" style="font-size:20px;font-weight:600">'+c.chc+'</div><div class="outcome">Não conta para a tolerância</div></div>';
 
   const dots = (n, tot, cls) => '<div class="dots '+cls+'">'+Array.from({length:tot},(_,i)=>'<i class="'+(i<n?'on':'')+'"></i>').join('')+'</div>';
   const advCiclo = r.advAc % ADV_P_SUS;
@@ -700,7 +711,7 @@ function renderMot(){
       if(h.susAdv) what.push('<span class="st sus">'+h.susAdv+' susp. por 3 advertências</span>');
       if(h.terminoNoMes) what.push('<span class="st ter">Término de contrato</span>');
       if(!h.advs.length && !h.susDir && !h.susAdv) what.push('<span class="st ok">Dentro da tolerância</span>');
-      what.push('<span style="color:var(--muted)">'+(cm.b1+cm.b2+cm.b3)+' picos seco · '+cm.ch+' chuva</span>');
+      what.push('<span style="color:var(--muted)">'+(cm.b1+cm.b2+cm.b3)+' picos seco · '+cm.ch+' chuva > 1 min'+(cm.chc?' (+'+cm.chc+' curtos)':'')+'</span>');
     }
     return '<div class="tl'+(m===ui.mes?' sel':'')+'"><div class="mo">'+mesNome(m)+'</div><div class="what">'+what.join('')+'</div><div class="acc mini-n">adv. '+h.advAc+' · susp. '+h.susAc+'</div></div>';
   }).join('');
@@ -829,6 +840,7 @@ async function salvarPendente(){
 function renderRegras(){
   $('#r-faixas').innerHTML = [
     {cor:'var(--pre)', n:'Pré-infração (seco)', f:'87 a 89 km/h', t:'Informativo', o:'Não gera penalidade'},
+    {cor:'var(--track-ink)', n:'Chuva · picos curtos', f:'> 70 km/h por até 1 min', t:'Informativo', o:'Não conta para a tolerância de 5 picos'},
     ...REGRAS.map(g => ({cor:g.cor, n:g.nome, f:g.faixa, t:g.tol?'Tolerância de '+g.tol+' picos por mês':'Sem tolerância', o:g.pena==='sus'?'Perda de pontuação + suspensão a cada pico':'Acima da tolerância: perda de pontuação + 1 advertência'}))
   ].map(r => '<div class="rule-box"><div class="rh"><span class="band-tag rt"><i style="background:'+r.cor+'"></i>'+esc(r.n)+'</span></div><div class="mini-n" style="font-size:20px;font-weight:600">'+esc(r.f)+'</div><div class="rr">'+esc(r.t)+'</div><div class="outcome">'+esc(r.o)+'</div></div>').join('');
 }
