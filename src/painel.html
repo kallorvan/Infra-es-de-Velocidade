@@ -196,7 +196,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 
 /* cadastro e comunicado */
 #com-sec{scroll-margin-top:150px}
-.form-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px 12px;align-items:end}
+.form-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px 12px;align-items:end}
 .fld{display:grid;gap:5px;min-width:0}
 .fld label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .fld input,.fld textarea{font-family:inherit;font-size:13px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px;min-width:0;width:100%}
@@ -206,6 +206,9 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 .fld textarea{font-family:var(--f-ui);line-height:1.5;resize:vertical;min-height:260px}
 .com-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px}
 .com-tipos{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.com-img-wrap{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;place-items:center;min-height:200px}
+.com-img-wrap img{display:block;width:100%;max-width:440px;height:auto;border-radius:6px;box-shadow:0 4px 14px rgba(28,37,67,.12)}
+.passos{margin:12px 0 0;padding-left:20px;font-size:12.5px;color:var(--ink2);line-height:1.6}
 .wa{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:12.5px;font-weight:700;border-radius:8px;padding:10px 16px;background:var(--wa);color:#fff;border:1px solid var(--wa)}
 .wa:hover{background:var(--wa-d)}
 .wa[aria-disabled="true"]{opacity:.45;pointer-events:none}
@@ -326,10 +329,18 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
         <div class="com-grid">
           <div class="card pad">
             <div class="com-tipos" id="com-tipos" role="group" aria-label="Tipo de comunicado"></div>
-            <div class="fld"><label for="com-txt">Mensagem (pode editar antes de enviar)</label><textarea id="com-txt"></textarea></div>
+            <div class="com-img-wrap"><img id="com-img" alt="Prévia do comunicado em imagem"></div>
+            <div class="fld" style="margin-top:12px"><label for="com-leg">Texto que acompanha a imagem</label><input id="com-leg" autocomplete="off"></div>
+            <ol class="passos">
+              <li>Baixe ou copie a imagem.</li>
+              <li>Abra a conversa do motorista no WhatsApp e anexe ou cole a imagem.</li>
+            </ol>
             <div class="actions" style="align-items:center">
-              <a class="wa" id="com-wa" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3z"/></svg>Abrir no WhatsApp</a>
-              <button class="btn ghost" type="button" id="com-copy">Copiar mensagem</button>
+              <button class="btn" type="button" id="com-dl">Baixar imagem (JPEG)</button>
+              <button class="btn ghost" type="button" id="com-copy">Copiar imagem</button>
+              <a class="wa" id="com-wa" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3z"/></svg>Abrir conversa no WhatsApp</a>
+            </div>
+            <div class="actions" style="margin-top:8px">
               <span class="sec-note" id="com-hint"></span>
             </div>
           </div>
@@ -377,7 +388,6 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       <form class="card pad" id="cad-form" novalidate>
         <div class="form-grid">
           <div class="fld"><label for="cad-nome">Nome (como na telemetria)</label><input id="cad-nome" list="cad-nomes" autocomplete="off" required><span class="err" id="cad-nome-err"></span></div>
-          <div class="fld"><label for="cad-cpf">CPF</label><input id="cad-cpf" inputmode="numeric" placeholder="000.000.000-00" autocomplete="off"><span class="err" id="cad-cpf-err"></span></div>
           <div class="fld"><label for="cad-mat">Matrícula</label><input id="cad-mat" autocomplete="off"><span class="err"></span></div>
           <div class="fld"><label for="cad-cel">Celular (WhatsApp)</label><input id="cad-cel" inputmode="tel" placeholder="(11) 98765-4321" autocomplete="off"><span class="err" id="cad-cel-err"></span></div>
         </div>
@@ -390,10 +400,20 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
         <div id="cad-msg"></div>
       </form>
     </div>
+    <div class="sec" id="cadimp-sec">
+      <div class="sec-h"><h2>Importar cadastro do RH</h2><span class="sec-note">Coluna A = nome, F = matrícula, K = celular</span></div>
+      <label class="drop" id="cad-drop" for="cad-file" style="padding:22px 20px">
+        <span class="big">Arraste a planilha do RH aqui ou clique para escolher</span>
+        <span class="small">Lê a primeira aba. Linhas sem nome são ignoradas. Motoristas que já existem têm matrícula e celular atualizados; celular vazio na planilha mantém o que já estava cadastrado.</span>
+        <input type="file" id="cad-file" accept=".xlsx,.xls,.xlsm,.csv" hidden>
+      </label>
+      <div id="cadimp-msg"></div>
+      <div id="cadimp-prev"></div>
+    </div>
     <div class="sec">
       <div class="sec-h"><h2>Motoristas</h2><span class="sec-note" id="cad-note"></span></div>
       <div class="tools">
-        <input type="search" id="cad-q" placeholder="Buscar nome, CPF, matrícula ou celular" aria-label="Buscar no cadastro">
+        <input type="search" id="cad-q" placeholder="Buscar nome, matrícula ou celular" aria-label="Buscar no cadastro">
         <div style="display:flex;gap:6px;flex-wrap:wrap" id="cad-chips">
           <button class="chip" type="button" data-f="todos" aria-pressed="true">Todos</button>
           <button class="chip" type="button" data-f="falta" aria-pressed="false">Falta cadastrar</button>
@@ -403,7 +423,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       </div>
       <div class="tbl-scroll">
         <table id="cad-tbl" style="min-width:760px">
-          <thead><tr><th>Nome</th><th>CPF</th><th>Matrícula</th><th>Celular</th><th>Cadastro</th><th>Último evento</th></tr></thead>
+          <thead><tr><th>Nome</th><th>Matrícula</th><th>Celular</th><th>Cadastro</th><th>Último evento</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -973,12 +993,6 @@ async function salvarPendente(){
 const slug = nome => norm(nome).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,150) || 'sem-nome';
 const cadDe = nome => store.data.motoristas[slug(nome)] || null;
 const soDig = v => String(v==null?'':v).replace(/\D/g,'');
-function cpfValido(c){
-  c = soDig(c); if(c.length!==11 || /^(\d)\1+$/.test(c)) return false;
-  for(let t=9; t<11; t++){ let sm=0; for(let i=0;i<t;i++) sm += (+c[i])*(t+1-i); if(((sm*10)%11)%10 !== +c[t]) return false; }
-  return true;
-}
-const fmtCpf = c => (c=soDig(c)).length===11 ? c.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4') : c;
 function celNorm(c){ c=soDig(c); if(c.length===10||c.length===11) return '55'+c; if((c.length===12||c.length===13) && c.startsWith('55')) return c; return null; }
 function fmtCel(c){ c=soDig(c); if(c.startsWith('55') && c.length>=12) c=c.slice(2); return c.length===11 ? '('+c.slice(0,2)+') '+c.slice(2,7)+'-'+c.slice(7) : c.length===10 ? '('+c.slice(0,2)+') '+c.slice(2,6)+'-'+c.slice(6) : c; }
 const nomeProprio = n => String(n||'').toLowerCase().split(' ')[0].replace(/^./, x=>x.toUpperCase());
@@ -989,7 +1003,8 @@ function ultimoEventoDe(M){ let t=''; Object.values(M.meses).forEach(c => c.ev.f
 function renderCad(){
   const ro = !store.canWrite;
   $('#cad-ro').hidden = !ro;
-  ['#cad-nome','#cad-cpf','#cad-mat','#cad-cel','#cad-save','#cad-clear'].forEach(s0 => $(s0).disabled = ro);
+  $('#cadimp-sec').hidden = ro;
+  ['#cad-nome','#cad-mat','#cad-cel','#cad-save','#cad-clear'].forEach(s0 => $(s0).disabled = ro);
   const tel = [...A.mot.values()].filter(M => !M.semId);
   $('#cad-nomes').innerHTML = tel.map(M => '<option value="'+esc(M.nome)+'">').join('');
   const linhas = new Map();
@@ -1004,12 +1019,12 @@ function renderCad(){
     if(cadUi.f!=='todos' && st(l)!==cadUi.f) return false;
     if(!q) return true;
     if(norm(l.nome).includes(q)) return true;
-    if(l.cad && (norm(l.cad.matricula).includes(q) || (qd && (soDig(l.cad.cpf).includes(qd) || soDig(l.cad.celular).includes(qd))))) return true;
+    if(l.cad && (norm(l.cad.matricula).includes(q) || (qd && soDig(l.cad.celular).includes(qd)))) return true;
     return false;
   }).sort((a,b) => ({falta:0,semcel:1,ok:2}[st(a)] - {falta:0,semcel:1,ok:2}[st(b)]) || a.nome.localeCompare(b.nome,'pt-BR'));
   const pill = {falta:'<span class="st pre">Falta cadastrar</span>', semcel:'<span class="st adv">Sem celular</span>', ok:'<span class="st ok">Cadastrado</span>'};
-  $('#cad-tbl tbody').innerHTML = rows.length ? rows.map(l => '<tr class="click" tabindex="0" data-cad="'+esc(l.nome)+'"'+(cadEdit===slug(l.nome)?' style="background:var(--hover)"':'')+'><td class="nm">'+esc(l.nome)+'</td><td class="mini-n">'+(l.cad&&l.cad.cpf?fmtCpf(l.cad.cpf):'<span class="zero">—</span>')+'</td><td class="mini-n">'+(l.cad&&l.cad.matricula?esc(l.cad.matricula):'<span class="zero">—</span>')+'</td><td class="mini-n">'+(l.cad&&l.cad.celular?fmtCel(l.cad.celular):'<span class="zero">—</span>')+'</td><td>'+pill[st(l)]+'</td><td class="mini-n">'+(l.ult?dataBR(l.ult).slice(0,10):'<span class="zero">sem eventos</span>')+'</td></tr>').join('')
-    : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:22px">'+(all.length?'Nenhum motorista com esse filtro.':'Nenhum motorista ainda. Importe uma planilha ou cadastre acima.')+'</td></tr>';
+  $('#cad-tbl tbody').innerHTML = rows.length ? rows.map(l => '<tr class="click" tabindex="0" data-cad="'+esc(l.nome)+'"'+(cadEdit===slug(l.nome)?' style="background:var(--hover)"':'')+'><td class="nm">'+esc(l.nome)+'</td><td class="mini-n">'+(l.cad&&l.cad.matricula?esc(l.cad.matricula):'<span class="zero">—</span>')+'</td><td class="mini-n">'+(l.cad&&l.cad.celular?fmtCel(l.cad.celular):'<span class="zero">—</span>')+'</td><td>'+pill[st(l)]+'</td><td class="mini-n">'+(l.ult?dataBR(l.ult).slice(0,10):'<span class="zero">sem eventos</span>')+'</td></tr>').join('')
+    : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:22px">'+(all.length?'Nenhum motorista com esse filtro.':'Nenhum motorista ainda. Importe uma planilha ou cadastre acima.')+'</td></tr>';
   document.querySelectorAll('#cad-chips .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f===cadUi.f)));
   const ed = cadEdit && store.data.motoristas[cadEdit];
   $('#cad-title').textContent = ed ? 'Editar cadastro' : 'Cadastrar motorista';
@@ -1021,10 +1036,9 @@ function cadCarregar(nome){
   const d = cadDe(nome);
   cadEdit = d ? slug(nome) : null; cadArmado = false;
   $('#cad-nome').value = d ? d.nome : nome || '';
-  $('#cad-cpf').value = d && d.cpf ? fmtCpf(d.cpf) : '';
   $('#cad-mat').value = d ? (d.matricula||'') : '';
   $('#cad-cel').value = d && d.celular ? fmtCel(d.celular) : '';
-  ['nome','cpf','cel'].forEach(k => { $('#cad-'+k+'-err').textContent=''; $('#cad-'+k).removeAttribute('aria-invalid'); });
+  ['nome','cel'].forEach(k => { $('#cad-'+k+'-err').textContent=''; $('#cad-'+k).removeAttribute('aria-invalid'); });
   $('#cad-msg').innerHTML = '';
   renderCad();
 }
@@ -1032,18 +1046,16 @@ function cadErro(k, t){ $('#cad-'+k+'-err').textContent = t; if(t) $('#cad-'+k).
 async function cadSalvar(){
   if(!store.canWrite) return;
   const nome = $('#cad-nome').value.trim().replace(/\s+/g,' ').toUpperCase();
-  const cpf = soDig($('#cad-cpf').value), mat = $('#cad-mat').value.trim(), celIn = $('#cad-cel').value.trim();
+  const mat = $('#cad-mat').value.trim(), celIn = $('#cad-cel').value.trim();
   const cel = celIn ? celNorm(celIn) : '';
   const id = slug(nome);
   let ok = true;
   ok = cadErro('nome', !nome ? 'Informe o nome.' : (id!==cadEdit && store.data.motoristas[id]) ? 'Já existe um cadastro com esse nome.' : '') && ok;
-  const cpfDup = cpf && Object.entries(store.data.motoristas).find(([k,d]) => k!==cadEdit && soDig(d.cpf)===cpf);
-  ok = cadErro('cpf', cpf && !cpfValido(cpf) ? 'CPF inválido. Confira os 11 dígitos.' : cpfDup ? 'CPF já cadastrado para '+cpfDup[1].nome+'.' : '') && ok;
   ok = cadErro('cel', celIn && !cel ? 'Use DDD + número, por exemplo (11) 98765-4321.' : '') && ok;
   if(!ok) return;
   const btn = $('#cad-save'); btn.disabled = true; btn.textContent = 'Salvando…';
   try{
-    await store.put('motoristas', id, {nome, cpf, matricula:mat, celular:cel||'', atualizadoEm:new Date().toISOString(), atualizadoPor:store.uid||null});
+    await store.put('motoristas', id, {nome, matricula:mat, celular:cel||'', atualizadoEm:new Date().toISOString(), atualizadoPor:store.uid||null});
     if(cadEdit && cadEdit!==id) await store.del('motoristas', cadEdit);
     cadEdit = id;
     $('#cad-msg').innerHTML = '<div class="msg ok">Cadastro de '+esc(nome)+' salvo.</div>';
@@ -1051,6 +1063,73 @@ async function cadSalvar(){
   }catch(e){
     $('#cad-msg').innerHTML = '<div class="msg err">'+esc(e && e.code==='invalid_argument' ? 'Você não tem permissão para alterar o cadastro.' : 'Não foi possível salvar ('+((e&&(e.message||e.code))||e)+').')+'</div>';
   }finally{ btn.disabled = false; btn.textContent = 'Salvar cadastro'; }
+}
+
+/* importação do cadastro (planilha do RH: A = nome, F = matrícula, K = celular) */
+let cadPend = null;
+function textoCelula(v){ if(v==null) return ''; if(typeof v==='number') return String(Math.round(v)); return String(v).trim(); }
+function lerCadastro(buf){
+  const wb = XLSX.read(buf, {type:'array'});
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, raw:true, defval:null});
+  const out = [], vistos = new Map();
+  rows.forEach((r, i) => {
+    if(!r) return;
+    const nome = textoCelula(r[0]).replace(/\s+/g,' ').toUpperCase();
+    if(!nome || /^(NOME|MOTORISTA|COLABORADOR|FUNCIONARIO)\b/.test(norm(nome).toUpperCase())) return;
+    const mat = textoCelula(r[5]), celBruto = textoCelula(r[10]);
+    const cel = celBruto ? celNorm(celBruto) : '';
+    const item = {linha:i+1, nome, matricula:mat, celular:cel||'', celInvalido:!!(celBruto && !cel), celBruto};
+    if(vistos.has(slug(nome))) out[vistos.get(slug(nome))] = item; else { vistos.set(slug(nome), out.length); out.push(item); }
+  });
+  return out;
+}
+function classificarCad(it){
+  const atual = store.data.motoristas[slug(it.nome)];
+  const novoCel = it.celular || (atual && atual.celular) || '';
+  if(!atual) return {st:'novo', cel:novoCel};
+  if((atual.matricula||'')===it.matricula && (atual.celular||'')===novoCel) return {st:'igual', cel:novoCel};
+  return {st:'atualiza', cel:novoCel};
+}
+async function arquivoCadastro(f){
+  if(!store.canWrite || !f) return;
+  if(typeof XLSX==='undefined'){ $('#cadimp-msg').innerHTML='<div class="msg err">O leitor de planilhas não carregou. Recarregue a página.</div>'; return; }
+  try{
+    const itens = lerCadastro(new Uint8Array(await f.arrayBuffer()));
+    if(!itens.length){ cadPend=null; renderCadPend(); $('#cadimp-msg').innerHTML='<div class="msg err">Nenhum motorista encontrado. Confira se os nomes estão na coluna A.</div>'; return; }
+    cadPend = {arquivo:f.name, itens}; $('#cadimp-msg').innerHTML=''; renderCadPend();
+  }catch(e){ $('#cadimp-msg').innerHTML='<div class="msg err">Não foi possível ler '+esc(f.name)+' ('+esc(e.message||e)+').</div>'; }
+}
+function renderCadPend(){
+  const el = $('#cadimp-prev');
+  if(!cadPend){ el.innerHTML=''; return; }
+  const tel = new Set([...A.mot.values()].filter(M=>!M.semId).map(M=>slug(M.nome)));
+  const cl = cadPend.itens.map(it => Object.assign({}, it, classificarCad(it), {tel:tel.has(slug(it.nome))}));
+  const n = k => cl.filter(x=>x.st===k).length;
+  const inval = cl.filter(x=>x.celInvalido).length, semTel = cl.filter(x=>!x.tel).length;
+  const pill = {novo:'<span class="st ok">Novo</span>', atualiza:'<span class="st adv">Atualiza</span>', igual:'<span class="st" style="background:var(--track);color:var(--muted)">Sem alteração</span>'};
+  el.innerHTML = '<div class="card pad" style="margin-top:12px"><div class="sec-h"><h2>Conferir antes de salvar</h2><span class="sec-note">'+esc(cadPend.arquivo)+'</span></div>'+
+    '<p style="margin:0 0 10px;font-size:13px"><b>'+cl.length+'</b> motoristas na planilha · <b>'+n('novo')+'</b> novos · <b>'+n('atualiza')+'</b> com alteração · '+n('igual')+' sem alteração'+(inval?' · <span style="color:var(--sus)"><b>'+inval+'</b> com celular inválido (ficam sem celular)</span>':'')+'</p>'+
+    (semTel?'<div class="msg info" style="margin:0 0 10px">'+semTel+' '+(semTel===1?'nome não aparece':'nomes não aparecem')+' na telemetria importada até agora. Eles são salvos mesmo assim; o vínculo acontece quando o nome da telemetria for igual ao do cadastro.</div>':'')+
+    '<div class="tbl-scroll" style="max-height:340px;overflow:auto"><table style="min-width:640px"><thead><tr><th>Linha</th><th>Nome</th><th>Matrícula</th><th>Celular</th><th>Ação</th><th>Telemetria</th></tr></thead><tbody>'+
+    cl.sort((a,b)=>({novo:0,atualiza:1,igual:2}[a.st]-{novo:0,atualiza:1,igual:2}[b.st]) || a.linha-b.linha).map(x => '<tr><td class="mini-n">'+x.linha+'</td><td class="nm">'+esc(x.nome)+'</td><td class="mini-n">'+(x.matricula?esc(x.matricula):'<span class="zero">—</span>')+'</td><td class="mini-n">'+(x.celInvalido?'<span style="color:var(--sus)">'+esc(x.celBruto)+' (inválido)</span>':x.cel?fmtCel(x.cel):'<span class="zero">—</span>')+'</td><td>'+pill[x.st]+'</td><td>'+(x.tel?'<span class="st ok">Encontrado</span>':'<span class="zero">sem eventos</span>')+'</td></tr>').join('')+
+    '</tbody></table></div><div class="actions"><button class="btn" type="button" id="cadimp-ok"'+(n('novo')+n('atualiza')?'':' disabled')+'>Salvar '+(n('novo')+n('atualiza'))+' no cadastro</button><button class="btn ghost" type="button" id="cadimp-cancel">Cancelar</button></div></div>';
+}
+async function salvarCadPend(){
+  if(!cadPend) return;
+  const btn = $('#cadimp-ok'); btn.disabled = true;
+  const alvo = cadPend.itens.map(it => Object.assign({it}, classificarCad(it))).filter(x => x.st!=='igual');
+  let feitos = 0;
+  try{
+    for(const x of alvo){
+      await store.put('motoristas', slug(x.it.nome), {nome:x.it.nome, matricula:x.it.matricula, celular:x.cel, atualizadoEm:new Date().toISOString(), atualizadoPor:store.uid||null, origem:'planilha RH'});
+      feitos++; btn.textContent = 'Salvando '+feitos+' de '+alvo.length+'…';
+    }
+    cadPend = null; renderCadPend(); render();
+    $('#cadimp-msg').innerHTML = '<div class="msg ok">'+feitos+' '+(feitos===1?'cadastro salvo':'cadastros salvos')+'.</div>';
+  }catch(e){
+    $('#cadimp-msg').innerHTML = '<div class="msg err">Parou em '+feitos+' de '+alvo.length+' ('+esc((e&&(e.code||e.message))||e)+'). Envie a planilha de novo para continuar: o que já foi salvo aparece como sem alteração.</div>';
+    btn.disabled = false; btn.textContent = 'Tentar de novo';
+  }
 }
 
 /* ---------- comunicados por WhatsApp ---------- */
@@ -1077,54 +1156,132 @@ function comInfo(M, mes){
   else if(alerta && !foiEnviado(M.nome, alerta)) info.pendente = 'alerta';
   return info;
 }
-function montarMensagem(M, mes, tipo){
-  const c = M.meses[mes], r = M.hist[mes], cad = cadDe(M.nome), info = comInfo(M, mes);
-  const ate = A.ate[mes] ? dataBR(A.ate[mes]).slice(0,10) : '';
-  const placas = [...c.placas].join(', ');
-  const vmax = Math.max(c.vmax.seco, c.vmax.chuva);
-  const L = [];
-  L.push('Olá, '+nomeProprio(M.nome)+'. Aqui é a Gestão de Frota do Grupo Dínamo / Tóliman Transportes.');
-  if(cad && cad.matricula) L.push('Matrícula: '+cad.matricula);
-  L.push('');
-  const linhaRegra = g => '• '+REGRA_MSG[g.id]+': '+c[g.id]+' '+(c[g.id]===1?'pico':'picos')+(g.tol?' (tolerância de '+g.tol+' no mês)':' (sem tolerância)');
-  const acumulado = '*Situação acumulada:* '+r.advAc+' '+(r.advAc===1?'advertência':'advertências')+' e '+r.susAc+' '+(r.susAc===1?'suspensão':'suspensões')+'.';
-  if(tipo==='pen'){
-    const susMes = r.susDir + r.susAdv;
-    L.push('*Comunicado de excesso de velocidade · '+mesNome(mes)+'*');
-    L.push('A telemetria registrou excesso de velocidade '+(c.placas.size>1?'nos veículos':'no veículo')+' '+placas+(ate?', com dados até '+ate:'')+':');
-    REGRAS.filter(g => c[g.id]>0).forEach(g => L.push(linhaRegra(g)));
-    L.push('• Velocidade máxima registrada: '+vmax+' km/h');
-    L.push('');
-    const partes = [];
-    if(r.advs.length) partes.push(r.advs.length+' '+(r.advs.length===1?'advertência':'advertências'));
-    if(r.susDir) partes.push(r.susDir+' '+(r.susDir===1?'suspensão':'suspensões')+' por velocidade igual ou acima de 100 km/h');
-    L.push('*Penalidade:* perda de pontuação avaliativa'+(partes.length?' e '+partes.join(' e '):'')+'.');
-    if(r.susAdv) L.push('Com isso você chegou a '+r.advAc+' advertências acumuladas, o que gera '+r.susAdv+' '+(r.susAdv===1?'suspensão':'suspensões')+'.');
-    if(r.terminoNoMes) L.push('Você atingiu '+r.susAc+' suspensões acumuladas, o que leva ao término do contrato de trabalho. O RH entrará em contato.');
-    L.push(acumulado);
-    if(!r.termino){
-      const fa = ADV_P_SUS - r.advAc%ADV_P_SUS, fs = SUS_P_TER - r.susAc;
-      L.push((fa===1?'Falta 1 advertência':'Faltam '+fa+' advertências')+' para a próxima suspensão'+(r.susAc?' e '+(fs===1?'1 suspensão':fs+' suspensões')+' para o término do contrato':'')+'.');
-    }
-  } else if(tipo==='alerta'){
-    L.push('*Alerta preventivo de velocidade · '+mesNome(mes)+'*');
-    L.push('Você está perto do limite de tolerância do mês'+(ate?' (dados até '+ate+')':'')+':');
-    (info && info.perto.length ? info.perto : REGRAS.filter(g=>g.pena==='adv' && c[g.id]>0)).forEach(g => L.push('• '+REGRA_MSG[g.id]+': '+c[g.id]+' de '+g.tol+' picos permitidos'));
-    L.push('');
-    L.push('Se passar do limite, a penalidade é perda de pontuação avaliativa e advertência. 3 advertências geram suspensão.');
-  } else {
-    L.push('*Resumo de velocidade · '+mesNome(mes)+'*'+(ate?' (dados até '+ate+')':''));
-    REGRAS.forEach(g => L.push('• '+REGRA_MSG[g.id]+': '+c[g.id]+(g.tol?' de '+g.tol+' permitidos':'')));
-    if(c.chc) L.push('• Chuva acima de 70 km/h por até 1 minuto (não contam): '+c.chc);
-    L.push('• Velocidade máxima registrada: '+vmax+' km/h');
-    L.push('');
-    L.push('*Situação no mês:* '+situacao(r, M).t+'.');
-    L.push(acumulado);
-  }
-  L.push('');
-  L.push('Limites: 90 km/h na pista seca e 70 km/h na chuva. Dirija com segurança. Em caso de dúvida, procure seu gestor.');
-  return L.join('\n');
+function montarLegenda(M, mes, tipo){
+  const nomeT = tipo==='pen' ? 'comunicado de excesso de velocidade' : tipo==='alerta' ? 'alerta preventivo de velocidade' : 'resumo de velocidade';
+  return 'Olá, '+nomeProprio(M.nome)+'. Segue seu '+nomeT+' de '+mesNome(mes).toLowerCase()+'. Gestão de Frota · Grupo Dínamo / Tóliman Transportes.';
 }
+/* ---------- imagem JPEG do comunicado ---------- */
+const CV = {ink:'#1C2543', ink2:'#363E58', ink3:'#5C6486', muted:'#767B8D', line:'#DCDEE8', paper:'#EFF0F5', track:'#E7E9F1',
+  coral:'#DD4663', mauve:'#AE82B1', sand:'#F4D38D', ok:'#1E8E5A', adv:'#B4580F', sus:'#C22C4C', ter:'#7A1030', pre:'#8A6410'};
+const FONTE = "'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif";
+const FONUM = "'IBM Plex Mono', ui-monospace, Menlo, monospace";
+function rr(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function quebra(ctx, txt, maxW){ const out=[]; let l=''; String(txt).split(' ').forEach(w => { const t = l ? l+' '+w : w; if(ctx.measureText(t).width > maxW && l){ out.push(l); l=w; } else l=t; }); if(l) out.push(l); return out; }
+function selo(M, mes, tipo){
+  const r = M.hist[mes], c = M.meses[mes];
+  if(tipo==='alerta') return {t:'ALERTA · PERTO DO LIMITE', cor:CV.pre, bg:'#FBEFD2', sub:'Se passar do limite: perda de pontuação avaliativa e advertência.'};
+  const s = situacao(r, M);
+  const susMes = r.susDir + r.susAdv;
+  const partes = [];
+  if(r.advs.length) partes.push(r.advs.length+' '+(r.advs.length===1?'advertência':'advertências'));
+  if(susMes) partes.push(susMes+' '+(susMes===1?'suspensão':'suspensões'));
+  const pen = 'Perda de pontuação avaliativa'+(partes.length?' + '+partes.join(' + '):'')+'.';
+  if(s.k==='ter') return {t:'TÉRMINO DE CONTRATO', cor:'#FFFFFF', bg:CV.ter, sub:r.terminoNoMes ? '3 suspensões acumuladas. O RH entrará em contato.' : 'Contrato encerrado em mês anterior.'};
+  if(s.k==='sus') return {t:'SUSPENSÃO', cor:CV.sus, bg:'#FBE3E8', sub:pen};
+  if(s.k==='adv') return {t:'ADVERTÊNCIA', cor:CV.adv, bg:'#FBE9D8', sub:pen};
+  return {t:'DENTRO DA TOLERÂNCIA', cor:CV.ok, bg:'#DDF1E7', sub:'Nenhuma penalidade no mês até agora. Continue assim.'};
+}
+async function desenharComunicado(M, mes, tipo){
+  try{ await Promise.all(['800 40px Archivo','600 24px Archivo','600 26px "IBM Plex Mono"'].map(f => document.fonts.load(f))); }catch(e){}
+  const W = 1080, H = 1420, P = 56;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d');
+  const c = M.meses[mes], r = M.hist[mes], cad = cadDe(M.nome), info = comInfo(M, mes);
+  x.fillStyle = CV.paper; x.fillRect(0,0,W,H);
+  rr(x, 32, 32, W-64, H-64, 28); x.fillStyle = '#FFFFFF'; x.fill();
+  // cabeçalho: marcas + período
+  const logos = [...document.querySelectorAll('.brand img')];
+  let lx = P+8; const ly = 70, lh = 50;
+  logos.forEach((im, i) => {
+    if(!im.naturalWidth) return;
+    const w = im.naturalWidth * lh / im.naturalHeight;
+    if(i>0){ x.fillStyle = CV.line; x.fillRect(lx, ly+6, 2, lh-12); lx += 22; }
+    x.drawImage(im, lx, ly, w, lh); lx += w + 20;
+  });
+  x.textAlign = 'right'; x.fillStyle = CV.muted; x.font = '600 20px '+FONTE;
+  x.fillText(mesNome(mes).toUpperCase(), W-P-8, ly+20);
+  x.font = '500 20px '+FONTE;
+  if(A.ate[mes]) x.fillText('Dados até '+dataBR(A.ate[mes]).slice(0,10), W-P-8, ly+48);
+  x.textAlign = 'left';
+  // faixa tricolor
+  const fy = 146, fw = W-2*P-16;
+  [[CV.coral,0,.34],[CV.mauve,.34,.67],[CV.sand,.67,1]].forEach(([cor,a,b]) => { x.fillStyle = cor; x.fillRect(P+8+fw*a, fy, fw*(b-a), 6); });
+  // título
+  const titulo = tipo==='alerta' ? 'Alerta preventivo de velocidade' : tipo==='resumo' ? 'Resumo de velocidade do mês' : 'Comunicado de excesso de velocidade';
+  x.fillStyle = CV.ink; x.font = '800 44px '+FONTE; x.fillText(titulo, P+8, fy+70);
+  // bloco do motorista
+  let y = fy+104;
+  x.font = '800 40px '+FONTE;
+  const nl = quebra(x, M.nome, W-2*P-80);
+  const hb = 64 + nl.length*46 + 40;
+  rr(x, P+8, y, W-2*P-16, hb, 18); x.fillStyle = CV.ink; x.fill();
+  x.save(); rr(x, P+8, y, W-2*P-16, hb, 18); x.clip();
+  x.globalAlpha = .16; x.translate(W-P-120, y-20); x.transform(1,0,-.19,1,0,0);
+  [[CV.coral,0],[CV.mauve,1],[CV.sand,2]].forEach(([cor,i]) => { x.fillStyle = cor; x.fillRect(0, i*60, 170, 60); });
+  x.restore();
+  x.fillStyle = '#9BA1BA'; x.font = '600 18px '+FONTE; x.fillText('MOTORISTA', P+40, y+44);
+  x.fillStyle = '#FFFFFF'; x.font = '800 40px '+FONTE;
+  nl.forEach((l,i) => x.fillText(l, P+40, y+92+i*46));
+  x.fillStyle = '#C9CDDB'; x.font = '500 22px '+FONTE;
+  x.fillText((cad && cad.matricula ? 'Matrícula '+cad.matricula+'   ·   ' : '')+'Placas '+[...c.placas].join(', '), P+40, y+hb-26);
+  y += hb + 28;
+  // selo de situação
+  const sl = selo(M, mes, tipo);
+  x.font = '800 30px '+FONTE; const sw = x.measureText(sl.t).width + 56;
+  rr(x, P+8, y, sw, 58, 29); x.fillStyle = sl.bg; x.fill();
+  x.fillStyle = sl.cor; x.beginPath(); x.arc(P+34, y+29, 7, 0, Math.PI*2); x.fill();
+  x.fillText(sl.t, P+50, y+40);
+  x.fillStyle = CV.ink2; x.font = '500 24px '+FONTE;
+  quebra(x, sl.sub, W-2*P-16).forEach((l,i) => x.fillText(l, P+8, y+98+i*32));
+  y += 140;
+  // faixas
+  x.fillStyle = CV.muted; x.font = '700 18px '+FONTE; x.fillText('PICOS NO MÊS', P+8, y); x.textAlign='right'; x.fillText('PICOS / TOLERÂNCIA', W-P-8, y); x.textAlign='left';
+  y += 16;
+  const nomesFx = {b1:'Pista seca · 90 a 95 km/h', b2:'Pista seca · 96 a 99 km/h', b3:'100 km/h ou mais', ch:'Chuva · acima de 70 km/h por mais de 1 min'};
+  const destaque = new Set(tipo==='alerta' && info ? info.perto.map(g=>g.id) : []);
+  REGRAS.forEach(g => {
+    const n = c[g.id], over = g.pena==='sus' ? n>0 : n>g.tol;
+    x.fillStyle = CV.line; x.fillRect(P+8, y, W-2*P-16, 2);
+    y += 50;
+    x.fillStyle = CV.ink; x.font = (over||destaque.has(g.id)?'700 ':'500 ')+'25px '+FONTE; x.fillText(nomesFx[g.id], P+8, y);
+    x.textAlign = 'right'; x.font = '600 30px '+FONUM; x.fillStyle = over ? CV.sus : destaque.has(g.id) ? CV.pre : n ? CV.ink : CV.muted;
+    x.fillText(g.tol ? n+' / '+g.tol : String(n), W-P-8, y+2); x.textAlign = 'left';
+    // barra
+    const bx = P+8, bw = W-2*P-16-150, by = y+18, bh = 14;
+    if(g.tol){
+      const sc = Math.max(g.tol*1.6, n);
+      x.fillStyle = CV.track; x.fillRect(bx, by, bw, bh);
+      x.fillStyle = over ? CV.coral : destaque.has(g.id) ? '#C99A2E' : CV.ink3; x.fillRect(bx, by, bw*Math.min(n/sc,1), bh);
+      x.fillStyle = CV.ink; x.fillRect(bx + bw*g.tol/sc - 2, by-5, 4, bh+10);
+    } else {
+      x.fillStyle = CV.muted; x.font = '500 19px '+FONTE; x.fillText(n ? 'Sem tolerância: cada pico gera suspensão' : 'Sem tolerância', bx, by+13);
+    }
+    y += 50;
+  });
+  x.fillStyle = CV.line; x.fillRect(P+8, y, W-2*P-16, 2);
+  y += 46;
+  x.fillStyle = CV.ink2; x.font = '500 24px '+FONTE; x.fillText('Velocidade máxima registrada', P+8, y);
+  x.textAlign = 'right'; x.fillStyle = CV.ink; x.font = '600 30px '+FONUM; x.fillText(Math.max(c.vmax.seco, c.vmax.chuva)+' km/h', W-P-8, y); x.textAlign = 'left';
+  y += 34;
+  // acumulado
+  const bw2 = (W-2*P-16-20)/2;
+  [['ADVERTÊNCIAS ACUMULADAS', r.advAc, r.advAc%ADV_P_SUS, ADV_P_SUS, CV.adv, (ADV_P_SUS-r.advAc%ADV_P_SUS)+' para a próxima suspensão'],
+   ['SUSPENSÕES ACUMULADAS', r.susAc, Math.min(r.susAc,SUS_P_TER), SUS_P_TER, CV.sus, r.termino ? 'Limite atingido' : (SUS_P_TER-r.susAc)+' para o término do contrato']].forEach(([lab, v, on, tot, cor, sub], i) => {
+    const bx = P+8 + i*(bw2+20);
+    rr(x, bx, y, bw2, 150, 16); x.fillStyle = '#F6F7FB'; x.fill();
+    x.fillStyle = CV.muted; x.font = '700 17px '+FONTE; x.fillText(lab, bx+24, y+38);
+    x.fillStyle = CV.ink; x.font = '600 44px '+FONUM; x.fillText(String(v), bx+24, y+92);
+    for(let k=0;k<tot;k++){ x.fillStyle = k<on ? cor : CV.track; x.fillRect(bx+110+k*44, y+70, 36, 14); }
+    x.fillStyle = CV.muted; x.font = '500 19px '+FONTE; x.fillText(sub, bx+24, y+130);
+  });
+  // rodapé
+  x.fillStyle = CV.ink; x.font = '700 23px '+FONTE;
+  x.fillText('Limites: 90 km/h na pista seca  ·  70 km/h na chuva', P+8, H-108);
+  x.fillStyle = CV.muted; x.font = '500 20px '+FONTE;
+  x.fillText('Dirija com segurança. Em caso de dúvida, procure seu gestor.', P+8, H-74);
+  return cv;
+}
+
 const comUi = {chave:null, tipo:null, texto:''};
 let comArmado = null;
 function renderCom(x){
@@ -1136,17 +1293,20 @@ function renderCom(x){
   comUi.pedido = null; comUi.motorista = M.nome;
   $('#com-tipos').innerHTML = ['pen','alerta','resumo'].map(t => '<button class="chip" type="button" data-tipo="'+t+'" aria-pressed="'+(comUi.tipo===t)+'"'+(disp[t]?'':' disabled title="Não se aplica neste mês"')+'>'+TIPO_COM[t]+(info.pendente===t?' · pendente':'')+'</button>').join('');
   const chave = M.nome+'|'+mes+'|'+comUi.tipo;
-  if(comUi.chave!==chave){ comUi.chave = chave; comUi.texto = montarMensagem(M, mes, comUi.tipo); }
-  const ta = $('#com-txt'); if(document.activeElement!==ta) ta.value = comUi.texto;
+  if(comUi.chave!==chave){ comUi.chave = chave; comUi.texto = montarLegenda(M, mes, comUi.tipo); }
+  const leg = $('#com-leg'); if(document.activeElement!==leg) leg.value = comUi.texto;
+  const c = x.c, r = x.r;
+  const imgKey = chave+'|'+(cad?cad.matricula:'')+'|'+A.ate[mes]+'|'+[c.b1,c.b2,c.b3,c.ch,r.advAc,r.susAc].join(',');
+  if(comUi.imgKey!==imgKey){ comUi.imgKey = imgKey; gerarImagem(M, mes, comUi.tipo, imgKey); }
   const cel = cad && cad.celular;
   atualizarLinkWa();
   const ult = enviados(M.nome).find(e => e.chave===info.chaves[comUi.tipo]);
   $('#com-hint').innerHTML = !cel ? 'Cadastre o celular do motorista para enviar. <button class="linkbtn" type="button" data-cad-ir="'+esc(M.nome)+'">Abrir cadastro</button>'
     : ult ? 'Este comunicado já foi registrado em '+new Date(ult.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+'.'
-    : 'Ao abrir o WhatsApp, o envio fica registrado aqui.';
+    : 'Ao abrir a conversa no WhatsApp, o envio fica registrado aqui.';
   $('#com-note').textContent = info.pendente ? 'Pendente: '+TIPO_COM[info.pendente].toLowerCase() : 'Nenhum comunicado pendente em '+mesNome(mes);
   $('#com-cad').innerHTML = cad
-    ? '<dl class="kv"><dt>CPF</dt><dd class="mini-n">'+(cad.cpf?fmtCpf(cad.cpf):'—')+'</dd><dt>Matrícula</dt><dd class="mini-n">'+(cad.matricula?esc(cad.matricula):'—')+'</dd><dt>Celular</dt><dd class="mini-n">'+(cad.celular?fmtCel(cad.celular):'<span class="st adv">Sem celular</span>')+'</dd></dl><div style="margin-top:10px"><button class="linkbtn" type="button" data-cad-ir="'+esc(M.nome)+'">Editar cadastro</button></div>'
+    ? '<dl class="kv"><dt>Matrícula</dt><dd class="mini-n">'+(cad.matricula?esc(cad.matricula):'—')+'</dd><dt>Celular</dt><dd class="mini-n">'+(cad.celular?fmtCel(cad.celular):'<span class="st adv">Sem celular</span>')+'</dd></dl><div style="margin-top:10px"><button class="linkbtn" type="button" data-cad-ir="'+esc(M.nome)+'">Editar cadastro</button></div>'
     : '<p class="sec-note" style="margin:0 0 10px">Motorista sem cadastro.</p><button class="btn ghost" type="button" data-cad-ir="'+esc(M.nome)+'">Cadastrar agora</button>';
   const hist = enviados(M.nome);
   $('#com-hist').innerHTML = hist.length ? hist.slice(0,12).map(h => '<div class="hc"><div><b>'+esc(TIPO_COM[h.tipo]||h.tipo)+'</b> · '+esc(mesNome(h.mes))+'<div class="when">'+new Date(h.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+' · para '+esc(fmtCel(h.celular))+(h.enviadoPor?' · <span class="who" data-id="'+esc(h.enviadoPor)+'">registrado</span>':'')+'</div></div><div>'+(store.canWrite?'<button class="linkbtn" type="button" data-com-del="'+esc(h.id)+'">'+(comArmado===h.id?'Confirmar':'Desfazer')+'</button>':'')+'</div></div>').join('')
@@ -1160,6 +1320,41 @@ async function nomesQuemEnviou(){
     const ps = await store.user.profiles([...new Set(els.map(e=>e.dataset.id))]);
     els.forEach(e => { const p = ps && ps[e.dataset.id]; if(p && p.name) e.textContent = 'por '+p.name; });
   }catch(e){}
+}
+async function gerarImagem(M, mes, tipo, key){
+  const cv = await desenharComunicado(M, mes, tipo);
+  if(comUi.imgKey!==key) return;
+  cv.toBlob(b => {
+    if(comUi.imgKey!==key || !b) return;
+    if(comUi.imgUrl) URL.revokeObjectURL(comUi.imgUrl);
+    comUi.blob = b; comUi.canvas = cv; comUi.imgUrl = URL.createObjectURL(b);
+    comUi.arquivo = 'comunicado-velocidade-'+slug(M.nome)+'-'+mes+'.jpg';
+    $('#com-img').src = comUi.imgUrl;
+  }, 'image/jpeg', 0.92);
+}
+async function baixarImagem(){
+  if(!comUi.blob) return;
+  const btn = $('#com-dl');
+  if(store.mode==='db'){
+    const dl = await claude.use('downloads');
+    if(!dl){ $('#com-hint').textContent = 'Download indisponível aqui. Use "Copiar imagem".'; return; }
+    try{ await dl.save({filename:comUi.arquivo, data:comUi.blob}); btn.textContent = 'Imagem salva'; }
+    catch(e){ if(e && e.code!=='declined') $('#com-hint').textContent = 'Não foi possível salvar a imagem ('+e.code+').'; }
+  } else {
+    const a = document.createElement('a'); a.href = comUi.imgUrl; a.download = comUi.arquivo; document.body.appendChild(a); a.click(); a.remove();
+    btn.textContent = 'Imagem salva';
+  }
+  setTimeout(() => { btn.textContent = 'Baixar imagem (JPEG)'; }, 2000);
+}
+async function copiarImagem(){
+  const btn = $('#com-copy');
+  if(!comUi.canvas) return;
+  try{
+    const png = await new Promise(res => comUi.canvas.toBlob(res, 'image/png'));
+    await navigator.clipboard.write([new ClipboardItem({'image/png': png})]);
+    btn.textContent = 'Imagem copiada';
+  }catch(e){ btn.textContent = 'Cópia bloqueada: use Baixar'; }
+  setTimeout(() => { btn.textContent = 'Copiar imagem'; }, 2200);
 }
 function atualizarLinkWa(){
   const M = A.mot.get(comUi.motorista); const cad = M && cadDe(M.nome);
@@ -1227,16 +1422,13 @@ $('#tbody').addEventListener('click', e => {
   $('#com-sec').scrollIntoView({block:'start'});
 }, true);
 $('#com-tipos').addEventListener('click', e => { const b=e.target.closest('[data-tipo]'); if(!b || b.disabled) return; comUi.tipo=b.dataset.tipo; renderMot(); });
-$('#com-txt').addEventListener('input', e => { comUi.texto = e.target.value; atualizarLinkWa(); });
+$('#com-leg').addEventListener('input', e => { comUi.texto = e.target.value; atualizarLinkWa(); });
+$('#com-dl').addEventListener('click', baixarImagem);
 $('#com-wa').addEventListener('click', e => { if($('#com-wa').getAttribute('aria-disabled')==='true'){ e.preventDefault(); return; } registrarEnvio(); });
-$('#com-copy').addEventListener('click', async () => {
-  const ta = $('#com-txt');
-  try{ await navigator.clipboard.writeText(ta.value); $('#com-copy').textContent='Copiada'; setTimeout(()=>{ $('#com-copy').textContent='Copiar mensagem'; }, 1800); }
-  catch(err){ ta.focus(); ta.select(); $('#com-copy').textContent='Selecionada: use Ctrl+C'; }
-});
+$('#com-copy').addEventListener('click', copiarImagem);
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-cad-ir]'); if(!b) return;
-  cadCarregar(b.dataset.cadIr); setTab('cad'); window.scrollTo({top:0}); $('#cad-cpf').focus();
+  cadCarregar(b.dataset.cadIr); setTab('cad'); window.scrollTo({top:0}); $('#cad-mat').focus();
 });
 $('#com-hist').addEventListener('click', async e => {
   const b = e.target.closest('[data-com-del]'); if(!b) return;
@@ -1245,6 +1437,12 @@ $('#com-hist').addEventListener('click', async e => {
   comArmado=null;
   try{ await store.del('comunicados', id); render(); }catch(err){ renderMot(); }
 });
+$('#cad-file').addEventListener('change', e => { const f=e.target.files[0]; e.target.value=''; arquivoCadastro(f); });
+const cadDrop = $('#cad-drop');
+['dragenter','dragover'].forEach(t => cadDrop.addEventListener(t, e => { e.preventDefault(); cadDrop.classList.add('over'); }));
+['dragleave','drop'].forEach(t => cadDrop.addEventListener(t, e => { e.preventDefault(); cadDrop.classList.remove('over'); }));
+cadDrop.addEventListener('drop', e => { const f=(e.dataTransfer&&e.dataTransfer.files||[])[0]; if(f) arquivoCadastro(f); });
+$('#cadimp-prev').addEventListener('click', e => { if(e.target.id==='cadimp-ok') salvarCadPend(); if(e.target.id==='cadimp-cancel'){ cadPend=null; renderCadPend(); } });
 $('#cad-form').addEventListener('submit', e => { e.preventDefault(); cadSalvar(); });
 $('#cad-clear').addEventListener('click', () => cadCarregar(''));
 $('#cad-del').addEventListener('click', async () => {
@@ -1255,7 +1453,6 @@ $('#cad-del').addEventListener('click', async () => {
   catch(err){ $('#cad-msg').innerHTML='<div class="msg err">Não foi possível remover.</div>'; }
 });
 $('#cad-nome').addEventListener('change', e => { const d = cadDe(e.target.value); if(d && slug(e.target.value)!==cadEdit) cadCarregar(e.target.value); });
-$('#cad-cpf').addEventListener('blur', e => { if(soDig(e.target.value).length===11) e.target.value = fmtCpf(e.target.value); });
 $('#cad-cel').addEventListener('blur', e => { const c = celNorm(e.target.value); if(c) e.target.value = fmtCel(c); });
 $('#cad-q').addEventListener('input', e => { cadUi.q = e.target.value; renderCad(); });
 $('#cad-chips').addEventListener('click', e => { const b=e.target.closest('.chip'); if(!b) return; cadUi.f=b.dataset.f; renderCad(); });
