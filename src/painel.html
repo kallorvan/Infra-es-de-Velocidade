@@ -12,7 +12,7 @@
   --ink:#1C2543; --ink2:#363E58; --ink3:#5C6486;
   --coral:#DD4663; --mauve:#AE82B1; --sand:#F4D38D; --rose:#E88A9C;
   --paper:#EFF0F5; --card:#FFFFFF; --line:#DCDEE8; --muted:#767B8D; --track:#E7E9F1; --track-ink:#B9BDCC; --hover:#F6F7FB;
-  --ok:#1E8E5A; --ok-bg:rgba(30,142,90,.12);
+  --ok:#1E8E5A; --ok-bg:rgba(30,142,90,.12); --wa:#128C4A; --wa-d:#0B6B37;
   --pre:#C99A2E; --pre-bg:rgba(244,211,141,.45); --pre-ink:#6B4E0E;
   --b1:#8B5BB0; --b2:#E0405F; --b3:#9A0F3A;
   --adv:#B4580F; --adv-bg:rgba(230,140,40,.16);
@@ -64,7 +64,7 @@ h2{font-size:13px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px 14px;position:relative;overflow:hidden}
 .kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ink)}
 .kpi.k-b1::before{background:var(--b1)} .kpi.k-ch::before{background:var(--mauve)}
-.kpi.k-adv::before{background:var(--adv)} .kpi.k-sus::before{background:var(--sus)} .kpi.k-ter::before{background:var(--ter-bg)}
+.kpi.k-adv::before{background:var(--adv)} .kpi.k-sus::before{background:var(--sus)} .kpi.k-ter::before{background:var(--ter-bg)} .kpi.k-com::before{background:var(--wa)}
 .kpi .lab{font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600;margin-bottom:7px}
 .kpi .val{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.05}
 .kpi .sub{font-size:11.5px;color:var(--muted);margin-top:6px}
@@ -99,7 +99,7 @@ input[type=search]:focus,select.inp:focus{outline:2px solid var(--coral);outline
 .chip:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
 .tbl-scroll{overflow-x:auto;border-radius:var(--r);border:1px solid var(--line)}
 table{border-collapse:collapse;width:100%;font-size:12.5px;background:var(--card)}
-table.wide{min-width:1080px}
+table.wide{min-width:1200px}
 thead th{background:var(--ink);color:#fff;font-weight:600;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;text-align:left;padding:10px 12px;white-space:nowrap}
 thead th.s{cursor:pointer;user-select:none} thead th.s:hover{background:var(--ink2)}
 thead th .ar{opacity:.5;margin-left:4px}
@@ -194,7 +194,38 @@ tbody tr.click:focus-visible{outline:2px solid var(--coral);outline-offset:-2px}
 .empty p{margin:0;font-size:13px;color:var(--muted);max-width:56ch;line-height:1.5}
 footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
 
+/* cadastro e comunicado */
+#com-sec{scroll-margin-top:150px}
+.form-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px 12px;align-items:end}
+.fld{display:grid;gap:5px;min-width:0}
+.fld label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.fld input,.fld textarea{font-family:inherit;font-size:13px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px;min-width:0;width:100%}
+.fld input:focus,.fld textarea:focus{outline:2px solid var(--coral);outline-offset:-1px;border-color:var(--coral)}
+.fld input[aria-invalid="true"]{border-color:var(--sus)}
+.fld .err{font-size:11px;color:var(--sus);min-height:0}
+.fld textarea{font-family:var(--f-ui);line-height:1.5;resize:vertical;min-height:260px}
+.com-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px}
+.com-tipos{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.wa{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:12.5px;font-weight:700;border-radius:8px;padding:10px 16px;background:var(--wa);color:#fff;border:1px solid var(--wa)}
+.wa:hover{background:var(--wa-d)}
+.wa[aria-disabled="true"]{opacity:.45;pointer-events:none}
+.wa:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+.wa svg{width:16px;height:16px;fill:currentColor}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:12.5px}
+.kv dt{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;align-self:center}
+.kv dd{margin:0;font-weight:600}
+.hist-com{display:grid;margin-top:6px}
+.hc{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:10px 0;border-top:1px solid var(--line);font-size:12px}
+.hc .when{color:var(--muted);font-size:11px}
+.linkbtn{appearance:none;border:0;background:none;padding:0;font:inherit;font-size:11.5px;font-weight:600;color:var(--coral);cursor:pointer;text-decoration:underline}
+.linkbtn:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+.com-cell{display:flex;align-items:center;gap:8px}
+.mini-btn{appearance:none;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;border-radius:6px;padding:4px 9px;border:1px solid var(--wa);background:var(--card);color:var(--wa-d)}
+.mini-btn:hover{background:var(--wa);color:#fff}
+.mini-btn:focus-visible{outline:2px solid var(--coral);outline-offset:2px}
+
 @media (max-width:820px){
+  .form-grid,.com-grid{grid-template-columns:1fr}
   .wrap{padding-inline:16px} .top-in{padding:16px 16px 0} nav.tabs{padding:14px 16px 0}
   .chart-grid{grid-template-columns:1fr}
   .tl{grid-template-columns:1fr;gap:6px} .tl .acc{text-align:left}
@@ -225,6 +256,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" id="tab-geral" aria-selected="true" aria-controls="v-geral">Visão geral</button>
     <button class="tab" role="tab" id="tab-mot" aria-selected="false" aria-controls="v-mot">Motorista</button>
+    <button class="tab" role="tab" id="tab-cad" aria-selected="false" aria-controls="v-cad">Cadastro de motoristas</button>
     <button class="tab" role="tab" id="tab-imp" aria-selected="false" aria-controls="v-imp">Importar planilhas</button>
     <button class="tab" role="tab" id="tab-reg" aria-selected="false" aria-controls="v-reg">Regras</button>
   </nav>
@@ -252,6 +284,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
             <button class="chip" type="button" data-f="sus" aria-pressed="false">Suspensão</button>
             <button class="chip" type="button" data-f="adv" aria-pressed="false">Advertência</button>
             <button class="chip" type="button" data-f="tol" aria-pressed="false">Dentro da tolerância</button>
+            <button class="chip" type="button" data-f="com" aria-pressed="false">Comunicado pendente</button>
           </div>
         </div>
         <div class="tbl-scroll">
@@ -288,6 +321,27 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       </div>
       <div class="hero" id="m-hero"></div>
 
+      <div class="sec" id="com-sec">
+        <div class="sec-h"><h2>Comunicado por WhatsApp</h2><span class="sec-note" id="com-note"></span></div>
+        <div class="com-grid">
+          <div class="card pad">
+            <div class="com-tipos" id="com-tipos" role="group" aria-label="Tipo de comunicado"></div>
+            <div class="fld"><label for="com-txt">Mensagem (pode editar antes de enviar)</label><textarea id="com-txt"></textarea></div>
+            <div class="actions" style="align-items:center">
+              <a class="wa" id="com-wa" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3z"/></svg>Abrir no WhatsApp</a>
+              <button class="btn ghost" type="button" id="com-copy">Copiar mensagem</button>
+              <span class="sec-note" id="com-hint"></span>
+            </div>
+          </div>
+          <div class="card pad">
+            <h2 style="margin-bottom:12px">Cadastro</h2>
+            <div id="com-cad"></div>
+            <h2 style="margin:20px 0 4px">Comunicados enviados</h2>
+            <div class="hist-com" id="com-hist"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="sec">
         <div class="sec-h"><h2>Picos do mês contra a tolerância</h2><span class="sec-note" id="m-mes-note"></span></div>
         <div class="rules-grid" id="m-rules"></div>
@@ -315,6 +369,47 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
     </div>
   </section>
 
+  <!-- CADASTRO -->
+  <section id="v-cad" role="tabpanel" aria-labelledby="tab-cad" hidden>
+    <div class="sec">
+      <div class="sec-h"><h2 id="cad-title">Cadastrar motorista</h2><span class="sec-note">O nome precisa ser igual ao que aparece na telemetria</span></div>
+      <div id="cad-ro" class="msg info" hidden>Só quem tem permissão de edição consegue alterar o cadastro.</div>
+      <form class="card pad" id="cad-form" novalidate>
+        <div class="form-grid">
+          <div class="fld"><label for="cad-nome">Nome (como na telemetria)</label><input id="cad-nome" list="cad-nomes" autocomplete="off" required><span class="err" id="cad-nome-err"></span></div>
+          <div class="fld"><label for="cad-cpf">CPF</label><input id="cad-cpf" inputmode="numeric" placeholder="000.000.000-00" autocomplete="off"><span class="err" id="cad-cpf-err"></span></div>
+          <div class="fld"><label for="cad-mat">Matrícula</label><input id="cad-mat" autocomplete="off"><span class="err"></span></div>
+          <div class="fld"><label for="cad-cel">Celular (WhatsApp)</label><input id="cad-cel" inputmode="tel" placeholder="(11) 98765-4321" autocomplete="off"><span class="err" id="cad-cel-err"></span></div>
+        </div>
+        <datalist id="cad-nomes"></datalist>
+        <div class="actions">
+          <button class="btn" type="submit" id="cad-save">Salvar cadastro</button>
+          <button class="btn ghost" type="button" id="cad-clear">Limpar</button>
+          <button class="btn danger" type="button" id="cad-del" hidden>Remover cadastro</button>
+        </div>
+        <div id="cad-msg"></div>
+      </form>
+    </div>
+    <div class="sec">
+      <div class="sec-h"><h2>Motoristas</h2><span class="sec-note" id="cad-note"></span></div>
+      <div class="tools">
+        <input type="search" id="cad-q" placeholder="Buscar nome, CPF, matrícula ou celular" aria-label="Buscar no cadastro">
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="cad-chips">
+          <button class="chip" type="button" data-f="todos" aria-pressed="true">Todos</button>
+          <button class="chip" type="button" data-f="falta" aria-pressed="false">Falta cadastrar</button>
+          <button class="chip" type="button" data-f="semcel" aria-pressed="false">Sem celular</button>
+          <button class="chip" type="button" data-f="ok" aria-pressed="false">Cadastrados</button>
+        </div>
+      </div>
+      <div class="tbl-scroll">
+        <table id="cad-tbl" style="min-width:760px">
+          <thead><tr><th>Nome</th><th>CPF</th><th>Matrícula</th><th>Celular</th><th>Cadastro</th><th>Último evento</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <!-- IMPORTAR -->
   <section id="v-imp" role="tabpanel" aria-labelledby="tab-imp" hidden>
     <div class="sec">
@@ -322,7 +417,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       <div id="imp-ro" class="msg info" hidden>Você pode consultar o painel, mas só quem tem permissão de edição consegue importar ou remover meses.</div>
       <label class="drop" id="drop" for="file">
         <span class="big">Arraste as planilhas aqui ou clique para escolher</span>
-        <span class="small">Pode enviar seco e chuva juntos. A condição vem da coluna "Tipo Evento" e o mês vem da coluna "Data". Reimportar um mês já salvo substitui os eventos daquela condição.</span>
+        <span class="small">Envie a planilha do dia, com seco e chuva juntos ou separados. Os eventos novos são somados ao mês (o mês vem da coluna "Data" e a condição, da coluna "Tipo Evento"). Eventos que já estão salvos são ignorados, então reenviar um arquivo não duplica nada.</span>
         <input type="file" id="file" accept=".xlsx,.xls,.xlsm" multiple hidden>
       </label>
       <div id="imp-msg"></div>
@@ -332,7 +427,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       <div class="sec-h"><h2>Meses salvos no painel</h2><span class="sec-note">O histórico de reincidência usa todos os meses desta lista</span></div>
       <div class="tbl-scroll">
         <table id="saved" style="min-width:640px">
-          <thead><tr><th>Mês</th><th>Condição</th><th class="r">Eventos</th><th class="r">Motoristas</th><th>Arquivo</th><th>Importado em</th><th></th></tr></thead>
+          <thead><tr><th>Mês</th><th>Condição</th><th class="r">Eventos</th><th class="r">Motoristas</th><th>Dados até</th><th>Última importação</th><th></th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -357,7 +452,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
     </div>
   </section>
 
-  <footer id="foot">Fonte: planilhas "Infrações de Velocidade" da telemetria, importadas no painel. Os dados importados ficam salvos e são vistos por todos que abrem este painel.</footer>
+  <footer id="foot">Fonte: planilhas "Infrações de Velocidade" da telemetria, importadas diariamente no painel. Os eventos ficam salvos e são vistos por todos que abrem este painel; o cadastro dos motoristas e o registro de comunicados só aparecem para quem pode editar.</footer>
 </main>
 <div class="tip" id="tip" hidden></div>
 
@@ -403,9 +498,13 @@ const dataBR = iso => { const [d,t]=iso.split(' '); const [y,m,dd]=d.split('-');
 
 /* ================= ARMAZENAMENTO ================= */
 // No claude.ai: banco compartilhado do artefato (db). Fora dele (arquivo aberto localmente): localStorage.
-const LS_KEY = 'infra-vel-meses-v1';
+// meses: eventos por mês e condição · motoristas: cadastro · comunicados: registro de envios por WhatsApp
+const COLECOES = ['meses','motoristas','comunicados'];
+const LS_KEY = c => c==='meses' ? 'infra-vel-meses-v1' : 'infra-vel-'+c+'-v1';
 const store = {
-  mode:'loading', db:null, canWrite:true, docs:{},
+  mode:'loading', db:null, user:null, uid:null, canWrite:true,
+  data:{meses:{}, motoristas:{}, comunicados:{}},
+  get docs(){ return this.data.meses; },
   async init(onChange){
     let db = null;
     if(window.claude && typeof window.claude.use==='function'){
@@ -415,34 +514,39 @@ const store = {
       this.mode='db'; this.db=db;
       try{
         const user = await window.claude.use('user');
-        if(user){ const c = await user.can('data.write'); if(c===false) this.canWrite=false; }
+        if(user){
+          this.user = user;
+          const c = await user.can('data.write'); if(c===false) this.canWrite=false;
+          this.uid = await user.id();
+        }
       }catch(e){}
-      db.collection('meses').onSnapshot(snap => {
+      COLECOES.forEach(col => db.collection(col).onSnapshot(snap => {
         const d = {}; snap.docs.forEach(x => { if(x.exists) d[x.id] = x.data(); });
-        this.docs = d; onChange();
-      }, err => { setSync('local','Sem conexão com o banco do painel ('+err.code+')'); });
+        this.data[col] = d; onChange();
+      }, err => { setSync('local','Sem conexão com o banco do painel ('+err.code+')'); }));
     } else {
       this.mode='local';
-      try{ this.docs = JSON.parse(localStorage.getItem(LS_KEY)||'{}')||{}; }catch(e){ this.docs={}; }
+      COLECOES.forEach(col => { try{ this.data[col] = JSON.parse(localStorage.getItem(LS_KEY(col))||'{}')||{}; }catch(e){ this.data[col]={}; } });
       onChange();
     }
   },
-  async put(id, body){
-    if(this.mode==='db'){ await this.db.collection('meses').doc(id).set(body); }
-    else { this.docs = Object.assign({}, this.docs, {[id]:body}); this._save(); }
+  newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); },
+  async put(col, id, body){
+    if(this.mode==='db'){ await this.db.collection(col).doc(id).set(body); }
+    else { this.data[col] = Object.assign({}, this.data[col], {[id]:body}); this._save(col); }
   },
-  async del(id){
-    if(this.mode==='db'){ await this.db.collection('meses').doc(id).delete(); }
-    else { const d=Object.assign({},this.docs); delete d[id]; this.docs=d; this._save(); }
+  async del(col, id){
+    if(this.mode==='db'){ await this.db.collection(col).doc(id).delete(); }
+    else { const d=Object.assign({},this.data[col]); delete d[id]; this.data[col]=d; this._save(col); }
   },
-  _save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(this.docs)); }catch(e){ showMsg('err','Não foi possível salvar neste navegador (armazenamento cheio ou bloqueado).'); } }
+  _save(col){ try{ localStorage.setItem(LS_KEY(col), JSON.stringify(this.data[col])); }catch(e){ throw {code:'local_full', message:'Não foi possível salvar neste navegador (armazenamento cheio ou bloqueado).'}; } }
 };
 function setSync(cls, t){ const s=$('#sync'); s.className='sync '+cls; $('#sync-t').textContent=t; }
 
 /* ================= MOTOR DE PENALIDADES ================= */
 let A = null; // análise atual
 function analisar(docs){
-  const meses = new Set(); const mot = new Map();
+  const meses = new Set(); const mot = new Map(); const ate = {};
   Object.values(docs).forEach(doc => {
     if(!doc || !Array.isArray(doc.ev)) return;
     meses.add(doc.mes);
@@ -453,6 +557,7 @@ function analisar(docs){
       const mm = M.meses[doc.mes] || (M.meses[doc.mes] = {pre:0,b1:0,b2:0,b3:0,ch:0,chc:0,ev:[],placas:new Set(),vmax:{seco:0,chuva:0}});
       const ev = {ts:e[1], placa:e[2], vel:+e[3], dur:+e[4], cond:doc.tipo, fx:faixa(doc.tipo, +e[3], +e[4])};
       mm.ev.push(ev); mm.placas.add(ev.placa);
+      if(!ate[doc.mes] || ev.ts > ate[doc.mes]) ate[doc.mes] = ev.ts;
       if(ev.fx) mm[ev.fx]++;
       if(ev.vel > mm.vmax[doc.tipo]) mm.vmax[doc.tipo] = ev.vel;
     });
@@ -480,7 +585,7 @@ function analisar(docs){
     });
     M.terminoEm = terminoEm;
   });
-  return {meses:lista, mot};
+  return {meses:lista, mot, ate};
 }
 function situacao(r, M){
   if(M && M.semId) return {k:'ni', t:'Sem motorista identificado'};
@@ -506,9 +611,12 @@ function render(){
   if(!ui.mes || !meses.includes(ui.mes)) ui.mes = meses[meses.length-1] || null;
   sel.innerHTML = meses.length ? meses.slice().reverse().map(m => '<option value="'+m+'"'+(m===ui.mes?' selected':'')+'>'+mesNome(m)+'</option>').join('') : '<option>Sem dados</option>';
   sel.disabled = !meses.length;
-  if(store.mode==='db') setSync('on', 'Dados compartilhados · '+meses.length+' '+(meses.length===1?'mês':'meses'));
-  else if(store.mode==='local') setSync('local', 'Salvo só neste navegador');
-  renderGeral(); renderMot(); renderImp(); renderRegras();
+  const ultimo = meses.length ? A.ate[meses[meses.length-1]] : '';
+  const ateTxt = ultimo ? 'Dados até '+dataBR(ultimo).slice(0,10) : 'Sem dados';
+  if(store.mode==='db') setSync('on', ateTxt+' · compartilhado');
+  else if(store.mode==='local') setSync('local', ateTxt+' · salvo só neste navegador');
+  indexarComunicados();
+  renderGeral(); renderMot(); renderCad(); renderImp(); renderRegras();
 }
 
 /* ---------- visão geral ---------- */
@@ -518,7 +626,7 @@ function linhasMes(){
   A.mot.forEach(M => {
     const c = M.meses[m]; if(!c) return;
     const r = M.hist[m];
-    out.push({M, c, r, s:situacao(r, M), placas:[...c.placas], vmax:Math.max(c.vmax.seco, c.vmax.chuva)});
+    out.push({M, c, r, s:situacao(r, M), placas:[...c.placas], vmax:Math.max(c.vmax.seco, c.vmax.chuva), com:comInfo(M, m), cad:cadDe(M.nome)});
   });
   return out;
 }
@@ -529,7 +637,7 @@ function meter(n, tol, over){
   return '<div class="meter"><div class="mtrack'+(over?' over':'')+'"><span class="f" style="width:'+(n/scale*100).toFixed(1)+'%"></span><span class="tol" style="left:'+(tol/scale*100).toFixed(1)+'%"></span></div><b>'+n+'<small>/'+tol+'</small></b></div>';
 }
 const COLS = [
-  {k:'nome', t:'Motorista'}, {k:'sit', t:'Situação'},
+  {k:'nome', t:'Motorista'}, {k:'sit', t:'Situação'}, {k:'com', t:'Comunicado'},
   {k:'b1', t:'Seco 90–95'}, {k:'b2', t:'Seco 96–99'}, {k:'b3', t:'≥ 100', c:'r'}, {k:'ch', t:'Chuva > 1 min'},
   {k:'pre', t:'Pré-infração', c:'r'}, {k:'vmax', t:'Vel. máx.', c:'r'}, {k:'advAc', t:'Advert. acum.', c:'r'}, {k:'susAc', t:'Susp. acum.', c:'r'}
 ];
@@ -550,7 +658,8 @@ function renderGeral(){
     {c:'k-ch', lab:'Picos na chuva', val:fmt(sum('ch')), sub:'acima de 70 km/h por mais de 1 min · '+fmt(sum('chc'))+' curtos não contam'},
     {c:'k-adv', lab:'Advertências', val:fmt(advMes), sub:'emitidas no mês'},
     {c:'k-sus', lab:'Suspensões', val:fmt(susMes), sub:fmt(L.reduce((a,x)=>a+x.r.susDir,0))+' por ≥ 100 km/h · '+fmt(L.reduce((a,x)=>a+x.r.susAdv,0))+' por reincidência'},
-    {c:'k-ter', lab:'Términos de contrato', val:fmt(terMes), sub:'3 suspensões acumuladas'}
+    {c:'k-ter', lab:'Términos de contrato', val:fmt(terMes), sub:'3 suspensões acumuladas'},
+    {c:'k-com', lab:'Comunicados pendentes', val:fmt(L.filter(x=>x.com&&x.com.pendente).length), sub:fmt(L.filter(x=>x.com&&x.com.pendente&&!(x.cad&&x.cad.celular)).length)+' sem celular cadastrado'}
   ];
   $('#kpis').innerHTML = kp.map(k => '<div class="kpi '+k.c+'"><div class="lab">'+k.lab+'</div><div class="val num">'+k.val+'</div><div class="sub">'+k.sub+'</div></div>').join('');
 
@@ -565,9 +674,10 @@ function renderGeral(){
     if(f==='sus') return x.s.k==='sus';
     if(f==='adv') return x.s.k==='adv';
     if(f==='tol') return x.s.k==='tol';
+    if(f==='com') return !!(x.com && x.com.pendente);
     return true;
   });
-  const val = (x,k) => k==='nome'?x.M.nome : k==='sit'?ST_ORD[x.s.k] : k==='vmax'?x.vmax : k==='advAc'?x.r.advAc : k==='susAc'?x.r.susAc : x.c[k];
+  const val = (x,k) => k==='nome'?x.M.nome : k==='sit'?ST_ORD[x.s.k] : k==='vmax'?x.vmax : k==='advAc'?x.r.advAc : k==='susAc'?x.r.susAc : k==='com'?(x.com&&x.com.pendente==='pen'?2:x.com&&x.com.pendente==='alerta'?1:0) : x.c[k];
   rows.sort((a,b) => {
     const va=val(a,ui.sort.k), vb=val(b,ui.sort.k);
     let d = typeof va==='string' ? va.localeCompare(vb,'pt-BR') : va-vb;
@@ -579,6 +689,7 @@ function renderGeral(){
   $('#tbody').innerHTML = rows.length ? rows.map(x => '<tr class="click" tabindex="0" data-m="'+esc(x.M.nome)+'">'+
     '<td><div class="nm">'+esc(x.M.nome)+'</div><div style="font-size:11px;color:var(--muted)">'+esc(x.placas.join(' · '))+'</div></td>'+
     '<td>'+stPill(x.s)+'</td>'+
+    '<td>'+celCom(x)+'</td>'+
     '<td>'+meter(x.c.b1, R.b1.tol, x.c.b1>R.b1.tol)+'</td>'+
     '<td>'+meter(x.c.b2, R.b2.tol, x.c.b2>R.b2.tol)+'</td>'+
     '<td class="r">'+meter(x.c.b3, 0)+'</td>'+
@@ -587,7 +698,7 @@ function renderGeral(){
     '<td class="r mini-n">'+(x.vmax?x.vmax+' km/h':'—')+'</td>'+
     '<td class="r mini-n">'+x.r.advAc+'</td>'+
     '<td class="r mini-n">'+x.r.susAc+'</td></tr>').join('')
-    : '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:22px">Nenhum motorista com esse filtro.</td></tr>';
+    : '<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:22px">Nenhum motorista com esse filtro.</td></tr>';
   $('#tbl-note').textContent = mesNome(ui.mes);
   $('#tbl-foot').textContent = rows.length+' de '+L.length+' motoristas · barra = picos do mês, traço = tolerância · acumulados consideram todos os meses importados até '+mesNome(ui.mes)+'.';
   document.querySelectorAll('#fchips .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f===ui.filtro)));
@@ -602,6 +713,14 @@ function renderGeral(){
 }
 const FX_ORD = ['ch','chc','pre','b1','b2','b3','_'];
 const fxLabel = fx => fx==='pre'?'Pré-infração 87–89 km/h':fx==='ch'?'Acima de 70 km/h por mais de 1 min':fx==='chc'?'Acima de 70 km/h por até 1 min (não conta)':fx==='_'?'Fora das faixas':'Faixa '+FAIXA_INFO[fx].nome+' km/h';
+function celCom(x){
+  if(!x.com) return '<span class="zero">—</span>';
+  const btn = t => ' <button class="mini-btn" type="button" data-com-ir="'+esc(x.M.nome)+'" data-tipo="'+t+'">Enviar</button>';
+  if(x.com.pendente==='pen') return '<div class="com-cell"><span class="st adv">Penalidade</span>'+btn('pen')+'</div>';
+  if(x.com.pendente==='alerta') return '<div class="com-cell"><span class="st pre">Alerta</span>'+btn('alerta')+'</div>';
+  const ult = enviados(x.M.nome).find(e => e.mes===ui.mes);
+  return ult ? '<span class="sec-note">Enviado '+new Date(ult.enviadoEm).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+'</span>' : '<span class="zero">—</span>';
+}
 function histograma(sel, lsel, cond, cont){
   const el = $(sel);
   const vs = Object.keys(cont).map(Number);
@@ -675,6 +794,7 @@ function renderMot(){
   pills.push('<span class="pill">Vel. máx.: <b class="num">'+x.vmax+' km/h</b></span>');
   $('#m-hero').innerHTML = '<div class="cod">'+mesNome(ui.mes)+' · '+(idx+1)+' de '+L.length+'</div><h3>'+esc(M.nome)+'</h3><div class="meta">'+pills.join('')+'</div>';
 
+  renderCom(x);
   $('#m-mes-note').textContent = mesNome(ui.mes);
   $('#m-rules').innerHTML = REGRAS.map(g => {
     const n = c[g.id], over = g.pena==='sus' ? n>0 : n>g.tol;
@@ -718,7 +838,7 @@ function renderImp(){
   $('#imp-ro').hidden = store.canWrite;
   $('#drop').style.display = store.canWrite ? '' : 'none';
   const docs = Object.entries(store.docs).sort((a,b)=> a[1].mes===b[1].mes ? a[1].tipo.localeCompare(b[1].tipo) : (a[1].mes<b[1].mes?1:-1));
-  $('#saved tbody').innerHTML = docs.length ? docs.map(([id,d]) => '<tr><td style="font-weight:600">'+mesNome(d.mes)+'</td><td>'+(d.tipo==='chuva'?'Chuva':'Seco')+'</td><td class="r mini-n">'+fmt(d.ev.length)+'</td><td class="r mini-n">'+d.motoristas.length+'</td><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis">'+esc(d.arquivo||'—')+'</td><td class="mini-n">'+(d.importadoEm?new Date(d.importadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—')+'</td><td class="r">'+(store.canWrite?'<button class="btn danger'+(armado===id?' armed':'')+'" type="button" data-del="'+esc(id)+'">'+(armado===id?'Confirmar remoção':'Remover')+'</button>':'')+'</td></tr>').join('')
+  $('#saved tbody').innerHTML = docs.length ? docs.map(([id,d]) => '<tr><td style="font-weight:600">'+mesNome(d.mes)+'</td><td>'+(d.tipo==='chuva'?'Chuva':'Seco')+'</td><td class="r mini-n">'+fmt(d.ev.length)+'</td><td class="r mini-n">'+d.motoristas.length+'</td><td class="mini-n">'+(d.ev.length?dataBR(ultimoTs(d)).slice(0,10):'—')+'</td><td class="mini-n" title="'+esc(d.arquivo||'')+'">'+(d.importadoEm?new Date(d.importadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—')+'</td><td class="r">'+(store.canWrite?'<button class="btn danger'+(armado===id?' armed':'')+'" type="button" data-del="'+esc(id)+'">'+(armado===id?'Confirmar remoção':'Remover')+'</button>':'')+'</td></tr>').join('')
     : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:22px">Nenhum mês salvo. Importe a primeira planilha acima.</td></tr>';
   renderPendente();
 }
@@ -726,10 +846,30 @@ function renderPendente(){
   const el = $('#imp-prev');
   if(!pendente){ el.innerHTML=''; return; }
   el.innerHTML = '<div class="card pad" style="margin-top:14px"><div class="sec-h"><h2>Conferir antes de salvar</h2><span class="sec-note">'+esc(pendente.arquivos.join(', '))+'</span></div>'+
-    '<div class="tbl-scroll"><table style="min-width:560px"><thead><tr><th>Mês</th><th>Condição</th><th class="r">Eventos</th><th class="r">Motoristas</th><th>Ação</th></tr></thead><tbody>'+
-    pendente.grupos.map(g => '<tr><td style="font-weight:600">'+mesNome(g.mes)+'</td><td>'+(g.tipo==='chuva'?'Chuva':'Seco')+'</td><td class="r mini-n">'+fmt(g.ev.length)+'</td><td class="r mini-n">'+g.motoristas.length+'</td><td>'+(store.docs[g.id]?'<span class="st adv">Substitui os '+fmt(store.docs[g.id].ev.length)+' eventos salvos</span>':'<span class="st ok">Novo</span>')+'</td></tr>').join('')+
+    '<div class="tbl-scroll"><table style="min-width:560px"><thead><tr><th>Mês</th><th>Condição</th><th class="r">Eventos no arquivo</th><th class="r">Novos</th><th class="r">Já salvos</th><th>Período</th></tr></thead><tbody>'+
+    pendente.grupos.map(g => { const m = mesclar(store.docs[g.id], g); return '<tr><td style="font-weight:600">'+mesNome(g.mes)+'</td><td>'+(g.tipo==='chuva'?'Chuva':'Seco')+'</td><td class="r mini-n">'+fmt(g.ev.length)+'</td><td class="r mini-n" style="font-weight:700">'+fmt(m.novos)+'</td><td class="r mini-n">'+(m.repetidos?fmt(m.repetidos):'<span class="zero">0</span>')+'</td><td class="mini-n">'+periodo(g.ev)+'</td></tr>'; }).join('')+
     '</tbody></table></div>'+(pendente.avisos.length?'<div class="msg info">'+pendente.avisos.map(esc).join('<br>')+'</div>':'')+
     '<div class="actions"><button class="btn" type="button" id="imp-ok">Salvar no painel</button><button class="btn ghost" type="button" id="imp-cancel">Cancelar</button></div></div>';
+}
+function ultimoTs(d){ let t=''; d.ev.forEach(e => { if(e[1]>t) t=e[1]; }); return t; }
+function periodo(ev){ let a='9', b=''; ev.forEach(e => { if(e[1]<a) a=e[1]; if(e[1]>b) b=e[1]; }); a=dataBR(a).slice(0,5); b=dataBR(b).slice(0,5); return a===b ? a : a+' a '+b; }
+const chaveEv = (nome, e) => e[1]+'|'+nome+'|'+e[2]+'|'+e[3];
+// soma os eventos do arquivo ao mês salvo, ignorando os que já existem
+function mesclar(atual, g){
+  const motoristas = atual ? atual.motoristas.slice() : [], ev = atual ? atual.ev.slice() : [];
+  const ix = {}; motoristas.forEach((n,i) => ix[n]=i);
+  const vistos = new Set(ev.map(e => chaveEv(motoristas[e[0]], e)));
+  let novos = 0, repetidos = 0;
+  g.ev.forEach(e => {
+    const nome = g.motoristas[e[0]], k = chaveEv(nome, e);
+    if(vistos.has(k)){ repetidos++; return; }
+    vistos.add(k); novos++;
+    if(!(nome in ix)){ ix[nome]=motoristas.length; motoristas.push(nome); }
+    ev.push([ix[nome], e[1], e[2], e[3], e[4]]);
+  });
+  const arqs = ((atual && atual.arquivo) ? atual.arquivo.split(', ') : []);
+  g.arquivo.split(', ').forEach(a => { if(!arqs.includes(a)) arqs.push(a); });
+  return {novos, repetidos, body:{mes:g.mes, tipo:g.tipo, arquivo:arqs.slice(-60).join(', '), importadoEm:new Date().toISOString(), motoristas, ev}};
 }
 function showMsg(kind, text){ $('#imp-msg').innerHTML = text ? '<div class="msg '+kind+'">'+esc(text)+'</div>' : ''; }
 
@@ -811,13 +951,15 @@ async function salvarPendente(){
   if(!pendente) return;
   const btn = $('#imp-ok'); if(btn){ btn.disabled=true; btn.textContent='Salvando…'; }
   try{
+    let tot = 0;
     for(const g of pendente.grupos){
-      await store.put(g.id, {mes:g.mes, tipo:g.tipo, arquivo:g.arquivo, importadoEm:new Date().toISOString(), motoristas:g.motoristas, ev:g.ev});
+      const m = mesclar(store.docs[g.id], g); tot += m.novos;
+      if(m.novos) await store.put('meses', g.id, m.body);
     }
     const meses = [...new Set(pendente.grupos.map(g=>g.mes))];
     pendente = null; ui.mes = meses.sort().pop();
     render();
-    showMsg('ok','Importação salva. '+mesNome(ui.mes)+' já aparece na visão geral.');
+    showMsg('ok', tot ? fmt(tot)+' '+(tot===1?'evento novo somado':'eventos novos somados')+'. '+mesNome(ui.mes)+' já está atualizado na visão geral.' : 'Nada novo: todos os eventos desses arquivos já estavam salvos.');
   }catch(e){
     const code = e && e.code;
     showMsg('err', code==='quota_exceeded' ? 'O banco do painel está cheio. Remova meses antigos e tente de novo.' :
@@ -825,6 +967,213 @@ async function salvarPendente(){
       'Não foi possível salvar agora ('+(code||e.message||e)+'). Tente de novo em instantes.');
     if(btn){ btn.disabled=false; btn.textContent='Salvar no painel'; }
   }
+}
+
+/* ---------- cadastro ---------- */
+const slug = nome => norm(nome).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,150) || 'sem-nome';
+const cadDe = nome => store.data.motoristas[slug(nome)] || null;
+const soDig = v => String(v==null?'':v).replace(/\D/g,'');
+function cpfValido(c){
+  c = soDig(c); if(c.length!==11 || /^(\d)\1+$/.test(c)) return false;
+  for(let t=9; t<11; t++){ let sm=0; for(let i=0;i<t;i++) sm += (+c[i])*(t+1-i); if(((sm*10)%11)%10 !== +c[t]) return false; }
+  return true;
+}
+const fmtCpf = c => (c=soDig(c)).length===11 ? c.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,'$1.$2.$3-$4') : c;
+function celNorm(c){ c=soDig(c); if(c.length===10||c.length===11) return '55'+c; if((c.length===12||c.length===13) && c.startsWith('55')) return c; return null; }
+function fmtCel(c){ c=soDig(c); if(c.startsWith('55') && c.length>=12) c=c.slice(2); return c.length===11 ? '('+c.slice(0,2)+') '+c.slice(2,7)+'-'+c.slice(7) : c.length===10 ? '('+c.slice(0,2)+') '+c.slice(2,6)+'-'+c.slice(6) : c; }
+const nomeProprio = n => String(n||'').toLowerCase().split(' ')[0].replace(/^./, x=>x.toUpperCase());
+
+let cadEdit = null, cadArmado = false;
+const cadUi = {q:'', f:'todos'};
+function ultimoEventoDe(M){ let t=''; Object.values(M.meses).forEach(c => c.ev.forEach(e => { if(e.ts>t) t=e.ts; })); return t; }
+function renderCad(){
+  const ro = !store.canWrite;
+  $('#cad-ro').hidden = !ro;
+  ['#cad-nome','#cad-cpf','#cad-mat','#cad-cel','#cad-save','#cad-clear'].forEach(s0 => $(s0).disabled = ro);
+  const tel = [...A.mot.values()].filter(M => !M.semId);
+  $('#cad-nomes').innerHTML = tel.map(M => '<option value="'+esc(M.nome)+'">').join('');
+  const linhas = new Map();
+  tel.forEach(M => linhas.set(slug(M.nome), {nome:M.nome, cad:cadDe(M.nome), ult:ultimoEventoDe(M)}));
+  Object.entries(store.data.motoristas).forEach(([id,d]) => { if(!linhas.has(id)) linhas.set(id, {nome:d.nome, cad:d, ult:''}); });
+  const st = l => !l.cad ? 'falta' : !l.cad.celular ? 'semcel' : 'ok';
+  const all = [...linhas.values()];
+  const nFalta = all.filter(l=>st(l)==='falta').length, nSemCel = all.filter(l=>st(l)==='semcel').length;
+  $('#cad-note').textContent = (all.length-nFalta)+' cadastrados · '+nFalta+' da telemetria sem cadastro · '+nSemCel+' sem celular';
+  const q = norm(cadUi.q), qd = soDig(cadUi.q);
+  const rows = all.filter(l => {
+    if(cadUi.f!=='todos' && st(l)!==cadUi.f) return false;
+    if(!q) return true;
+    if(norm(l.nome).includes(q)) return true;
+    if(l.cad && (norm(l.cad.matricula).includes(q) || (qd && (soDig(l.cad.cpf).includes(qd) || soDig(l.cad.celular).includes(qd))))) return true;
+    return false;
+  }).sort((a,b) => ({falta:0,semcel:1,ok:2}[st(a)] - {falta:0,semcel:1,ok:2}[st(b)]) || a.nome.localeCompare(b.nome,'pt-BR'));
+  const pill = {falta:'<span class="st pre">Falta cadastrar</span>', semcel:'<span class="st adv">Sem celular</span>', ok:'<span class="st ok">Cadastrado</span>'};
+  $('#cad-tbl tbody').innerHTML = rows.length ? rows.map(l => '<tr class="click" tabindex="0" data-cad="'+esc(l.nome)+'"'+(cadEdit===slug(l.nome)?' style="background:var(--hover)"':'')+'><td class="nm">'+esc(l.nome)+'</td><td class="mini-n">'+(l.cad&&l.cad.cpf?fmtCpf(l.cad.cpf):'<span class="zero">—</span>')+'</td><td class="mini-n">'+(l.cad&&l.cad.matricula?esc(l.cad.matricula):'<span class="zero">—</span>')+'</td><td class="mini-n">'+(l.cad&&l.cad.celular?fmtCel(l.cad.celular):'<span class="zero">—</span>')+'</td><td>'+pill[st(l)]+'</td><td class="mini-n">'+(l.ult?dataBR(l.ult).slice(0,10):'<span class="zero">sem eventos</span>')+'</td></tr>').join('')
+    : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:22px">'+(all.length?'Nenhum motorista com esse filtro.':'Nenhum motorista ainda. Importe uma planilha ou cadastre acima.')+'</td></tr>';
+  document.querySelectorAll('#cad-chips .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f===cadUi.f)));
+  const ed = cadEdit && store.data.motoristas[cadEdit];
+  $('#cad-title').textContent = ed ? 'Editar cadastro' : 'Cadastrar motorista';
+  $('#cad-del').hidden = !ed || ro;
+  $('#cad-del').textContent = cadArmado ? 'Confirmar remoção' : 'Remover cadastro';
+  $('#cad-del').classList.toggle('armed', cadArmado);
+}
+function cadCarregar(nome){
+  const d = cadDe(nome);
+  cadEdit = d ? slug(nome) : null; cadArmado = false;
+  $('#cad-nome').value = d ? d.nome : nome || '';
+  $('#cad-cpf').value = d && d.cpf ? fmtCpf(d.cpf) : '';
+  $('#cad-mat').value = d ? (d.matricula||'') : '';
+  $('#cad-cel').value = d && d.celular ? fmtCel(d.celular) : '';
+  ['nome','cpf','cel'].forEach(k => { $('#cad-'+k+'-err').textContent=''; $('#cad-'+k).removeAttribute('aria-invalid'); });
+  $('#cad-msg').innerHTML = '';
+  renderCad();
+}
+function cadErro(k, t){ $('#cad-'+k+'-err').textContent = t; if(t) $('#cad-'+k).setAttribute('aria-invalid','true'); else $('#cad-'+k).removeAttribute('aria-invalid'); return !t; }
+async function cadSalvar(){
+  if(!store.canWrite) return;
+  const nome = $('#cad-nome').value.trim().replace(/\s+/g,' ').toUpperCase();
+  const cpf = soDig($('#cad-cpf').value), mat = $('#cad-mat').value.trim(), celIn = $('#cad-cel').value.trim();
+  const cel = celIn ? celNorm(celIn) : '';
+  const id = slug(nome);
+  let ok = true;
+  ok = cadErro('nome', !nome ? 'Informe o nome.' : (id!==cadEdit && store.data.motoristas[id]) ? 'Já existe um cadastro com esse nome.' : '') && ok;
+  const cpfDup = cpf && Object.entries(store.data.motoristas).find(([k,d]) => k!==cadEdit && soDig(d.cpf)===cpf);
+  ok = cadErro('cpf', cpf && !cpfValido(cpf) ? 'CPF inválido. Confira os 11 dígitos.' : cpfDup ? 'CPF já cadastrado para '+cpfDup[1].nome+'.' : '') && ok;
+  ok = cadErro('cel', celIn && !cel ? 'Use DDD + número, por exemplo (11) 98765-4321.' : '') && ok;
+  if(!ok) return;
+  const btn = $('#cad-save'); btn.disabled = true; btn.textContent = 'Salvando…';
+  try{
+    await store.put('motoristas', id, {nome, cpf, matricula:mat, celular:cel||'', atualizadoEm:new Date().toISOString(), atualizadoPor:store.uid||null});
+    if(cadEdit && cadEdit!==id) await store.del('motoristas', cadEdit);
+    cadEdit = id;
+    $('#cad-msg').innerHTML = '<div class="msg ok">Cadastro de '+esc(nome)+' salvo.</div>';
+    render();
+  }catch(e){
+    $('#cad-msg').innerHTML = '<div class="msg err">'+esc(e && e.code==='invalid_argument' ? 'Você não tem permissão para alterar o cadastro.' : 'Não foi possível salvar ('+((e&&(e.message||e.code))||e)+').')+'</div>';
+  }finally{ btn.disabled = false; btn.textContent = 'Salvar cadastro'; }
+}
+
+/* ---------- comunicados por WhatsApp ---------- */
+const ALERTA_PCT = 0.8; // alerta preventivo a partir de 80% da tolerância
+const TIPO_COM = {pen:'Penalidade', alerta:'Alerta preventivo', resumo:'Resumo do mês'};
+const REGRA_MSG = {b1:'Pista seca, de 90 a 95 km/h', b2:'Pista seca, de 96 a 99 km/h', b3:'Igual ou acima de 100 km/h', ch:'Chuva, acima de 70 km/h por mais de 1 minuto'};
+let comIdx = new Map();
+function indexarComunicados(){
+  comIdx = new Map();
+  Object.entries(store.data.comunicados).forEach(([id,d]) => { const k=d.motorista; if(!comIdx.has(k)) comIdx.set(k,[]); comIdx.get(k).push(Object.assign({id}, d)); });
+  comIdx.forEach(l => l.sort((a,b)=> a.enviadoEm<b.enviadoEm?1:-1));
+}
+const enviados = nome => comIdx.get(slug(nome)) || [];
+const foiEnviado = (nome, chave) => enviados(nome).some(x => x.chave===chave);
+function comInfo(M, mes){
+  const c = M.meses[mes], r = M.hist[mes];
+  if(!c || M.semId) return null;
+  const susMes = r.susDir + r.susAdv;
+  const pen = (r.advs.length || susMes || r.terminoNoMes) ? 'pen:'+mes+':'+r.advs.join('+')+':s'+susMes+(r.terminoNoMes?':t':'') : null;
+  const perto = REGRAS.filter(g => g.pena==='adv' && c[g.id]<=g.tol && c[g.id]>=Math.ceil(g.tol*ALERTA_PCT));
+  const alerta = perto.length ? 'alerta:'+mes+':'+perto.map(g=>g.id).join('+') : null;
+  const info = {chaves:{pen, alerta, resumo:'resumo:'+mes}, perto, pendente:null};
+  if(pen && !foiEnviado(M.nome, pen)) info.pendente = 'pen';
+  else if(alerta && !foiEnviado(M.nome, alerta)) info.pendente = 'alerta';
+  return info;
+}
+function montarMensagem(M, mes, tipo){
+  const c = M.meses[mes], r = M.hist[mes], cad = cadDe(M.nome), info = comInfo(M, mes);
+  const ate = A.ate[mes] ? dataBR(A.ate[mes]).slice(0,10) : '';
+  const placas = [...c.placas].join(', ');
+  const vmax = Math.max(c.vmax.seco, c.vmax.chuva);
+  const L = [];
+  L.push('Olá, '+nomeProprio(M.nome)+'. Aqui é a Gestão de Frota do Grupo Dínamo / Tóliman Transportes.');
+  if(cad && cad.matricula) L.push('Matrícula: '+cad.matricula);
+  L.push('');
+  const linhaRegra = g => '• '+REGRA_MSG[g.id]+': '+c[g.id]+' '+(c[g.id]===1?'pico':'picos')+(g.tol?' (tolerância de '+g.tol+' no mês)':' (sem tolerância)');
+  const acumulado = '*Situação acumulada:* '+r.advAc+' '+(r.advAc===1?'advertência':'advertências')+' e '+r.susAc+' '+(r.susAc===1?'suspensão':'suspensões')+'.';
+  if(tipo==='pen'){
+    const susMes = r.susDir + r.susAdv;
+    L.push('*Comunicado de excesso de velocidade · '+mesNome(mes)+'*');
+    L.push('A telemetria registrou excesso de velocidade '+(c.placas.size>1?'nos veículos':'no veículo')+' '+placas+(ate?', com dados até '+ate:'')+':');
+    REGRAS.filter(g => c[g.id]>0).forEach(g => L.push(linhaRegra(g)));
+    L.push('• Velocidade máxima registrada: '+vmax+' km/h');
+    L.push('');
+    const partes = [];
+    if(r.advs.length) partes.push(r.advs.length+' '+(r.advs.length===1?'advertência':'advertências'));
+    if(r.susDir) partes.push(r.susDir+' '+(r.susDir===1?'suspensão':'suspensões')+' por velocidade igual ou acima de 100 km/h');
+    L.push('*Penalidade:* perda de pontuação avaliativa'+(partes.length?' e '+partes.join(' e '):'')+'.');
+    if(r.susAdv) L.push('Com isso você chegou a '+r.advAc+' advertências acumuladas, o que gera '+r.susAdv+' '+(r.susAdv===1?'suspensão':'suspensões')+'.');
+    if(r.terminoNoMes) L.push('Você atingiu '+r.susAc+' suspensões acumuladas, o que leva ao término do contrato de trabalho. O RH entrará em contato.');
+    L.push(acumulado);
+    if(!r.termino){
+      const fa = ADV_P_SUS - r.advAc%ADV_P_SUS, fs = SUS_P_TER - r.susAc;
+      L.push((fa===1?'Falta 1 advertência':'Faltam '+fa+' advertências')+' para a próxima suspensão'+(r.susAc?' e '+(fs===1?'1 suspensão':fs+' suspensões')+' para o término do contrato':'')+'.');
+    }
+  } else if(tipo==='alerta'){
+    L.push('*Alerta preventivo de velocidade · '+mesNome(mes)+'*');
+    L.push('Você está perto do limite de tolerância do mês'+(ate?' (dados até '+ate+')':'')+':');
+    (info && info.perto.length ? info.perto : REGRAS.filter(g=>g.pena==='adv' && c[g.id]>0)).forEach(g => L.push('• '+REGRA_MSG[g.id]+': '+c[g.id]+' de '+g.tol+' picos permitidos'));
+    L.push('');
+    L.push('Se passar do limite, a penalidade é perda de pontuação avaliativa e advertência. 3 advertências geram suspensão.');
+  } else {
+    L.push('*Resumo de velocidade · '+mesNome(mes)+'*'+(ate?' (dados até '+ate+')':''));
+    REGRAS.forEach(g => L.push('• '+REGRA_MSG[g.id]+': '+c[g.id]+(g.tol?' de '+g.tol+' permitidos':'')));
+    if(c.chc) L.push('• Chuva acima de 70 km/h por até 1 minuto (não contam): '+c.chc);
+    L.push('• Velocidade máxima registrada: '+vmax+' km/h');
+    L.push('');
+    L.push('*Situação no mês:* '+situacao(r, M).t+'.');
+    L.push(acumulado);
+  }
+  L.push('');
+  L.push('Limites: 90 km/h na pista seca e 70 km/h na chuva. Dirija com segurança. Em caso de dúvida, procure seu gestor.');
+  return L.join('\n');
+}
+const comUi = {chave:null, tipo:null, texto:''};
+let comArmado = null;
+function renderCom(x){
+  const M = x.M, mes = ui.mes, info = comInfo(M, mes), cad = cadDe(M.nome);
+  $('#com-sec').hidden = !!M.semId;
+  if(M.semId) return;
+  const disp = {pen:!!info.chaves.pen, alerta:!!info.chaves.alerta, resumo:true};
+  if(!comUi.tipo || !disp[comUi.tipo] || comUi.motorista!==M.nome) comUi.tipo = comUi.pedido && disp[comUi.pedido] ? comUi.pedido : (info.pendente || (disp.pen?'pen':'resumo'));
+  comUi.pedido = null; comUi.motorista = M.nome;
+  $('#com-tipos').innerHTML = ['pen','alerta','resumo'].map(t => '<button class="chip" type="button" data-tipo="'+t+'" aria-pressed="'+(comUi.tipo===t)+'"'+(disp[t]?'':' disabled title="Não se aplica neste mês"')+'>'+TIPO_COM[t]+(info.pendente===t?' · pendente':'')+'</button>').join('');
+  const chave = M.nome+'|'+mes+'|'+comUi.tipo;
+  if(comUi.chave!==chave){ comUi.chave = chave; comUi.texto = montarMensagem(M, mes, comUi.tipo); }
+  const ta = $('#com-txt'); if(document.activeElement!==ta) ta.value = comUi.texto;
+  const cel = cad && cad.celular;
+  atualizarLinkWa();
+  const ult = enviados(M.nome).find(e => e.chave===info.chaves[comUi.tipo]);
+  $('#com-hint').innerHTML = !cel ? 'Cadastre o celular do motorista para enviar. <button class="linkbtn" type="button" data-cad-ir="'+esc(M.nome)+'">Abrir cadastro</button>'
+    : ult ? 'Este comunicado já foi registrado em '+new Date(ult.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+'.'
+    : 'Ao abrir o WhatsApp, o envio fica registrado aqui.';
+  $('#com-note').textContent = info.pendente ? 'Pendente: '+TIPO_COM[info.pendente].toLowerCase() : 'Nenhum comunicado pendente em '+mesNome(mes);
+  $('#com-cad').innerHTML = cad
+    ? '<dl class="kv"><dt>CPF</dt><dd class="mini-n">'+(cad.cpf?fmtCpf(cad.cpf):'—')+'</dd><dt>Matrícula</dt><dd class="mini-n">'+(cad.matricula?esc(cad.matricula):'—')+'</dd><dt>Celular</dt><dd class="mini-n">'+(cad.celular?fmtCel(cad.celular):'<span class="st adv">Sem celular</span>')+'</dd></dl><div style="margin-top:10px"><button class="linkbtn" type="button" data-cad-ir="'+esc(M.nome)+'">Editar cadastro</button></div>'
+    : '<p class="sec-note" style="margin:0 0 10px">Motorista sem cadastro.</p><button class="btn ghost" type="button" data-cad-ir="'+esc(M.nome)+'">Cadastrar agora</button>';
+  const hist = enviados(M.nome);
+  $('#com-hist').innerHTML = hist.length ? hist.slice(0,12).map(h => '<div class="hc"><div><b>'+esc(TIPO_COM[h.tipo]||h.tipo)+'</b> · '+esc(mesNome(h.mes))+'<div class="when">'+new Date(h.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+' · para '+esc(fmtCel(h.celular))+(h.enviadoPor?' · <span class="who" data-id="'+esc(h.enviadoPor)+'">registrado</span>':'')+'</div></div><div>'+(store.canWrite?'<button class="linkbtn" type="button" data-com-del="'+esc(h.id)+'">'+(comArmado===h.id?'Confirmar':'Desfazer')+'</button>':'')+'</div></div>').join('')
+    : '<p class="sec-note" style="margin:6px 0 0">Nenhum comunicado registrado para este motorista.</p>';
+  nomesQuemEnviou();
+}
+async function nomesQuemEnviou(){
+  if(!store.user || typeof store.user.profiles!=='function') return;
+  const els = [...document.querySelectorAll('#com-hist .who')]; if(!els.length) return;
+  try{
+    const ps = await store.user.profiles([...new Set(els.map(e=>e.dataset.id))]);
+    els.forEach(e => { const p = ps && ps[e.dataset.id]; if(p && p.name) e.textContent = 'por '+p.name; });
+  }catch(e){}
+}
+function atualizarLinkWa(){
+  const M = A.mot.get(comUi.motorista); const cad = M && cadDe(M.nome);
+  const a = $('#com-wa');
+  if(cad && cad.celular){ a.href = 'https://wa.me/'+cad.celular+'?text='+encodeURIComponent(comUi.texto); a.removeAttribute('aria-disabled'); }
+  else { a.href = '#'; a.setAttribute('aria-disabled','true'); }
+}
+async function registrarEnvio(){
+  const M = A.mot.get(comUi.motorista); if(!M) return;
+  const cad = cadDe(M.nome); if(!cad || !cad.celular) return;
+  const info = comInfo(M, ui.mes);
+  const body = {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:comUi.tipo, chave:info.chaves[comUi.tipo], texto:comUi.texto, celular:cad.celular, enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null};
+  try{ await store.put('comunicados', store.newId(), body); render(); }
+  catch(e){ $('#com-hint').textContent = 'O WhatsApp abriu, mas não foi possível registrar o envio ('+((e&&(e.code||e.message))||e)+').'; }
 }
 
 /* ---------- regras ---------- */
@@ -839,7 +1188,7 @@ function renderRegras(){
 /* ================= EVENTOS ================= */
 function setTab(t){
   ui.tab = t;
-  ['geral','mot','imp','reg'].forEach(k => { $('#tab-'+k).setAttribute('aria-selected', String(k===t)); $('#v-'+k).hidden = k!==t; });
+  ['geral','mot','cad','imp','reg'].forEach(k => { $('#tab-'+k).setAttribute('aria-selected', String(k===t)); $('#v-'+k).hidden = k!==t; });
   try{ localStorage.setItem('infra-vel-tab', t); }catch(e){}
 }
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.id.slice(4))));
@@ -868,9 +1217,50 @@ $('#saved').addEventListener('click', async e => {
   const id = b.dataset.del;
   if(armado!==id){ armado=id; renderImp(); setTimeout(()=>{ if(armado===id){ armado=null; renderImp(); } }, 5000); return; }
   armado=null; b.disabled=true;
-  try{ await store.del(id); render(); showMsg('ok','Mês removido do painel.'); }
+  try{ await store.del('meses', id); render(); showMsg('ok','Mês removido do painel.'); }
   catch(err){ showMsg('err','Não foi possível remover ('+(err.code||err.message)+').'); renderImp(); }
 });
+$('#tbody').addEventListener('click', e => {
+  const b = e.target.closest('[data-com-ir]'); if(!b) return;
+  e.stopPropagation(); comUi.pedido = b.dataset.tipo; comUi.chave = null;
+  ui.motorista = b.dataset.comIr; renderMot(); setTab('mot');
+  $('#com-sec').scrollIntoView({block:'start'});
+}, true);
+$('#com-tipos').addEventListener('click', e => { const b=e.target.closest('[data-tipo]'); if(!b || b.disabled) return; comUi.tipo=b.dataset.tipo; renderMot(); });
+$('#com-txt').addEventListener('input', e => { comUi.texto = e.target.value; atualizarLinkWa(); });
+$('#com-wa').addEventListener('click', e => { if($('#com-wa').getAttribute('aria-disabled')==='true'){ e.preventDefault(); return; } registrarEnvio(); });
+$('#com-copy').addEventListener('click', async () => {
+  const ta = $('#com-txt');
+  try{ await navigator.clipboard.writeText(ta.value); $('#com-copy').textContent='Copiada'; setTimeout(()=>{ $('#com-copy').textContent='Copiar mensagem'; }, 1800); }
+  catch(err){ ta.focus(); ta.select(); $('#com-copy').textContent='Selecionada: use Ctrl+C'; }
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-cad-ir]'); if(!b) return;
+  cadCarregar(b.dataset.cadIr); setTab('cad'); window.scrollTo({top:0}); $('#cad-cpf').focus();
+});
+$('#com-hist').addEventListener('click', async e => {
+  const b = e.target.closest('[data-com-del]'); if(!b) return;
+  const id = b.dataset.comDel;
+  if(comArmado!==id){ comArmado=id; renderMot(); setTimeout(()=>{ if(comArmado===id){ comArmado=null; renderMot(); } }, 5000); return; }
+  comArmado=null;
+  try{ await store.del('comunicados', id); render(); }catch(err){ renderMot(); }
+});
+$('#cad-form').addEventListener('submit', e => { e.preventDefault(); cadSalvar(); });
+$('#cad-clear').addEventListener('click', () => cadCarregar(''));
+$('#cad-del').addEventListener('click', async () => {
+  if(!cadEdit) return;
+  if(!cadArmado){ cadArmado=true; renderCad(); setTimeout(()=>{ if(cadArmado){ cadArmado=false; renderCad(); } }, 5000); return; }
+  cadArmado=false;
+  try{ await store.del('motoristas', cadEdit); cadCarregar(''); render(); $('#cad-msg').innerHTML='<div class="msg ok">Cadastro removido.</div>'; }
+  catch(err){ $('#cad-msg').innerHTML='<div class="msg err">Não foi possível remover.</div>'; }
+});
+$('#cad-nome').addEventListener('change', e => { const d = cadDe(e.target.value); if(d && slug(e.target.value)!==cadEdit) cadCarregar(e.target.value); });
+$('#cad-cpf').addEventListener('blur', e => { if(soDig(e.target.value).length===11) e.target.value = fmtCpf(e.target.value); });
+$('#cad-cel').addEventListener('blur', e => { const c = celNorm(e.target.value); if(c) e.target.value = fmtCel(c); });
+$('#cad-q').addEventListener('input', e => { cadUi.q = e.target.value; renderCad(); });
+$('#cad-chips').addEventListener('click', e => { const b=e.target.closest('.chip'); if(!b) return; cadUi.f=b.dataset.f; renderCad(); });
+$('#cad-tbl').addEventListener('click', e => { const tr=e.target.closest('tr[data-cad]'); if(tr){ cadCarregar(tr.dataset.cad); window.scrollTo({top:0, behavior:'smooth'}); } });
+$('#cad-tbl').addEventListener('keydown', e => { if(e.key!=='Enter') return; const tr=e.target.closest('tr[data-cad]'); if(tr) cadCarregar(tr.dataset.cad); });
 const top = $('#top');
 addEventListener('scroll', () => top.classList.toggle('stuck', scrollY>4), {passive:true});
 

@@ -2,6 +2,13 @@
 
 Painel HTML que lê as planilhas "Infrações de Velocidade" da telemetria (seco e chuva) e calcula, por motorista, as penalidades do mês e a reincidência acumulada.
 
+## Uso diário
+
+- **Importar planilhas**: envie a planilha do dia. Os eventos novos são somados ao mês; eventos já salvos (mesma data/hora, motorista, placa e velocidade) são ignorados.
+- **Cadastro de motoristas**: nome (igual ao da telemetria), CPF (validado), matrícula e celular.
+- **Comunicado por WhatsApp** (aba Motorista ou botão "Enviar" na visão geral): mensagem pronta e editável de penalidade, alerta preventivo (a partir de 80% da tolerância) ou resumo do mês. O botão abre `wa.me` com o texto e registra o envio; um comunicado de penalidade ou alerta já registrado deixa de aparecer como pendente até surgir uma penalidade nova no mês.
+- No artefato do claude.ai, cadastro e registro de comunicados só podem ser lidos por quem tem acesso de Contribuidor ou acima.
+
 - `src/painel.html` — código-fonte do painel (logos entram no build).
 - `assets/` — logos Grupo Dínamo / Tóliman e ícone.
 - `tools/build.py` — gera `index.html` (abre direto no navegador; dados ficam salvos no próprio navegador) e `dist/artefato.html` (versão publicada no claude.ai; dados ficam no banco compartilhado do artefato).
