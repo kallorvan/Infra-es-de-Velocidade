@@ -14,7 +14,7 @@ Painel HTML que lê as planilhas "Infrações de Velocidade" da telemetria (seco
 
 - `src/painel.html` — código-fonte do painel (logos entram no build).
 - `assets/` — logos Grupo Dínamo / Tóliman e ícone.
-- `tools/build.py` — gera `index.html` (abre direto no navegador; dados ficam salvos no próprio navegador) e `dist/artefato.html` (versão publicada no claude.ai; dados ficam no banco compartilhado do artefato).
+- `tools/build.py` — gera `Infrações de velocidade.html` (abre direto no navegador; dados ficam salvos no próprio navegador) e `dist/artefato.html` (versão publicada no claude.ai; dados ficam no banco compartilhado do artefato).
 
 ## Regras aplicadas
 

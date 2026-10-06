@@ -1,7 +1,7 @@
 """Monta o painel a partir de src/painel.html.
 
 Gera:
-  index.html          documento completo, para abrir localmente (dados salvos no navegador)
+  Infrações de velocidade.html   documento completo, para abrir localmente (dados salvos no navegador)
   dist/artefato.html  fragmento publicado como artefato claude.ai (dados no banco compartilhado)
 """
 import base64, pathlib, sys
@@ -19,7 +19,7 @@ frag = src.replace('%%LOGOS%%', logos).replace('%%ICON%%', icon)
 out = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'dist/artefato.html'
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(frag, encoding='utf-8')
-(ROOT / 'index.html').write_text(
+(ROOT / 'Infrações de velocidade.html').write_text(
     '<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
     '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
     '</head>\n<body>\n' + frag + '\n</body>\n</html>\n', encoding='utf-8')
