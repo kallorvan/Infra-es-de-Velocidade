@@ -204,7 +204,7 @@ tbody tr.click:focus-visible{outline:2px solid var(--coral);outline-offset:-2px}
 footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
 
 /* cadastro e comunicado */
-#com-sec,#rh-card,#rhcfg-sec{scroll-margin-top:150px}
+#com-sec,#rh-card,#rhcfg-sec,#bkp{scroll-margin-top:170px}
 .form-grid{display:grid;grid-template-columns:2fr 1fr 1.2fr 1fr;gap:10px 12px;align-items:end}
 .fld{display:grid;gap:5px;min-width:0}
 .fld label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -245,6 +245,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 .ei svg{width:12px;height:12px;fill:currentColor;opacity:.45}
 .ei.pend{background:var(--wa);color:#fff} .ei.pend svg{opacity:1}
 .env-sub{font-size:10.5px;color:var(--adv);margin-top:3px}
+.bloq{font-size:11px;font-weight:600;color:var(--muted);background:var(--track);border-radius:6px;padding:4px 8px;white-space:nowrap}
 .acum{font-size:12px;font-weight:600;white-space:nowrap}
 .acum i{font-style:normal;font-size:10px;color:var(--muted);font-weight:500;margin:0 2px 0 2px}
 .mini-btn{appearance:none;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;border-radius:6px;padding:4px 9px;border:1px solid var(--wa);background:var(--card);color:var(--wa-d)}
@@ -300,6 +301,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       <button class="btn" type="button" data-goto="imp">Importar planilhas</button>
     </div>
     <div id="geral-body">
+      <div id="bkp-aviso"></div>
       <div class="kpis" id="kpis"></div>
 
       <div class="sec">
@@ -352,7 +354,8 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 
       <div class="sec" id="com-sec">
         <div class="sec-h"><h2>Comunicado por WhatsApp</h2><span class="sec-note" id="com-note"></span></div>
-        <div class="com-grid">
+        <div class="msg info" id="com-bloq" hidden></div>
+        <div class="com-grid" id="com-grid">
           <div class="card pad">
             <div class="com-tipos" id="com-tipos" role="group" aria-label="Tipo de comunicado"></div>
             <div class="com-img-wrap"><img id="com-img" alt="Prévia do comunicado em imagem"></div>
@@ -497,6 +500,22 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       </label>
       <div id="imp-msg"></div>
       <div id="imp-prev"></div>
+    </div>
+    <div class="sec">
+      <div class="sec-h"><h2>Backup dos meses</h2><span class="sec-note">Baixe e guarde fora do painel quando o mês fechar</span></div>
+      <div class="tbl-scroll">
+        <table id="bkp" style="min-width:640px">
+          <thead><tr><th>Mês</th><th class="r">Eventos</th><th class="r">Motoristas</th><th>Situação</th><th>Último backup</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="bkp-msg"></div>
+      <div class="actions" id="rest-row">
+        <label class="btn ghost" for="rest-file" style="display:inline-flex;align-items:center">Restaurar backup (.json)</label>
+        <input type="file" id="rest-file" accept=".json,application/json" hidden>
+        <span class="sec-note">O Excel é para consulta; o arquivo .json devolve o mês ao painel se ele for removido.</span>
+      </div>
+      <div id="rest-prev"></div>
     </div>
     <div class="sec">
       <div class="sec-h"><h2>Meses salvos no painel</h2><span class="sec-note">O histórico de reincidência usa todos os meses desta lista</span></div>
@@ -737,6 +756,8 @@ function renderGeral(){
     {c:'k-ter', lab:'Términos de contrato', val:fmt(terMes), sub:'3 suspensões acumuladas'},
     {c:'k-com', lab:'Comunicados pendentes', val:fmt(L.filter(x=>x.com&&x.com.pendente).length), sub:fmt(L.filter(x=>x.com&&x.com.rhPendente).length)+' e-mails ao RH · '+fmt(L.filter(x=>x.com&&x.com.pendente&&!(x.cad&&x.cad.celular)).length)+' sem celular'}
   ];
+  const semBkp = A.meses.filter(m => mesFechado(m) && (!backups()[m] || (A.ate[m] && backups()[m].ate && A.ate[m] > backups()[m].ate)));
+  $('#bkp-aviso').innerHTML = semBkp.length ? '<div class="msg info" style="margin-top:22px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span><b>'+semBkp.map(mesNome).join(', ')+'</b> '+(semBkp.length===1?'fechou e ainda não tem':'fecharam e ainda não têm')+' backup fora do painel.</span><button class="linkbtn" type="button" data-goto-bkp="1">Fazer backup</button></div>' : '';
   $('#kpis').innerHTML = kp.map(k => '<div class="kpi '+k.c+'"><div class="lab">'+k.lab+'</div><div class="val num">'+k.val+'</div><div class="sub">'+k.sub+'</div></div>').join('');
 
   // tabela
@@ -793,6 +814,7 @@ const feito = d => '<span class="env-ok">✓ Enviado '+new Date(d).toLocaleDateS
 // um botão só: abre o motorista na parte de envio; os ícones mostram o que falta (WhatsApp e e-mail ao RH)
 function celEnvio(x){
   if(!x.com) return '<span class="zero">—</span>';
+  if(x.com.inativo) return '<span class="bloq" title="Cadastro inativo: envio bloqueado">Inativo · bloqueado</span>';
   const waP = !!x.com.pendente, rhP = !!x.com.rhPendente, temRh = !!x.com.chaves.rh;
   const waFeito = !waP && enviados(x.M.nome).some(e => e.mes===ui.mes && e.tipo!=='rh');
   const rhFeito = temRh && !rhP;
@@ -924,6 +946,7 @@ function renderImp(){
   const docs = Object.entries(store.docs).sort((a,b)=> a[1].mes===b[1].mes ? a[1].tipo.localeCompare(b[1].tipo) : (a[1].mes<b[1].mes?1:-1));
   $('#saved tbody').innerHTML = docs.length ? docs.map(([id,d]) => '<tr><td style="font-weight:600">'+mesNome(d.mes)+'</td><td>'+(d.tipo==='chuva'?'Chuva':'Seco')+'</td><td class="r mini-n">'+fmt(d.ev.length)+'</td><td class="r mini-n">'+d.motoristas.length+'</td><td class="mini-n">'+(d.ev.length?dataBR(ultimoTs(d)).slice(0,10):'—')+'</td><td class="mini-n" title="'+esc(d.arquivo||'')+'">'+(d.importadoEm?new Date(d.importadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—')+'</td><td class="r">'+(store.canWrite?'<button class="btn danger'+(armado===id?' armed':'')+'" type="button" data-del="'+esc(id)+'">'+(armado===id?'Confirmar remoção':'Remover')+'</button>':'')+'</td></tr>').join('')
     : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:22px">Nenhum mês salvo. Importe a primeira planilha acima.</td></tr>';
+  renderBackup();
   renderPendente();
 }
 function renderPendente(){
@@ -1360,7 +1383,7 @@ function renderRH(M, mes, info){
 }
 async function marcarRH(){
   const M = A.mot.get(comUi.motorista); if(!M) return;
-  const info = comInfo(M, ui.mes); if(!info || !info.chaves.rh) return;
+  const info = comInfo(M, ui.mes); if(!info || !info.chaves.rh || info.inativo) return;
   const cfg = rhCfg();
   try{
     await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'rh', chave:info.chaves.rh, assunto:$('#rh-assunto').value, texto:$('#rh-corpo').value, email:cfg.para||'', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
@@ -1398,6 +1421,9 @@ function comInfo(M, mes){
   else if(alerta && !foiEnviado(M.nome, alerta)) info.pendente = 'alerta';
   info.chaves.rh = pen ? 'rh:'+pen : null;
   info.rhPendente = !!(pen && !foiEnviado(M.nome, info.chaves.rh));
+  const cadM = cadDe(M.nome);
+  info.inativo = !!(cadM && !ativo(cadM));
+  if(info.inativo){ info.pendente = null; info.rhPendente = false; } // envio bloqueado para cadastro inativo
   return info;
 }
 function montarLegenda(M, mes, tipo){
@@ -1532,6 +1558,13 @@ function renderCom(x){
   const M = x.M, mes = ui.mes, info = comInfo(M, mes), cad = cadDe(M.nome);
   $('#com-sec').hidden = !!M.semId;
   if(M.semId) return;
+  $('#com-bloq').hidden = !info.inativo; $('#com-grid').hidden = info.inativo;
+  if(info.inativo){
+    $('#com-bloq').innerHTML = '<b>Envio bloqueado.</b> O cadastro deste motorista (código '+esc(cad.codigo)+') está inativo. Para enviar, atualize a situação no cadastro.';
+    $('#com-note').textContent = 'Cadastro inativo';
+    $('#rh-card').hidden = true;
+    return;
+  }
   const disp = {pen:!!info.chaves.pen, alerta:!!info.chaves.alerta, resumo:true};
   if(!comUi.tipo || !disp[comUi.tipo] || comUi.motorista!==M.nome) comUi.tipo = comUi.pedido && disp[comUi.pedido] ? comUi.pedido : (info.pendente || (disp.pen?'pen':'resumo'));
   comUi.pedido = null; comUi.motorista = M.nome;
@@ -1609,11 +1642,123 @@ function atualizarLinkWa(){
 }
 async function registrarEnvio(){
   const M = A.mot.get(comUi.motorista); if(!M) return;
-  const cad = cadDe(M.nome); if(!cad || !cad.celular) return;
+  const cad = cadDe(M.nome); if(!cad || !cad.celular || !ativo(cad)) return;
   const info = comInfo(M, ui.mes);
   const body = {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:comUi.tipo, chave:info.chaves[comUi.tipo], texto:comUi.texto, celular:cad.celular, enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null};
   try{ await store.put('comunicados', store.newId(), body); render(); }
   catch(e){ $('#com-hint').textContent = 'O WhatsApp abriu, mas não foi possível registrar o envio ('+((e&&(e.code||e.message))||e)+').'; }
+}
+
+/* ---------- backup do mês ---------- */
+// Mês fechado = já começou um mês posterior (pelo calendário ou pelos dados importados).
+const mesAtual = () => { const d = new Date(); return d.getFullYear()+'-'+p2(d.getMonth()+1); };
+const mesFechado = m => m < mesAtual() || A.meses.some(x => x > m);
+const backups = () => store.data.config.backups || {};
+function renderBackup(){
+  const meses = A.meses.slice().reverse();
+  $('#rest-row').hidden = !store.canWrite;
+  $('#bkp tbody').innerHTML = meses.length ? meses.map(m => {
+    const docs = Object.values(store.docs).filter(d => d.mes===m);
+    const nEv = docs.reduce((a,d)=>a+d.ev.length,0);
+    const nMot = [...A.mot.values()].filter(M => M.meses[m]).length;
+    const bk = backups()[m];
+    const fech = mesFechado(m);
+    const desatual = bk && bk.ate && A.ate[m] && A.ate[m] > bk.ate;
+    const st = fech ? (bk && !desatual ? '<span class="st ok">Fechado · com backup</span>' : '<span class="st adv">Fechado · fazer backup</span>') : '<span class="st" style="background:var(--track);color:var(--muted)">Em andamento</span>';
+    return '<tr><td style="font-weight:600">'+mesNome(m)+'</td><td class="r mini-n">'+fmt(nEv)+'</td><td class="r mini-n">'+nMot+'</td><td>'+st+'</td><td class="mini-n">'+(bk?new Date(bk.em).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+(desatual?' <span style="color:var(--adv)">(dados novos depois)</span>':''):'<span class="zero">—</span>')+'</td>'+
+      '<td class="r" style="white-space:nowrap"><button class="btn'+(fech?'':' ghost')+'" type="button" data-bkp="'+m+'" data-fmt="xlsx">Excel</button> <button class="btn ghost" type="button" data-bkp="'+m+'" data-fmt="json">Restauração (.json)</button></td></tr>';
+  }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:22px">Nenhum mês para backup.</td></tr>';
+}
+function dadosBackup(m){
+  const meses = Object.fromEntries(Object.entries(store.docs).filter(([id,d]) => d.mes===m));
+  const comunicados = Object.fromEntries(Object.entries(store.data.comunicados).filter(([id,d]) => d.mes===m));
+  return {formato:'infracoes-velocidade-backup', versao:1, mes:m, geradoEm:new Date().toISOString(), dadosAte:A.ate[m]||null, meses, comunicados};
+}
+function planilhaBackup(m){
+  const wb = XLSX.utils.book_new();
+  const fx = {pre:'Pré-infração 87–89', b1:'Seco 90–95', b2:'Seco 96–99', b3:'≥ 100', ch:'Chuva > 70 por mais de 1 min', chc:'Chuva > 70 até 1 min (não conta)'};
+  const linhas = [...A.mot.values()].filter(M => M.meses[m]).map(M => {
+    const c = M.meses[m], r = M.hist[m], cad = cadDe(M.nome), info = comInfo(M, m) || {chaves:{}};
+    const env = enviados(M.nome);
+    const wa = env.find(e => e.mes===m && e.tipo!=='rh'), rh = env.find(e => e.mes===m && e.tipo==='rh');
+    return {'Motorista':M.nome, 'Código':cad?cad.codigo:'', 'Cadastro':cad?(ativo(cad)?'Ativo':'Inativo'):'Sem cadastro', 'Situação no mês':situacao(r, M).t,
+      'Seco 90–95':c.b1, 'Seco 96–99':c.b2, '≥ 100':c.b3, 'Chuva > 1 min':c.ch, 'Chuva até 1 min':c.chc, 'Pré-infração':c.pre,
+      'Vel. máx. (km/h)':Math.max(c.vmax.seco, c.vmax.chuva), 'Advertências no mês':r.advs.length, 'Suspensões no mês':r.susDir+r.susAdv,
+      'Advertências acumuladas':r.advAc, 'Suspensões acumuladas':r.susAc, 'Término de contrato':r.terminoNoMes?'Sim':'',
+      'WhatsApp enviado em':wa?new Date(wa.enviadoEm).toLocaleString('pt-BR'):'', 'E-mail RH enviado em':rh?new Date(rh.enviadoEm).toLocaleString('pt-BR'):'', 'Placas':[...c.placas].join(', ')};
+  }).sort((a,b) => b['Advertências no mês']+b['Suspensões no mês']*10 - a['Advertências no mês']-a['Suspensões no mês']*10 || a.Motorista.localeCompare(b.Motorista,'pt-BR'));
+  const brutos = [];
+  [...A.mot.values()].forEach(M => (M.meses[m]?M.meses[m].ev:[]).forEach(e => brutos.push([e, M.nome])));
+  const ev = brutos.sort((a,b) => a[0].ts<b[0].ts?-1:1).map(([e, nome]) => ({'Data e hora':dataBR(e.ts)+e.ts.slice(16), 'Condição':e.cond==='chuva'?'Chuva':'Seco', 'Motorista':nome, 'Placa':e.placa, 'Velocidade (km/h)':e.vel, 'Duração':dur(e.dur), 'Faixa':e.fx?fx[e.fx]:''}));
+  const com = Object.values(store.data.comunicados).filter(d => d.mes===m).sort((a,b)=>a.enviadoEm<b.enviadoEm?-1:1).map(d => ({'Enviado em':new Date(d.enviadoEm).toLocaleString('pt-BR'), 'Canal':d.tipo==='rh'?'E-mail ao RH':'WhatsApp', 'Tipo':TIPO_COM[d.tipo]||d.tipo, 'Motorista':d.nome, 'Para':d.tipo==='rh'?(d.email||''):fmtCel(d.celular||''), 'Assunto / texto':d.assunto||d.texto||''}));
+  const regras = [['Faixa','Tolerância por mês','Penalidade acima da tolerância']].concat(REGRAS.map(g => [g.nome, g.tol||'sem tolerância', g.pena==='sus'?'Suspensão a cada pico':'Perda de pontuação + 1 advertência'])).concat([[],['3 advertências acumuladas = 1 suspensão; 3 suspensões acumuladas = término do contrato.'],['Gerado em '+new Date().toLocaleString('pt-BR')+' · dados até '+(A.ate[m]?dataBR(A.ate[m]).slice(0,10):'—')]]);
+  const add = (rows, nome, larg) => { const ws = Array.isArray(rows[0]) ? XLSX.utils.aoa_to_sheet(rows) : XLSX.utils.json_to_sheet(rows.length?rows:[{'':'Sem registros'}]); if(larg) ws['!cols'] = larg.map(w=>({wch:w})); XLSX.utils.book_append_sheet(wb, ws, nome); };
+  add(linhas, 'Resumo por motorista', [38,8,11,26,10,10,7,12,14,11,14,18,16,22,20,18,20,20,30]);
+  add(ev, 'Eventos', [18,9,38,10,16,9,30]);
+  add(com, 'Comunicados', [18,13,18,38,26,80]);
+  add(regras, 'Regras', [44,20,40]);
+  return XLSX.write(wb, {bookType:'xlsx', type:'array'});
+}
+async function salvarArquivo(nome, dados){
+  if(store.mode==='db'){
+    const dl = await claude.use('downloads');
+    if(!dl) throw {code:'unavailable'};
+    await dl.save({filename:nome, data:dados});
+  } else {
+    const blob = dados instanceof Blob ? dados : new Blob([dados]);
+    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  }
+}
+async function fazerBackup(m, formato, btn){
+  const base = 'backup-infracoes-velocidade-'+m;
+  const msg = $('#bkp-msg'); const orig = btn.textContent;
+  btn.disabled = true;
+  try{
+    if(formato==='xlsx'){
+      if(typeof XLSX==='undefined') throw {message:'leitor de planilhas não carregou'};
+      await salvarArquivo(base+'.xlsx', new Blob([planilhaBackup(m)], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    } else {
+      await salvarArquivo(base+'.json', JSON.stringify(dadosBackup(m)));
+    }
+    btn.textContent = 'Baixado';
+    if(store.canWrite){
+      const b = Object.assign({}, backups(), {[m]:{em:new Date().toISOString(), ate:A.ate[m]||null, por:store.uid||null, formatos:Array.from(new Set([...(((backups()[m]||{}).formatos)||[]), formato]))}});
+      try{ await store.put('config', 'backups', b); }catch(e){}
+    }
+    msg.innerHTML = '<div class="msg ok">Backup de '+esc(mesNome(m))+' salvo em '+(formato==='xlsx'?'Excel':'.json')+'. Guarde o arquivo fora do painel (pasta da rede, Drive, e-mail).</div>';
+    render();
+  }catch(e){
+    if(e && e.code==='declined'){ msg.innerHTML=''; }
+    else msg.innerHTML = '<div class="msg err">Não foi possível baixar o backup ('+esc((e&&(e.code||e.message))||e)+').</div>';
+  }finally{ setTimeout(() => { btn.disabled = false; btn.textContent = orig; }, 1500); }
+}
+let restPend = null;
+async function lerRestauracao(f){
+  const el = $('#rest-prev');
+  try{
+    const d = JSON.parse(await f.text());
+    if(!d || d.formato!=='infracoes-velocidade-backup' || !d.meses) throw new Error('não é um backup deste painel');
+    const docs = Object.entries(d.meses), coms = Object.entries(d.comunicados||{});
+    const existentes = docs.filter(([id]) => store.docs[id]).length;
+    restPend = {d, docs, coms};
+    el.innerHTML = '<div class="card pad" style="margin-top:12px"><div class="sec-h"><h2>Restaurar '+esc(mesNome(d.mes))+'</h2><span class="sec-note">'+esc(f.name)+'</span></div>'+
+      '<p style="margin:0 0 10px;font-size:13px">'+docs.map(([id,x]) => (x.tipo==='chuva'?'Chuva':'Seco')+': '+fmt(x.ev.length)+' eventos').join(' · ')+' · '+coms.length+' comunicados registrados.</p>'+
+      (existentes?'<div class="msg info" style="margin:0 0 10px">O mês já está no painel. A restauração soma os eventos do backup aos atuais, sem duplicar.</div>':'')+
+      '<div class="actions"><button class="btn" type="button" id="rest-ok">Restaurar no painel</button><button class="btn ghost" type="button" id="rest-cancel">Cancelar</button></div></div>';
+  }catch(e){ restPend = null; el.innerHTML = '<div class="msg err">Não foi possível usar '+esc(f.name)+': '+esc(e.message||e)+'.</div>'; }
+}
+async function restaurar(){
+  if(!restPend) return;
+  const btn = $('#rest-ok'); btn.disabled = true; btn.textContent = 'Restaurando…';
+  try{
+    for(const [id, x] of restPend.docs){
+      const m = mesclar(store.docs[id], {id, mes:x.mes, tipo:x.tipo, arquivo:x.arquivo||'backup', motoristas:x.motoristas, ev:x.ev});
+      if(m.novos) await comRetentativa(() => store.put('meses', id, m.body));
+    }
+    for(const [id, x] of restPend.coms){ if(!store.data.comunicados[id]) await comRetentativa(() => store.put('comunicados', id, x)); }
+    const m = restPend.d.mes; restPend = null; $('#rest-prev').innerHTML = '<div class="msg ok">'+esc(mesNome(m))+' restaurado.</div>';
+    ui.mes = m; render();
+  }catch(e){ btn.disabled = false; btn.textContent = 'Tentar de novo'; $('#rest-prev').insertAdjacentHTML('beforeend', '<div class="msg err">Falhou ('+esc((e&&(e.code||e.message))||e)+').</div>'); }
 }
 
 /* ---------- regras ---------- */
@@ -1652,6 +1797,9 @@ $('#imp-prev').addEventListener('click', e => {
   if(e.target.id==='imp-ok') salvarPendente();
   if(e.target.id==='imp-cancel'){ pendente=null; renderPendente(); }
 });
+$('#bkp').addEventListener('click', e => { const b = e.target.closest('[data-bkp]'); if(b) fazerBackup(b.dataset.bkp, b.dataset.fmt, b); });
+$('#rest-file').addEventListener('change', e => { const f = e.target.files[0]; e.target.value=''; if(f) lerRestauracao(f); });
+$('#rest-prev').addEventListener('click', e => { if(e.target.id==='rest-ok') restaurar(); if(e.target.id==='rest-cancel'){ restPend=null; $('#rest-prev').innerHTML=''; } });
 $('#saved').addEventListener('click', async e => {
   const b = e.target.closest('[data-del]'); if(!b) return;
   const id = b.dataset.del;
@@ -1692,6 +1840,7 @@ $('#cadimp-prev').addEventListener('click', e => { if(e.target.id==='cadimp-ok')
 $('#rhcfg-form').addEventListener('submit', e => { e.preventDefault(); salvarRhCfg(); });
 $('#rh-ok').addEventListener('click', marcarRH);
 document.addEventListener('click', e => {
+  if(e.target.closest('[data-goto-bkp]')){ setTab('imp'); $('#bkp').scrollIntoView({block:'start'}); }
   const b = e.target.closest('[data-copy]'); if(b) copiarCampo(b.dataset.copy, b);
   if(e.target.closest('[data-rhcfg-ir]')){ setTab('cad'); $('#rhcfg-sec').scrollIntoView({block:'start'}); $('#rhcfg-para').focus(); }
 });
