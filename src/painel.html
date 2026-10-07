@@ -1304,10 +1304,23 @@ function renderCadPend(){
     cl.sort((a,b) => (!!b.tel-!!a.tel) || ({novo:0,atualiza:1,igual:2}[a.st]-{novo:0,atualiza:1,igual:2}[b.st]) || a.nome.localeCompare(b.nome,'pt-BR')).map(x => '<tr><td class="mini-n">'+esc(x.codigo)+'</td><td class="nm">'+esc(x.nome)+'</td><td class="mini-n">'+(x.celular?fmtCel(x.celular):x.celularOriginal?'<span style="color:var(--sus)" title="Não é celular válido para WhatsApp">'+esc(x.celularOriginal)+'</span>':'<span class="zero">—</span>')+'</td><td>'+pillSit(x)+'</td><td>'+pill[x.st]+'</td><td>'+(x.tel?'<span class="st ok">Encontrado</span>':'<span class="zero">—</span>')+'</td></tr>').join('')+
     '</tbody></table></div><div class="actions"><button class="btn" type="button" id="cadimp-ok"'+(salvar||legado.length?'':' disabled')+'>Salvar '+salvar+' no cadastro'+(legado.length?' e remover '+legado.length+' antigos':'')+'</button><button class="btn ghost" type="button" id="cadimp-cancel">Cancelar</button></div></div>';
 }
+// Gravações em lote respeitam o limite de chamadas do banco do claude.ai: quando ele pede calma
+// (resource_exhausted), o ritmo diminui para o resto do lote e a mesma gravação é tentada de novo, por até ~2 min.
+let ritmoMs = 0;
+const dormir = ms => new Promise(r => setTimeout(r, ms));
 async function comRetentativa(fn){
   for(let t=0;;t++){
-    try{ return await fn(); }
-    catch(e){ if(t<5 && e && (e.code==='resource_exhausted' || e.code==='unavailable')){ await new Promise(r => setTimeout(r, 800*(t+1) + Math.random()*400)); continue; } throw e; }
+    if(ritmoMs) await dormir(ritmoMs);
+    try{ const r = await fn(); ritmoMs = Math.max(0, Math.floor(ritmoMs*0.95)); return r; }
+    catch(e){
+      const limite = e && e.code==='resource_exhausted';
+      if(t<10 && e && (limite || e.code==='unavailable')){
+        if(limite) ritmoMs = Math.min(1500, Math.max(150, ritmoMs*2));
+        await dormir(Math.min(20000, 1000*Math.pow(2, t)) + Math.random()*500);
+        continue;
+      }
+      throw e;
+    }
   }
 }
 async function salvarCadPend(){
@@ -1319,7 +1332,7 @@ async function salvarCadPend(){
     .concat(legado.map(id => () => store.del('motoristas', id)));
   let feitos = 0, erro = null, i = 0;
   const trabalhador = async () => { while(!erro && i<tarefas.length){ const t = tarefas[i++]; try{ await comRetentativa(t); feitos++; btn.textContent = 'Salvando '+feitos+' de '+tarefas.length+'…'; }catch(e){ erro = e; } } };
-  await Promise.all([1,2,3,4].map(trabalhador));
+  await Promise.all([1,2].map(trabalhador));
   if(erro){
     $('#cadimp-msg').innerHTML = '<div class="msg err">Parou em '+feitos+' de '+tarefas.length+' ('+esc((erro.code||erro.message)||erro)+'). Envie o PDF de novo para continuar: o que já foi salvo aparece como sem alteração.</div>';
     btn.disabled = false; btn.textContent = 'Tentar de novo';
@@ -1806,17 +1819,21 @@ function prevCompleto(d, nome){
     '<div class="msg info" style="margin:0 0 10px">Nada que já está no painel é apagado: os eventos são somados sem duplicar, envios e cadastros que faltam são incluídos e, no cadastro, vale a versão mais recente de cada motorista.</div>'+
     '<div class="actions"><button class="btn" type="button" id="rest-ok">Restaurar tudo</button><button class="btn ghost" type="button" id="rest-cancel">Cancelar</button></div></div>';
 }
-async function restaurarCompleto(d){
+async function restaurarCompleto(d, progresso){
   let n = {ev:0, mot:0, com:0};
+  const total = Object.keys(d.meses||{}).length + Object.keys(d.motoristas||{}).length + Object.keys(d.comunicados||{}).length;
+  let feitos = 0; const passo = () => { feitos++; if(progresso && (feitos%10===0 || feitos===total)) progresso(feitos, total); };
   for(const [id, x] of Object.entries(d.meses||{})){
     const m = mesclar(store.docs[id], {id, mes:x.mes, tipo:x.tipo, arquivo:x.arquivo||'backup', motoristas:x.motoristas, ev:x.ev});
     if(m.novos){ await comRetentativa(() => store.put('meses', id, m.body)); n.ev += m.novos; }
+    passo();
   }
   for(const [id, x] of Object.entries(d.motoristas||{})){
     const at = store.data.motoristas[id];
     if(!at || (x.atualizadoEm||'') > (at.atualizadoEm||'')){ await comRetentativa(() => store.put('motoristas', id, x)); n.mot++; }
+    passo();
   }
-  for(const [id, x] of Object.entries(d.comunicados||{})){ if(!store.data.comunicados[id]){ await comRetentativa(() => store.put('comunicados', id, x)); n.com++; } }
+  for(const [id, x] of Object.entries(d.comunicados||{})){ if(!store.data.comunicados[id]){ await comRetentativa(() => store.put('comunicados', id, x)); n.com++; } passo(); }
   const cfg = d.config || {};
   if(cfg.rh && cfg.rh.para && !rhCfg().para) await comRetentativa(() => store.put('config', 'rh', cfg.rh));
   if(cfg.backups) await comRetentativa(() => store.put('config', 'backups', Object.assign({}, cfg.backups, backups())));
@@ -1827,10 +1844,10 @@ async function restaurar(){
   if(restPend.completo){
     const btn = $('#rest-ok'); btn.disabled = true; btn.textContent = 'Restaurando…';
     try{
-      const n = await restaurarCompleto(restPend.d); restPend = null;
+      const n = await restaurarCompleto(restPend.d, (f, t) => { btn.textContent = 'Restaurando '+f+' de '+t+'…'; }); restPend = null;
       $('#rest-prev').innerHTML = '<div class="msg ok">Backup restaurado: '+fmt(n.ev)+' eventos, '+n.mot+' cadastros e '+n.com+' envios incluídos.</div>';
       ui.mes = null; render();
-    }catch(e){ btn.disabled = false; btn.textContent = 'Tentar de novo'; $('#rest-prev').insertAdjacentHTML('beforeend', '<div class="msg err">Falhou ('+esc((e&&(e.code||e.message))||e)+'). O que já foi restaurado fica; tente de novo para completar.</div>'); }
+    }catch(e){ btn.disabled = false; btn.textContent = 'Tentar de novo'; $('#rest-prev').insertAdjacentHTML('beforeend', '<div class="msg err">A restauração parou ('+esc((e&&(e.code||e.message))||e)+'). O que já foi gravado fica no painel. Clique em "Tentar de novo": ela continua de onde parou, sem duplicar.</div>'); }
     return;
   }
   const btn = $('#rest-ok'); btn.disabled = true; btn.textContent = 'Restaurando…';
