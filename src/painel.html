@@ -214,7 +214,9 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 .copyrow{display:flex;gap:6px}
 .copyrow input{flex:1}
 .copyrow .btn{padding:8px 12px;white-space:nowrap}
-#rh-corpo{min-height:320px}
+#rh-corpo{min-height:320px;font-family:var(--f-ui);font-size:13px;line-height:1.55;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow:auto;max-height:520px}
+#rh-corpo:focus{outline:2px solid var(--coral);outline-offset:-1px;border-color:var(--coral)}
+#rh-corpo .adv-linha{font-weight:700;font-size:1.12em}
 .passos{margin:12px 0 0;padding-left:20px;font-size:12.5px;color:var(--ink2);line-height:1.6}
 .wa{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:12.5px;font-weight:700;border-radius:8px;padding:10px 16px;background:var(--wa);color:#fff;border:1px solid var(--wa)}
 .wa:hover{background:var(--wa-d)}
@@ -387,7 +389,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
               <div class="fld"><label for="rh-cc">Cópia</label><div class="copyrow"><input id="rh-cc" readonly><button class="btn ghost" type="button" data-copy="rh-cc">Copiar</button></div></div>
             </div>
             <div class="fld" style="margin-top:10px"><label for="rh-assunto">Assunto</label><div class="copyrow"><input id="rh-assunto"><button class="btn ghost" type="button" data-copy="rh-assunto">Copiar</button></div></div>
-            <div class="fld" style="margin-top:10px"><label for="rh-corpo">Mensagem (pode editar antes de copiar)</label><textarea id="rh-corpo"></textarea></div>
+            <div class="fld" style="margin-top:10px"><label id="rh-corpo-lbl">Mensagem (pode editar antes de copiar; o negrito vai junto ao colar no e-mail)</label><div id="rh-corpo" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="rh-corpo-lbl"></div></div>
             <div class="actions" style="align-items:center">
               <button class="btn" type="button" data-copy="rh-corpo">Copiar mensagem</button>
               <button class="btn ghost" type="button" id="rh-ok">Marcar como enviado</button>
@@ -1386,7 +1388,9 @@ function montarEmailRH(M, mes){
     'Placas: '+[...c.placas].join(', '), '',
     'Ocorrências no mês:'
   ];
-  REGRAS.filter(g => c[g.id]>0).forEach(g => L.push('- '+REGRA_MSG[g.id]+': '+c[g.id]+' '+(c[g.id]===1?'pico':'picos')+(g.tol?' (tolerância de '+g.tol+')':' (sem tolerância)')));
+  // ocorrências que geraram advertência no mês ficam destacadas (negrito e letra maior) para conferência rápida
+  REGRAS.filter(g => c[g.id]>0).forEach(g => { const adv = r.advs.includes(g.id);
+    L.push({t:'- '+REGRA_MSG[g.id]+': '+c[g.id]+' '+(c[g.id]===1?'pico':'picos')+(g.tol?' (tolerância de '+g.tol+')':' (sem tolerância)')+(adv?' — gerou advertência':''), adv}); });
   L.push('- Velocidade máxima registrada: '+Math.max(c.vmax.seco, c.vmax.chuva)+' km/h', '');
   L.push('Penalidade aplicada: perda de pontuação avaliativa'+(partes.length?' e '+partes.join(' e '):'')+'.');
   if(r.susAdv) L.push('Com '+r.advAc+' advertências acumuladas, foi gerada '+(r.susAdv===1?'1 suspensão':r.susAdv+' suspensões')+' por reincidência.');
@@ -1394,7 +1398,10 @@ function montarEmailRH(M, mes){
   L.push('Situação acumulada: '+r.advAc+' '+(r.advAc===1?'advertência':'advertências')+' e '+r.susAc+' '+(r.susAc===1?'suspensão':'suspensões')+'.', '');
   L.push('Comunicado ao motorista: '+(zap ? 'enviado por WhatsApp em '+new Date(zap.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+'.' : 'ainda não enviado.'), '');
   L.push('Atenciosamente,', 'Gestão de Frota · Grupo Dínamo / Tóliman Transportes');
-  return {assunto, corpo:L.join('\n'), rotulo};
+  const linhas = L.map(x => typeof x==='string' ? {t:x, adv:false} : x);
+  const corpo = linhas.map(x => (x.adv?'► ':'')+x.t).join('\n');
+  const html = linhas.map(x => x.t==='' ? '<div><br></div>' : x.adv ? '<div class="adv-linha"><b style="font-size:12pt">'+esc(x.t)+'</b></div>' : '<div>'+esc(x.t)+'</div>').join('');
+  return {assunto, corpo, html, rotulo};
 }
 const rhUi = {chave:null};
 function renderRH(M, mes, info){
@@ -1405,7 +1412,7 @@ function renderRH(M, mes, info){
   const chave = info.chaves.rh+'|'+(cadDe(M.nome)||{}).codigo+'|'+A.ate[mes]+'|'+enviados(M.nome).length;
   if(rhUi.chave!==chave){
     rhUi.chave = chave; const e = montarEmailRH(M, mes);
-    $('#rh-assunto').value = e.assunto; $('#rh-corpo').value = e.corpo;
+    $('#rh-assunto').value = e.assunto; $('#rh-corpo').innerHTML = e.html;
   }
   $('#rh-para').value = cfg.para || ''; $('#rh-cc').value = cfg.cc || '';
   const ult = enviados(M.nome).find(e => e.chave===info.chaves.rh);
@@ -1419,12 +1426,26 @@ async function marcarRH(){
   const info = comInfo(M, ui.mes); if(!info || !info.chaves.rh || info.inativo) return;
   const cfg = rhCfg();
   try{
-    await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'rh', chave:info.chaves.rh, assunto:$('#rh-assunto').value, texto:$('#rh-corpo').value, email:cfg.para||'', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
+    await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'rh', chave:info.chaves.rh, assunto:$('#rh-assunto').value, texto:textoDe($('#rh-corpo')), email:cfg.para||'', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
     render();
   }catch(e){ $('#rh-hint').textContent = 'Não foi possível registrar ('+((e&&(e.code||e.message))||e)+').'; }
 }
+const textoDe = el => el.innerText.replace(/\n{3,}/g, '\n\n').trim();
 async function copiarCampo(id, btn){
   const el = $('#'+id), orig = btn.textContent;
+  if(el.isContentEditable){
+    // copia com formatação (HTML) e, junto, a versão em texto simples
+    try{
+      const html = '<div style="font-family:Calibri,Arial,sans-serif;font-size:11pt">'+el.innerHTML+'</div>';
+      await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}), 'text/plain':new Blob([textoDe(el)],{type:'text/plain'})})]);
+      btn.textContent = 'Copiado';
+    }catch(e){
+      const rg = document.createRange(); rg.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg);
+      btn.textContent = 'Selecionado: Ctrl+C';
+    }
+    setTimeout(() => { btn.textContent = orig; }, 1800);
+    return;
+  }
   try{ await navigator.clipboard.writeText(el.value); btn.textContent = 'Copiado'; }
   catch(e){ el.focus(); el.select(); btn.textContent = 'Selecionado: Ctrl+C'; }
   setTimeout(() => { btn.textContent = orig; }, 1800);
