@@ -52,7 +52,7 @@ h1{font-size:clamp(20px,3vw,27px);line-height:1.1;margin:0;font-weight:800;lette
 .mes-wrap select:focus{outline:2px solid var(--coral);outline-offset:0}
 .sync{font-size:11px;color:var(--muted);font-weight:500;margin-top:5px;text-align:right;width:100%;display:flex;gap:6px;justify-content:flex-end;align-items:center}
 .sync .sd{width:6px;height:6px;border-radius:50%;background:var(--muted)}
-.sync.on .sd{background:var(--ok)} .sync.local .sd{background:var(--pre)}
+.sync.on .sd{background:var(--ok)} .sync.local .sd{background:var(--pre)} .sync.err .sd{background:var(--sus)} .sync.err{color:var(--sus);font-weight:600}
 nav.tabs{max-width:var(--maxw);margin:0 auto;padding:16px 28px 0;display:flex;gap:2px;overflow-x:auto}
 .tab{appearance:none;border:0;background:transparent;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);padding:10px 16px 12px;position:relative;white-space:nowrap}
 .tab:hover,.tab[aria-selected="true"]{color:var(--ink)}
@@ -299,6 +299,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 </header>
 
 <main class="wrap">
+  <div id="modo-aviso"></div>
   <div id="bkpc-aviso"></div>
   <!-- VISÃO GERAL -->
   <section id="v-geral" role="tabpanel" aria-labelledby="tab-geral">
@@ -636,6 +637,11 @@ const store = {
         const d = {}; snap.docs.forEach(x => { if(x.exists) d[x.id] = x.data(); });
         this.data[col] = d; onChange();
       }, err => { setSync('local','Sem conexão com o banco do painel ('+err.code+')'); }));
+    } else if(window.claude && typeof window.claude.use==='function'){
+      // aberto no claude.ai sem acesso ao banco compartilhado: não grava em lugar nenhum, para não
+      // parecer que salvou para a equipe quando ficou só neste navegador
+      this.mode='semdb'; this.canWrite=false;
+      onChange();
     } else {
       this.mode='local';
       COLECOES.forEach(col => { try{ this.data[col] = JSON.parse(localStorage.getItem(LS_KEY(col))||'{}')||{}; }catch(e){ this.data[col]={}; } });
@@ -644,10 +650,12 @@ const store = {
   },
   newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); },
   async put(col, id, body){
+    if(this.mode==='semdb') throw {code:'sem_banco', message:'sem acesso ao banco compartilhado'};
     if(this.mode==='db'){ await this.db.collection(col).doc(id).set(body); }
     else { this.data[col] = Object.assign({}, this.data[col], {[id]:body}); this._save(col); }
   },
   async del(col, id){
+    if(this.mode==='semdb') throw {code:'sem_banco', message:'sem acesso ao banco compartilhado'};
     if(this.mode==='db'){ await this.db.collection(col).doc(id).delete(); }
     else { const d=Object.assign({},this.data[col]); delete d[id]; this.data[col]=d; this._save(col); }
   },
@@ -728,6 +736,8 @@ function render(){
   const ateTxt = ultimo ? 'Dados até '+dataBR(ultimo).slice(0,10) : 'Sem dados';
   if(store.mode==='db') setSync('on', ateTxt+' · compartilhado');
   else if(store.mode==='local') setSync('local', ateTxt+' · salvo só neste navegador');
+  else if(store.mode==='semdb') setSync('err', 'Sem acesso aos dados da equipe');
+  $('#modo-aviso').innerHTML = store.mode==='semdb' ? '<div class="aviso-topo" role="alert" style="background:var(--sus-bg);border-color:rgba(221,70,99,.4)"><span><b style="color:var(--sus)">O painel não conseguiu acessar os dados compartilhados da equipe.</b> Nada pode ser importado ou salvo agora. Recarregue a página; se continuar, confira se você entrou com a sua conta do claude.ai e se o painel foi compartilhado com você.</span></div>' : '';
   indexarComunicados();
   renderGeral(); renderMot(); renderCad(); renderRhCfg(); renderImp(); renderRegras();
 }
