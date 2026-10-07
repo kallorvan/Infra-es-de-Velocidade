@@ -2,6 +2,10 @@
 
 Painel HTML que lê as planilhas "Infrações de Velocidade" da telemetria (seco e chuva) e calcula, por motorista, as penalidades do mês e a reincidência acumulada.
 
+## Manual
+
+Passo a passo com os prints das telas: [`docs/Manual de uso - Infrações de velocidade.pdf`](<docs/Manual de uso - Infrações de velocidade.pdf>). Os prints usam dados fictícios.
+
 ## Uso diário
 
 - **Importar planilhas**: envie a planilha do dia. Os eventos novos são somados ao mês; eventos já salvos (mesma data/hora, motorista, placa e velocidade) são ignorados.
