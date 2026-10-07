@@ -571,7 +571,7 @@ const REGRAS = [
   {id:'b1', cond:'seco',  nome:'Seco · 90 a 95 km/h', faixa:'90–95 km/h', min:90, max:95, tol:35, pena:'adv', cor:'var(--b1)'},
   {id:'b2', cond:'seco',  nome:'Seco · 96 a 99 km/h', faixa:'96–99 km/h', min:96, max:99, tol:5,  pena:'adv', cor:'var(--b2)'},
   {id:'b3', cond:'seco',  nome:'Igual ou acima de 100 km/h', faixa:'≥ 100 km/h', min:100, max:Infinity, tol:0, pena:'sus', cor:'var(--b3)'},
-  {id:'ch', cond:'chuva', nome:'Chuva · acima de 70 km/h por mais de 1 min', faixa:'> 70 km/h e > 1 min', min:71, max:Infinity, tol:5, pena:'adv', cor:'var(--mauve)'}
+  {id:'ch', cond:'chuva', nome:'Chuva · acima de 70 km/h por mais de 1 min', faixa:'> 70 km/h e > 1 min', min:71, max:Infinity, tol:20, pena:'adv', cor:'var(--mauve)'}
 ];
 const PRE = {min:87, max:89};
 const ADV_P_SUS = 3, SUS_P_TER = 3;
@@ -1887,7 +1887,7 @@ async function restaurar(){
 function renderRegras(){
   $('#r-faixas').innerHTML = [
     {cor:'var(--pre)', n:'Pré-infração (seco)', f:'87 a 89 km/h', t:'Informativo', o:'Não gera penalidade'},
-    {cor:'var(--track-ink)', n:'Chuva · picos curtos', f:'> 70 km/h por até 1 min', t:'Informativo', o:'Não conta para a tolerância de 5 picos'},
+    {cor:'var(--track-ink)', n:'Chuva · picos curtos', f:'> 70 km/h por até 1 min', t:'Informativo', o:'Não conta para a tolerância de 20 picos'},
     ...REGRAS.map(g => ({cor:g.cor, n:g.nome, f:g.faixa, t:g.tol?'Tolerância de '+g.tol+' picos por mês':'Sem tolerância', o:g.pena==='sus'?'Perda de pontuação + suspensão a cada pico':'Acima da tolerância: perda de pontuação + 1 advertência'}))
   ].map(r => '<div class="rule-box"><div class="rh"><span class="band-tag rt"><i style="background:'+r.cor+'"></i>'+esc(r.n)+'</span></div><div class="mini-n" style="font-size:20px;font-weight:600">'+esc(r.f)+'</div><div class="rr">'+esc(r.t)+'</div><div class="outcome">'+esc(r.o)+'</div></div>').join('');
 }
