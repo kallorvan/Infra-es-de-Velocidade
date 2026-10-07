@@ -204,7 +204,7 @@ tbody tr.click:focus-visible{outline:2px solid var(--coral);outline-offset:-2px}
 footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
 
 /* cadastro e comunicado */
-#com-sec,#rh-card,#rhcfg-sec,#bkp{scroll-margin-top:170px}
+#com-sec,#rh-card,#rhcfg-sec,#bkpc-sec{scroll-margin-top:170px}
 .form-grid{display:grid;grid-template-columns:2fr 1fr 1.2fr 1fr;gap:10px 12px;align-items:end}
 .fld{display:grid;gap:5px;min-width:0}
 .fld label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
@@ -311,7 +311,6 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       <button class="btn" type="button" data-goto="imp">Importar planilhas</button>
     </div>
     <div id="geral-body">
-      <div id="bkp-aviso"></div>
       <div class="kpis" id="kpis"></div>
 
       <div class="sec">
@@ -511,7 +510,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       <div id="imp-msg"></div>
       <div id="imp-prev"></div>
     </div>
-    <div class="sec">
+    <div class="sec" id="bkpc-sec">
       <div class="sec-h"><h2>Backup completo</h2><span class="sec-note">Todos os meses, cadastro, envios e e-mail do RH em um arquivo só</span></div>
       <div class="card pad bkpc">
         <div><div class="bkpc-t">Último backup completo</div><div class="bkpc-v" id="bkpc-ult">—</div></div>
@@ -519,24 +518,11 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
           <button class="btn" type="button" id="bkpc-btn">Fazer backup completo (.json)</button>
           <label class="btn ghost" for="rest-file" id="rest-lbl" style="display:inline-flex;align-items:center">Restaurar backup (.json)</label>
         </div>
-        <p class="sec-note" style="margin:0;grid-column:1/-1">Salve o arquivo na pasta do OneDrive. Os dados do painel ficam guardados neste navegador: em outro computador, outro navegador ou depois de limpar os dados de navegação, use "Restaurar backup" com o arquivo mais recente para voltar tudo como estava.</p>
+        <p class="sec-note" style="margin:0;grid-column:1/-1">Faça ao fechar cada mês e guarde o arquivo numa pasta da empresa. Ele serve para recuperar os dados se alguém apagar algo por engano ou se o painel deixar de existir. "Restaurar backup" traz tudo de volta sem apagar o que já está no painel.</p>
+        <input type="file" id="rest-file" accept=".json,application/json" hidden>
       </div>
       <div id="bkpc-msg"></div>
       <div id="rest-prev"></div>
-    </div>
-    <div class="sec">
-      <div class="sec-h"><h2>Backup dos meses</h2><span class="sec-note">Baixe e guarde fora do painel quando o mês fechar</span></div>
-      <div class="tbl-scroll">
-        <table id="bkp" style="min-width:640px">
-          <thead><tr><th>Mês</th><th class="r">Eventos</th><th class="r">Motoristas</th><th>Situação</th><th>Último backup</th><th></th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <div id="bkp-msg"></div>
-      <div class="actions" id="rest-row">
-        <input type="file" id="rest-file" accept=".json,application/json" hidden>
-        <span class="sec-note">O Excel é para consulta. O .json do mês devolve aquele mês ao painel pelo botão "Restaurar backup" acima.</span>
-      </div>
     </div>
     <div class="sec">
       <div class="sec-h"><h2>Meses salvos no painel</h2><span class="sec-note">O histórico de reincidência usa todos os meses desta lista</span></div>
@@ -617,7 +603,7 @@ const dataBR = iso => { const [d,t]=iso.split(' '); const [y,m,dd]=d.split('-');
 const COLECOES = ['meses','motoristas','comunicados','config'];
 const LS_KEY = c => c==='meses' ? 'infra-vel-meses-v1' : 'infra-vel-'+c+'-v1';
 const store = {
-  mode:'loading', db:null, user:null, uid:null, canWrite:true,
+  mode:'loading', db:null, user:null, uid:null, canWrite:true, isEditor:false,
   data:{meses:{}, motoristas:{}, comunicados:{}, config:{}},
   get docs(){ return this.data.meses; },
   async init(onChange){
@@ -632,6 +618,7 @@ const store = {
         if(user){
           this.user = user;
           const c = await user.can('data.write'); if(c===false) this.canWrite=false;
+          try{ this.isEditor = !!(user.isOwner() || user.canEdit()); }catch(e){}
           this.uid = await user.id();
         }
       }catch(e){}
@@ -731,7 +718,8 @@ function render(){
   cadVinc = null;
   const sel = $('#mes');
   const meses = A.meses;
-  if(!ui.mes || !meses.includes(ui.mes)) ui.mes = meses[meses.length-1] || null;
+  if(ui.alvo && meses.includes(ui.alvo)){ ui.mes = ui.alvo; ui.alvo = null; }
+  else if(!ui.mes || !meses.includes(ui.mes)) ui.mes = meses[meses.length-1] || (ui.alvo || null);
   sel.innerHTML = meses.length ? meses.slice().reverse().map(m => '<option value="'+m+'"'+(m===ui.mes?' selected':'')+'>'+mesNome(m)+'</option>').join('') : '<option>Sem dados</option>';
   sel.disabled = !meses.length;
   const ultimo = meses.length ? A.ate[meses[meses.length-1]] : '';
@@ -786,8 +774,6 @@ function renderGeral(){
     {c:'k-ter', lab:'Términos de contrato', val:fmt(terMes), sub:'3 suspensões acumuladas'},
     {c:'k-com', lab:'Comunicados pendentes', val:fmt(L.filter(x=>x.com&&x.com.pendente).length), sub:fmt(L.filter(x=>x.com&&x.com.rhPendente).length)+' e-mails ao RH · '+fmt(L.filter(x=>x.com&&x.com.pendente&&!(x.cad&&x.cad.celular)).length)+' sem celular'}
   ];
-  const semBkp = A.meses.filter(m => mesFechado(m) && (!backups()[m] || (A.ate[m] && backups()[m].ate && A.ate[m] > backups()[m].ate)));
-  $('#bkp-aviso').innerHTML = semBkp.length ? '<div class="msg info" style="margin-top:22px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span><b>'+semBkp.map(mesNome).join(', ')+'</b> '+(semBkp.length===1?'fechou e ainda não tem':'fecharam e ainda não têm')+' backup fora do painel.</span><button class="linkbtn" type="button" data-goto-bkp="1">Fazer backup</button></div>' : '';
   $('#kpis').innerHTML = kp.map(k => '<div class="kpi '+k.c+'"><div class="lab">'+k.lab+'</div><div class="val num">'+k.val+'</div><div class="sub">'+k.sub+'</div></div>').join('');
 
   // tabela
@@ -976,7 +962,6 @@ function renderImp(){
   const docs = Object.entries(store.docs).sort((a,b)=> a[1].mes===b[1].mes ? a[1].tipo.localeCompare(b[1].tipo) : (a[1].mes<b[1].mes?1:-1));
   $('#saved tbody').innerHTML = docs.length ? docs.map(([id,d]) => '<tr><td style="font-weight:600">'+mesNome(d.mes)+'</td><td>'+(d.tipo==='chuva'?'Chuva':'Seco')+'</td><td class="r mini-n">'+fmt(d.ev.length)+'</td><td class="r mini-n">'+d.motoristas.length+'</td><td class="mini-n">'+(d.ev.length?dataBR(ultimoTs(d)).slice(0,10):'—')+'</td><td class="mini-n" title="'+esc(d.arquivo||'')+'">'+(d.importadoEm?new Date(d.importadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—')+'</td><td class="r">'+(store.canWrite?'<button class="btn danger'+(armado===id?' armed':'')+'" type="button" data-del="'+esc(id)+'">'+(armado===id?'Confirmar remoção':'Remover')+'</button>':'')+'</td></tr>').join('')
     : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:22px">Nenhum mês salvo. Importe a primeira planilha acima.</td></tr>';
-  renderBackup();
   renderBkpCompleto();
   renderPendente();
 }
@@ -1095,9 +1080,11 @@ async function salvarPendente(){
       if(m.novos) await store.put('meses', g.id, m.body);
     }
     const meses = [...new Set(pendente.grupos.map(g=>g.mes))];
-    pendente = null; ui.mes = meses.sort().pop();
+    // no painel compartilhado o banco devolve os dados um instante depois da gravação: guarda o mês alvo
+    const mesAlvo = meses.sort().pop();
+    pendente = null; ui.mes = mesAlvo; ui.alvo = mesAlvo;
     render();
-    showMsg('ok', tot ? fmt(tot)+' '+(tot===1?'evento novo somado':'eventos novos somados')+'. '+mesNome(ui.mes)+' já está atualizado na visão geral.' : 'Nada novo: todos os eventos desses arquivos já estavam salvos.');
+    showMsg('ok', tot ? fmt(tot)+' '+(tot===1?'evento novo somado':'eventos novos somados')+'. '+mesNome(mesAlvo)+' já está atualizado na visão geral.' : 'Nada novo: todos os eventos desses arquivos já estavam salvos.');
   }catch(e){
     const code = e && e.code;
     showMsg('err', code==='quota_exceeded' ? 'O banco do painel está cheio. Remova meses antigos e tente de novo.' :
@@ -1717,62 +1704,30 @@ async function registrarEnvio(){
 const mesAtual = () => { const d = new Date(); return d.getFullYear()+'-'+p2(d.getMonth()+1); };
 const mesFechado = m => m < mesAtual() || A.meses.some(x => x > m);
 const backups = () => store.data.config.backups || {};
-function renderBackup(){
-  const meses = A.meses.slice().reverse();
-  $('#rest-row').hidden = !store.canWrite;
-  $('#rest-lbl').hidden = !store.canWrite;
-  $('#bkp tbody').innerHTML = meses.length ? meses.map(m => {
-    const docs = Object.values(store.docs).filter(d => d.mes===m);
-    const nEv = docs.reduce((a,d)=>a+d.ev.length,0);
-    const nMot = [...A.mot.values()].filter(M => M.meses[m]).length;
-    const bk = backups()[m];
-    const fech = mesFechado(m);
-    const desatual = bk && bk.ate && A.ate[m] && A.ate[m] > bk.ate;
-    const st = fech ? (bk && !desatual ? '<span class="st ok">Fechado · com backup</span>' : '<span class="st adv">Fechado · fazer backup</span>') : '<span class="st" style="background:var(--track);color:var(--muted)">Em andamento</span>';
-    return '<tr><td style="font-weight:600">'+mesNome(m)+'</td><td class="r mini-n">'+fmt(nEv)+'</td><td class="r mini-n">'+nMot+'</td><td>'+st+'</td><td class="mini-n">'+(bk?new Date(bk.em).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+(desatual?' <span style="color:var(--adv)">(dados novos depois)</span>':''):'<span class="zero">—</span>')+'</td>'+
-      '<td class="r" style="white-space:nowrap"><button class="btn'+(fech?'':' ghost')+'" type="button" data-bkp="'+m+'" data-fmt="xlsx">Excel</button> <button class="btn ghost" type="button" data-bkp="'+m+'" data-fmt="json">Restauração (.json)</button></td></tr>';
-  }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:22px">Nenhum mês para backup.</td></tr>';
-}
-function dadosBackup(m){
-  const meses = Object.fromEntries(Object.entries(store.docs).filter(([id,d]) => d.mes===m));
-  const comunicados = Object.fromEntries(Object.entries(store.data.comunicados).filter(([id,d]) => d.mes===m));
-  return {formato:'infracoes-velocidade-backup', versao:1, mes:m, geradoEm:new Date().toISOString(), dadosAte:A.ate[m]||null, meses, comunicados};
-}
-function planilhaBackup(m){
-  const wb = XLSX.utils.book_new();
-  const fx = {pre:'Pré-infração 87–89', b1:'Seco 90–95', b2:'Seco 96–99', b3:'≥ 100', ch:'Chuva > 70 por mais de 1 min', chc:'Chuva > 70 até 1 min (não conta)'};
-  const linhas = [...A.mot.values()].filter(M => M.meses[m]).map(M => {
-    const c = M.meses[m], r = M.hist[m], cad = cadDe(M.nome), info = comInfo(M, m) || {chaves:{}};
-    const env = enviados(M.nome);
-    const wa = env.find(e => e.mes===m && e.tipo!=='rh'), rh = env.find(e => e.mes===m && e.tipo==='rh');
-    return {'Motorista':M.nome, 'Código':cad?cad.codigo:'', 'Cadastro':cad?(ativo(cad)?'Ativo':'Inativo'):'Sem cadastro', 'Situação no mês':situacao(r, M).t,
-      'Seco 90–95':c.b1, 'Seco 96–99':c.b2, '≥ 100':c.b3, 'Chuva > 1 min':c.ch, 'Chuva até 1 min':c.chc, 'Pré-infração':c.pre,
-      'Vel. máx. (km/h)':Math.max(c.vmax.seco, c.vmax.chuva), 'Advertências no mês':r.advs.length, 'Suspensões no mês':r.susDir+r.susAdv,
-      'Advertências acumuladas':r.advAc, 'Suspensões acumuladas':r.susAc, 'Término de contrato':r.terminoNoMes?'Sim':'',
-      'WhatsApp enviado em':wa?new Date(wa.enviadoEm).toLocaleString('pt-BR'):'', 'E-mail RH enviado em':rh?new Date(rh.enviadoEm).toLocaleString('pt-BR'):'', 'Placas':[...c.placas].join(', ')};
-  }).sort((a,b) => b['Advertências no mês']+b['Suspensões no mês']*10 - a['Advertências no mês']-a['Suspensões no mês']*10 || a.Motorista.localeCompare(b.Motorista,'pt-BR'));
-  const brutos = [];
-  [...A.mot.values()].forEach(M => (M.meses[m]?M.meses[m].ev:[]).forEach(e => brutos.push([e, M.nome])));
-  const ev = brutos.sort((a,b) => a[0].ts<b[0].ts?-1:1).map(([e, nome]) => ({'Data e hora':dataBR(e.ts)+e.ts.slice(16), 'Condição':e.cond==='chuva'?'Chuva':'Seco', 'Motorista':nome, 'Placa':e.placa, 'Velocidade (km/h)':e.vel, 'Duração':dur(e.dur), 'Faixa':e.fx?fx[e.fx]:''}));
-  const com = Object.values(store.data.comunicados).filter(d => d.mes===m).sort((a,b)=>a.enviadoEm<b.enviadoEm?-1:1).map(d => ({'Enviado em':new Date(d.enviadoEm).toLocaleString('pt-BR'), 'Canal':d.tipo==='rh'?'E-mail ao RH':'WhatsApp', 'Tipo':TIPO_COM[d.tipo]||d.tipo, 'Motorista':d.nome, 'Para':d.tipo==='rh'?(d.email||''):fmtCel(d.celular||''), 'Assunto / texto':d.assunto||d.texto||''}));
-  const regras = [['Faixa','Tolerância por mês','Penalidade acima da tolerância']].concat(REGRAS.map(g => [g.nome, g.tol||'sem tolerância', g.pena==='sus'?'Suspensão a cada pico':'Perda de pontuação + 1 advertência'])).concat([[],['3 advertências acumuladas = 1 suspensão; 3 suspensões acumuladas = término do contrato.'],['Gerado em '+new Date().toLocaleString('pt-BR')+' · dados até '+(A.ate[m]?dataBR(A.ate[m]).slice(0,10):'—')]]);
-  const add = (rows, nome, larg) => { const ws = Array.isArray(rows[0]) ? XLSX.utils.aoa_to_sheet(rows) : XLSX.utils.json_to_sheet(rows.length?rows:[{'':'Sem registros'}]); if(larg) ws['!cols'] = larg.map(w=>({wch:w})); XLSX.utils.book_append_sheet(wb, ws, nome); };
-  add(linhas, 'Resumo por motorista', [38,8,11,26,10,10,7,12,14,11,14,18,16,22,20,18,20,20,30]);
-  add(ev, 'Eventos', [18,9,38,10,16,9,30]);
-  add(com, 'Comunicados', [18,13,18,38,26,80]);
-  add(regras, 'Regras', [44,20,40]);
-  return XLSX.write(wb, {bookType:'xlsx', type:'array'});
-}
 /* backup completo: tudo o que o painel guarda, para levar a outro navegador ou computador */
-const DIAS_AVISO_BKP = 7;
 const ultBkpCompleto = () => (store.data.config.backupCompleto || {}).em || null;
 function temDados(){ return Object.keys(store.data.meses).length || Object.keys(store.data.motoristas).length; }
+// Aviso de backup: quando um mês fecha (calendário virou ou já há dados de mês posterior), pede um backup completo
+// feito depois do fechamento e depois da última importação desse mês. No painel compartilhado, só para Editor/Proprietário.
+function mesSeguinte(m){ const [y,mm] = m.split('-').map(Number); return mm===12 ? (y+1)+'-01' : y+'-'+p2(mm+1); }
+function bkpPendente(){
+  const fechados = A.meses.filter(mesFechado);
+  if(!fechados.length) return null;
+  const m = fechados[fechados.length-1], ult = ultBkpCompleto();
+  if(!ult) return m;
+  if(ult.slice(0,7) < mesSeguinte(m)) return m;
+  const importDepois = Object.values(store.docs).some(d => d.mes<=m && d.importadoEm && d.importadoEm > ult);
+  return importDepois ? m : null;
+}
 function renderBkpCompleto(){
+  $('#rest-lbl').hidden = !store.canWrite;
+  $('#bkpc-btn').hidden = store.mode==='semdb';
   const ult = ultBkpCompleto();
   const dias = ult ? Math.floor((Date.now() - new Date(ult).getTime()) / 86400000) : null;
   $('#bkpc-ult').innerHTML = ult ? new Date(ult).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+' <span class="sec-note">('+(dias===0?'hoje':dias===1?'há 1 dia':'há '+dias+' dias')+')</span>' : '<span style="color:var(--adv)">Nenhum backup completo ainda</span>';
-  const atrasado = temDados() && (dias===null || dias >= DIAS_AVISO_BKP);
-  $('#bkpc-aviso').innerHTML = atrasado ? '<div class="aviso-topo" role="status"><span><b>'+(dias===null?'Nenhum backup completo feito.':'Último backup completo há '+dias+' dias.')+'</b> Salve uma cópia na pasta do OneDrive para não perder os dados se o navegador for limpo.</span><button class="btn" type="button" data-bkpc="1" style="padding:6px 12px">Fazer backup agora</button></div>' : '';
+  const m = temDados() ? bkpPendente() : null;
+  const mostra = store.mode==='db' ? store.isEditor : store.mode==='local';
+  $('#bkpc-aviso').innerHTML = (m && mostra) ? '<div class="aviso-topo" role="status"><span><b>'+esc(mesNome(m))+' fechou.</b> Faça o backup completo e guarde o arquivo numa pasta da empresa.</span><button class="btn" type="button" data-bkpc="1" style="padding:6px 12px">Fazer backup agora</button></div>' : '';
 }
 function dadosCompletos(){
   return {formato:'infracoes-velocidade-completo', versao:1, geradoEm:new Date().toISOString(),
@@ -1785,7 +1740,7 @@ async function fazerBackupCompleto(btn){
   try{
     await salvarArquivo(nome, JSON.stringify(dadosCompletos()));
     try{ await store.put('config', 'backupCompleto', {em:new Date().toISOString(), por:store.uid||null, arquivo:nome}); }catch(e){}
-    msg.innerHTML = '<div class="msg ok">Backup completo salvo como <b>'+esc(nome)+'</b>. Guarde-o na pasta do OneDrive.</div>';
+    msg.innerHTML = '<div class="msg ok">Backup completo salvo como <b>'+esc(nome)+'</b>. Guarde-o numa pasta da empresa.</div>';
     render();
   }catch(e){
     if(!(e && e.code==='declined')) msg.innerHTML = '<div class="msg err">Não foi possível salvar o backup ('+esc((e&&(e.code||e.message))||e)+').</div>';
@@ -1800,29 +1755,6 @@ async function salvarArquivo(nome, dados){
     const blob = dados instanceof Blob ? dados : new Blob([dados]);
     const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = nome; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 4000);
   }
-}
-async function fazerBackup(m, formato, btn){
-  const base = 'backup-infracoes-velocidade-'+m;
-  const msg = $('#bkp-msg'); const orig = btn.textContent;
-  btn.disabled = true;
-  try{
-    if(formato==='xlsx'){
-      if(typeof XLSX==='undefined') throw {message:'leitor de planilhas não carregou'};
-      await salvarArquivo(base+'.xlsx', new Blob([planilhaBackup(m)], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
-    } else {
-      await salvarArquivo(base+'.json', JSON.stringify(dadosBackup(m)));
-    }
-    btn.textContent = 'Baixado';
-    if(store.canWrite){
-      const b = Object.assign({}, backups(), {[m]:{em:new Date().toISOString(), ate:A.ate[m]||null, por:store.uid||null, formatos:Array.from(new Set([...(((backups()[m]||{}).formatos)||[]), formato]))}});
-      try{ await store.put('config', 'backups', b); }catch(e){}
-    }
-    msg.innerHTML = '<div class="msg ok">Backup de '+esc(mesNome(m))+' salvo em '+(formato==='xlsx'?'Excel':'.json')+'. Guarde o arquivo fora do painel (pasta da rede, Drive, e-mail).</div>';
-    render();
-  }catch(e){
-    if(e && e.code==='declined'){ msg.innerHTML=''; }
-    else msg.innerHTML = '<div class="msg err">Não foi possível baixar o backup ('+esc((e&&(e.code||e.message))||e)+').</div>';
-  }finally{ setTimeout(() => { btn.disabled = false; btn.textContent = orig; }, 1500); }
 }
 let restPend = null;
 async function lerRestauracao(f){
@@ -1930,7 +1862,6 @@ $('#imp-prev').addEventListener('click', e => {
 });
 $('#bkpc-btn').addEventListener('click', e => fazerBackupCompleto(e.currentTarget));
 document.addEventListener('click', e => { const b = e.target.closest('[data-bkpc]'); if(b) fazerBackupCompleto(b); });
-$('#bkp').addEventListener('click', e => { const b = e.target.closest('[data-bkp]'); if(b) fazerBackup(b.dataset.bkp, b.dataset.fmt, b); });
 $('#rest-file').addEventListener('change', e => { const f = e.target.files[0]; e.target.value=''; if(f) lerRestauracao(f); });
 $('#rest-prev').addEventListener('click', e => { if(e.target.id==='rest-ok') restaurar(); if(e.target.id==='rest-cancel'){ restPend=null; $('#rest-prev').innerHTML=''; } });
 $('#saved').addEventListener('click', async e => {
@@ -1973,7 +1904,7 @@ $('#cadimp-prev').addEventListener('click', e => { if(e.target.id==='cadimp-ok')
 $('#rhcfg-form').addEventListener('submit', e => { e.preventDefault(); salvarRhCfg(); });
 $('#rh-ok').addEventListener('click', marcarRH);
 document.addEventListener('click', e => {
-  if(e.target.closest('[data-goto-bkp]')){ setTab('imp'); $('#bkp').scrollIntoView({block:'start'}); }
+  if(e.target.closest('[data-goto-bkp]')){ setTab('imp'); $('#bkpc-sec').scrollIntoView({block:'start'}); }
   const b = e.target.closest('[data-copy]'); if(b) copiarCampo(b.dataset.copy, b);
   if(e.target.closest('[data-rhcfg-ir]')){ setTab('cad'); $('#rhcfg-sec').scrollIntoView({block:'start'}); $('#rhcfg-para').focus(); }
 });
