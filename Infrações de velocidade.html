@@ -52,7 +52,7 @@ h1{font-size:clamp(20px,3vw,27px);line-height:1.1;margin:0;font-weight:800;lette
 .mes-wrap select:focus{outline:2px solid var(--coral);outline-offset:0}
 .sync{font-size:11px;color:var(--muted);font-weight:500;margin-top:5px;text-align:right;width:100%;display:flex;gap:6px;justify-content:flex-end;align-items:center}
 .sync .sd{width:6px;height:6px;border-radius:50%;background:var(--muted)}
-.sync.on .sd{background:var(--ok)} .sync.local .sd{background:var(--pre)}
+.sync.on .sd{background:var(--ok)} .sync.local .sd{background:var(--pre)} .sync.err .sd{background:var(--sus)} .sync.err{color:var(--sus);font-weight:600}
 nav.tabs{max-width:var(--maxw);margin:0 auto;padding:16px 28px 0;display:flex;gap:2px;overflow-x:auto}
 .tab{appearance:none;border:0;background:transparent;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);padding:10px 16px 12px;position:relative;white-space:nowrap}
 .tab:hover,.tab[aria-selected="true"]{color:var(--ink)}
@@ -221,7 +221,9 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 .copyrow{display:flex;gap:6px}
 .copyrow input{flex:1}
 .copyrow .btn{padding:8px 12px;white-space:nowrap}
-#rh-corpo{min-height:320px}
+#rh-corpo{min-height:320px;font-family:var(--f-ui);font-size:13px;line-height:1.55;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;overflow:auto;max-height:520px}
+#rh-corpo:focus{outline:2px solid var(--coral);outline-offset:-1px;border-color:var(--coral)}
+#rh-corpo .adv-linha{font-weight:700;font-size:1.12em}
 .passos{margin:12px 0 0;padding-left:20px;font-size:12.5px;color:var(--ink2);line-height:1.6}
 .wa{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-size:12.5px;font-weight:700;border-radius:8px;padding:10px 16px;background:var(--wa);color:#fff;border:1px solid var(--wa)}
 .wa:hover{background:var(--wa-d)}
@@ -299,6 +301,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 </header>
 
 <main class="wrap">
+  <div id="modo-aviso"></div>
   <div id="bkpc-aviso"></div>
   <!-- VISÃO GERAL -->
   <section id="v-geral" role="tabpanel" aria-labelledby="tab-geral">
@@ -395,7 +398,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
               <div class="fld"><label for="rh-cc">Cópia</label><div class="copyrow"><input id="rh-cc" readonly><button class="btn ghost" type="button" data-copy="rh-cc">Copiar</button></div></div>
             </div>
             <div class="fld" style="margin-top:10px"><label for="rh-assunto">Assunto</label><div class="copyrow"><input id="rh-assunto"><button class="btn ghost" type="button" data-copy="rh-assunto">Copiar</button></div></div>
-            <div class="fld" style="margin-top:10px"><label for="rh-corpo">Mensagem (pode editar antes de copiar)</label><textarea id="rh-corpo"></textarea></div>
+            <div class="fld" style="margin-top:10px"><label id="rh-corpo-lbl">Mensagem (pode editar antes de copiar; o negrito vai junto ao colar no e-mail)</label><div id="rh-corpo" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="rh-corpo-lbl"></div></div>
             <div class="actions" style="align-items:center">
               <button class="btn" type="button" data-copy="rh-corpo">Copiar mensagem</button>
               <button class="btn ghost" type="button" id="rh-ok">Marcar como enviado</button>
@@ -577,7 +580,7 @@ const REGRAS = [
   {id:'b1', cond:'seco',  nome:'Seco · 90 a 95 km/h', faixa:'90–95 km/h', min:90, max:95, tol:35, pena:'adv', cor:'var(--b1)'},
   {id:'b2', cond:'seco',  nome:'Seco · 96 a 99 km/h', faixa:'96–99 km/h', min:96, max:99, tol:5,  pena:'adv', cor:'var(--b2)'},
   {id:'b3', cond:'seco',  nome:'Igual ou acima de 100 km/h', faixa:'≥ 100 km/h', min:100, max:Infinity, tol:0, pena:'sus', cor:'var(--b3)'},
-  {id:'ch', cond:'chuva', nome:'Chuva · acima de 70 km/h por mais de 1 min', faixa:'> 70 km/h e > 1 min', min:71, max:Infinity, tol:5, pena:'adv', cor:'var(--mauve)'}
+  {id:'ch', cond:'chuva', nome:'Chuva · acima de 70 km/h por mais de 1 min', faixa:'> 70 km/h e > 1 min', min:71, max:Infinity, tol:20, pena:'adv', cor:'var(--mauve)'}
 ];
 const PRE = {min:87, max:89};
 const ADV_P_SUS = 3, SUS_P_TER = 3;
@@ -636,6 +639,11 @@ const store = {
         const d = {}; snap.docs.forEach(x => { if(x.exists) d[x.id] = x.data(); });
         this.data[col] = d; onChange();
       }, err => { setSync('local','Sem conexão com o banco do painel ('+err.code+')'); }));
+    } else if(window.claude && typeof window.claude.use==='function'){
+      // aberto no claude.ai sem acesso ao banco compartilhado: não grava em lugar nenhum, para não
+      // parecer que salvou para a equipe quando ficou só neste navegador
+      this.mode='semdb'; this.canWrite=false;
+      onChange();
     } else {
       this.mode='local';
       COLECOES.forEach(col => { try{ this.data[col] = JSON.parse(localStorage.getItem(LS_KEY(col))||'{}')||{}; }catch(e){ this.data[col]={}; } });
@@ -644,10 +652,12 @@ const store = {
   },
   newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); },
   async put(col, id, body){
+    if(this.mode==='semdb') throw {code:'sem_banco', message:'sem acesso ao banco compartilhado'};
     if(this.mode==='db'){ await this.db.collection(col).doc(id).set(body); }
     else { this.data[col] = Object.assign({}, this.data[col], {[id]:body}); this._save(col); }
   },
   async del(col, id){
+    if(this.mode==='semdb') throw {code:'sem_banco', message:'sem acesso ao banco compartilhado'};
     if(this.mode==='db'){ await this.db.collection(col).doc(id).delete(); }
     else { const d=Object.assign({},this.data[col]); delete d[id]; this.data[col]=d; this._save(col); }
   },
@@ -728,6 +738,8 @@ function render(){
   const ateTxt = ultimo ? 'Dados até '+dataBR(ultimo).slice(0,10) : 'Sem dados';
   if(store.mode==='db') setSync('on', ateTxt+' · compartilhado');
   else if(store.mode==='local') setSync('local', ateTxt+' · salvo só neste navegador');
+  else if(store.mode==='semdb') setSync('err', 'Sem acesso aos dados da equipe');
+  $('#modo-aviso').innerHTML = store.mode==='semdb' ? '<div class="aviso-topo" role="alert" style="background:var(--sus-bg);border-color:rgba(221,70,99,.4)"><span><b style="color:var(--sus)">O painel não conseguiu acessar os dados compartilhados da equipe.</b> Nada pode ser importado ou salvo agora. Recarregue a página; se continuar, confira se você entrou com a sua conta do claude.ai e se o painel foi compartilhado com você.</span></div>' : '';
   indexarComunicados();
   renderGeral(); renderMot(); renderCad(); renderRhCfg(); renderImp(); renderRegras();
 }
@@ -1303,10 +1315,23 @@ function renderCadPend(){
     cl.sort((a,b) => (!!b.tel-!!a.tel) || ({novo:0,atualiza:1,igual:2}[a.st]-{novo:0,atualiza:1,igual:2}[b.st]) || a.nome.localeCompare(b.nome,'pt-BR')).map(x => '<tr><td class="mini-n">'+esc(x.codigo)+'</td><td class="nm">'+esc(x.nome)+'</td><td class="mini-n">'+(x.celular?fmtCel(x.celular):x.celularOriginal?'<span style="color:var(--sus)" title="Não é celular válido para WhatsApp">'+esc(x.celularOriginal)+'</span>':'<span class="zero">—</span>')+'</td><td>'+pillSit(x)+'</td><td>'+pill[x.st]+'</td><td>'+(x.tel?'<span class="st ok">Encontrado</span>':'<span class="zero">—</span>')+'</td></tr>').join('')+
     '</tbody></table></div><div class="actions"><button class="btn" type="button" id="cadimp-ok"'+(salvar||legado.length?'':' disabled')+'>Salvar '+salvar+' no cadastro'+(legado.length?' e remover '+legado.length+' antigos':'')+'</button><button class="btn ghost" type="button" id="cadimp-cancel">Cancelar</button></div></div>';
 }
+// Gravações em lote respeitam o limite de chamadas do banco do claude.ai: quando ele pede calma
+// (resource_exhausted), o ritmo diminui para o resto do lote e a mesma gravação é tentada de novo, por até ~2 min.
+let ritmoMs = 0;
+const dormir = ms => new Promise(r => setTimeout(r, ms));
 async function comRetentativa(fn){
   for(let t=0;;t++){
-    try{ return await fn(); }
-    catch(e){ if(t<5 && e && (e.code==='resource_exhausted' || e.code==='unavailable')){ await new Promise(r => setTimeout(r, 800*(t+1) + Math.random()*400)); continue; } throw e; }
+    if(ritmoMs) await dormir(ritmoMs);
+    try{ const r = await fn(); ritmoMs = Math.max(0, Math.floor(ritmoMs*0.95)); return r; }
+    catch(e){
+      const limite = e && e.code==='resource_exhausted';
+      if(t<10 && e && (limite || e.code==='unavailable')){
+        if(limite) ritmoMs = Math.min(1500, Math.max(150, ritmoMs*2));
+        await dormir(Math.min(20000, 1000*Math.pow(2, t)) + Math.random()*500);
+        continue;
+      }
+      throw e;
+    }
   }
 }
 async function salvarCadPend(){
@@ -1318,7 +1343,7 @@ async function salvarCadPend(){
     .concat(legado.map(id => () => store.del('motoristas', id)));
   let feitos = 0, erro = null, i = 0;
   const trabalhador = async () => { while(!erro && i<tarefas.length){ const t = tarefas[i++]; try{ await comRetentativa(t); feitos++; btn.textContent = 'Salvando '+feitos+' de '+tarefas.length+'…'; }catch(e){ erro = e; } } };
-  await Promise.all([1,2,3,4].map(trabalhador));
+  await Promise.all([1,2].map(trabalhador));
   if(erro){
     $('#cadimp-msg').innerHTML = '<div class="msg err">Parou em '+feitos+' de '+tarefas.length+' ('+esc((erro.code||erro.message)||erro)+'). Envie o PDF de novo para continuar: o que já foi salvo aparece como sem alteração.</div>';
     btn.disabled = false; btn.textContent = 'Tentar de novo';
@@ -1372,7 +1397,9 @@ function montarEmailRH(M, mes){
     'Placas: '+[...c.placas].join(', '), '',
     'Ocorrências no mês:'
   ];
-  REGRAS.filter(g => c[g.id]>0).forEach(g => L.push('- '+REGRA_MSG[g.id]+': '+c[g.id]+' '+(c[g.id]===1?'pico':'picos')+(g.tol?' (tolerância de '+g.tol+')':' (sem tolerância)')));
+  // ocorrências que geraram advertência no mês ficam destacadas (negrito e letra maior) para conferência rápida
+  REGRAS.filter(g => c[g.id]>0).forEach(g => { const adv = r.advs.includes(g.id);
+    L.push({t:'- '+REGRA_MSG[g.id]+': '+c[g.id]+' '+(c[g.id]===1?'pico':'picos')+(g.tol?' (tolerância de '+g.tol+')':' (sem tolerância)')+(adv?' — gerou advertência':''), adv}); });
   L.push('- Velocidade máxima registrada: '+Math.max(c.vmax.seco, c.vmax.chuva)+' km/h', '');
   L.push('Penalidade aplicada: perda de pontuação avaliativa'+(partes.length?' e '+partes.join(' e '):'')+'.');
   if(r.susAdv) L.push('Com '+r.advAc+' advertências acumuladas, foi gerada '+(r.susAdv===1?'1 suspensão':r.susAdv+' suspensões')+' por reincidência.');
@@ -1380,7 +1407,10 @@ function montarEmailRH(M, mes){
   L.push('Situação acumulada: '+r.advAc+' '+(r.advAc===1?'advertência':'advertências')+' e '+r.susAc+' '+(r.susAc===1?'suspensão':'suspensões')+'.', '');
   L.push('Comunicado ao motorista: '+(zap ? 'enviado por WhatsApp em '+new Date(zap.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+'.' : 'ainda não enviado.'), '');
   L.push('Atenciosamente,', 'Gestão de Frota · Grupo Dínamo / Tóliman Transportes');
-  return {assunto, corpo:L.join('\n'), rotulo};
+  const linhas = L.map(x => typeof x==='string' ? {t:x, adv:false} : x);
+  const corpo = linhas.map(x => (x.adv?'► ':'')+x.t).join('\n');
+  const html = linhas.map(x => x.t==='' ? '<div><br></div>' : x.adv ? '<div class="adv-linha"><b style="font-size:12pt">'+esc(x.t)+'</b></div>' : '<div>'+esc(x.t)+'</div>').join('');
+  return {assunto, corpo, html, rotulo};
 }
 const rhUi = {chave:null};
 function renderRH(M, mes, info){
@@ -1391,7 +1421,7 @@ function renderRH(M, mes, info){
   const chave = info.chaves.rh+'|'+(cadDe(M.nome)||{}).codigo+'|'+A.ate[mes]+'|'+enviados(M.nome).length;
   if(rhUi.chave!==chave){
     rhUi.chave = chave; const e = montarEmailRH(M, mes);
-    $('#rh-assunto').value = e.assunto; $('#rh-corpo').value = e.corpo;
+    $('#rh-assunto').value = e.assunto; $('#rh-corpo').innerHTML = e.html;
   }
   $('#rh-para').value = cfg.para || ''; $('#rh-cc').value = cfg.cc || '';
   const ult = enviados(M.nome).find(e => e.chave===info.chaves.rh);
@@ -1405,12 +1435,26 @@ async function marcarRH(){
   const info = comInfo(M, ui.mes); if(!info || !info.chaves.rh || info.inativo) return;
   const cfg = rhCfg();
   try{
-    await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'rh', chave:info.chaves.rh, assunto:$('#rh-assunto').value, texto:$('#rh-corpo').value, email:cfg.para||'', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
+    await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'rh', chave:info.chaves.rh, assunto:$('#rh-assunto').value, texto:textoDe($('#rh-corpo')), email:cfg.para||'', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
     render();
   }catch(e){ $('#rh-hint').textContent = 'Não foi possível registrar ('+((e&&(e.code||e.message))||e)+').'; }
 }
+const textoDe = el => el.innerText.replace(/\n{3,}/g, '\n\n').trim();
 async function copiarCampo(id, btn){
   const el = $('#'+id), orig = btn.textContent;
+  if(el.isContentEditable){
+    // copia com formatação (HTML) e, junto, a versão em texto simples
+    try{
+      const html = '<div style="font-family:Calibri,Arial,sans-serif;font-size:11pt">'+el.innerHTML+'</div>';
+      await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}), 'text/plain':new Blob([textoDe(el)],{type:'text/plain'})})]);
+      btn.textContent = 'Copiado';
+    }catch(e){
+      const rg = document.createRange(); rg.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg);
+      btn.textContent = 'Selecionado: Ctrl+C';
+    }
+    setTimeout(() => { btn.textContent = orig; }, 1800);
+    return;
+  }
   try{ await navigator.clipboard.writeText(el.value); btn.textContent = 'Copiado'; }
   catch(e){ el.focus(); el.select(); btn.textContent = 'Selecionado: Ctrl+C'; }
   setTimeout(() => { btn.textContent = orig; }, 1800);
@@ -1805,17 +1849,21 @@ function prevCompleto(d, nome){
     '<div class="msg info" style="margin:0 0 10px">Nada que já está no painel é apagado: os eventos são somados sem duplicar, envios e cadastros que faltam são incluídos e, no cadastro, vale a versão mais recente de cada motorista.</div>'+
     '<div class="actions"><button class="btn" type="button" id="rest-ok">Restaurar tudo</button><button class="btn ghost" type="button" id="rest-cancel">Cancelar</button></div></div>';
 }
-async function restaurarCompleto(d){
+async function restaurarCompleto(d, progresso){
   let n = {ev:0, mot:0, com:0};
+  const total = Object.keys(d.meses||{}).length + Object.keys(d.motoristas||{}).length + Object.keys(d.comunicados||{}).length;
+  let feitos = 0; const passo = () => { feitos++; if(progresso && (feitos%10===0 || feitos===total)) progresso(feitos, total); };
   for(const [id, x] of Object.entries(d.meses||{})){
     const m = mesclar(store.docs[id], {id, mes:x.mes, tipo:x.tipo, arquivo:x.arquivo||'backup', motoristas:x.motoristas, ev:x.ev});
     if(m.novos){ await comRetentativa(() => store.put('meses', id, m.body)); n.ev += m.novos; }
+    passo();
   }
   for(const [id, x] of Object.entries(d.motoristas||{})){
     const at = store.data.motoristas[id];
     if(!at || (x.atualizadoEm||'') > (at.atualizadoEm||'')){ await comRetentativa(() => store.put('motoristas', id, x)); n.mot++; }
+    passo();
   }
-  for(const [id, x] of Object.entries(d.comunicados||{})){ if(!store.data.comunicados[id]){ await comRetentativa(() => store.put('comunicados', id, x)); n.com++; } }
+  for(const [id, x] of Object.entries(d.comunicados||{})){ if(!store.data.comunicados[id]){ await comRetentativa(() => store.put('comunicados', id, x)); n.com++; } passo(); }
   const cfg = d.config || {};
   if(cfg.rh && cfg.rh.para && !rhCfg().para) await comRetentativa(() => store.put('config', 'rh', cfg.rh));
   if(cfg.backups) await comRetentativa(() => store.put('config', 'backups', Object.assign({}, cfg.backups, backups())));
@@ -1826,10 +1874,10 @@ async function restaurar(){
   if(restPend.completo){
     const btn = $('#rest-ok'); btn.disabled = true; btn.textContent = 'Restaurando…';
     try{
-      const n = await restaurarCompleto(restPend.d); restPend = null;
+      const n = await restaurarCompleto(restPend.d, (f, t) => { btn.textContent = 'Restaurando '+f+' de '+t+'…'; }); restPend = null;
       $('#rest-prev').innerHTML = '<div class="msg ok">Backup restaurado: '+fmt(n.ev)+' eventos, '+n.mot+' cadastros e '+n.com+' envios incluídos.</div>';
       ui.mes = null; render();
-    }catch(e){ btn.disabled = false; btn.textContent = 'Tentar de novo'; $('#rest-prev').insertAdjacentHTML('beforeend', '<div class="msg err">Falhou ('+esc((e&&(e.code||e.message))||e)+'). O que já foi restaurado fica; tente de novo para completar.</div>'); }
+    }catch(e){ btn.disabled = false; btn.textContent = 'Tentar de novo'; $('#rest-prev').insertAdjacentHTML('beforeend', '<div class="msg err">A restauração parou ('+esc((e&&(e.code||e.message))||e)+'). O que já foi gravado fica no painel. Clique em "Tentar de novo": ela continua de onde parou, sem duplicar.</div>'); }
     return;
   }
   const btn = $('#rest-ok'); btn.disabled = true; btn.textContent = 'Restaurando…';
@@ -1848,7 +1896,7 @@ async function restaurar(){
 function renderRegras(){
   $('#r-faixas').innerHTML = [
     {cor:'var(--pre)', n:'Pré-infração (seco)', f:'87 a 89 km/h', t:'Informativo', o:'Não gera penalidade'},
-    {cor:'var(--track-ink)', n:'Chuva · picos curtos', f:'> 70 km/h por até 1 min', t:'Informativo', o:'Não conta para a tolerância de 5 picos'},
+    {cor:'var(--track-ink)', n:'Chuva · picos curtos', f:'> 70 km/h por até 1 min', t:'Informativo', o:'Não conta para a tolerância de 20 picos'},
     ...REGRAS.map(g => ({cor:g.cor, n:g.nome, f:g.faixa, t:g.tol?'Tolerância de '+g.tol+' picos por mês':'Sem tolerância', o:g.pena==='sus'?'Perda de pontuação + suspensão a cada pico':'Acima da tolerância: perda de pontuação + 1 advertência'}))
   ].map(r => '<div class="rule-box"><div class="rh"><span class="band-tag rt"><i style="background:'+r.cor+'"></i>'+esc(r.n)+'</span></div><div class="mini-n" style="font-size:20px;font-weight:600">'+esc(r.f)+'</div><div class="rr">'+esc(r.t)+'</div><div class="outcome">'+esc(r.o)+'</div></div>').join('');
 }

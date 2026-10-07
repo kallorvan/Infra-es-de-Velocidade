@@ -30,7 +30,7 @@ Passo a passo com os prints das telas: [`docs/Manual de uso - Infrações de vel
 | Seco | 90–95 km/h | 35 picos | perda de pontuação + 1 advertência |
 | Seco | 96–99 km/h | 5 picos | perda de pontuação + 1 advertência |
 | Seco | ≥ 100 km/h | nenhuma | perda de pontuação + 1 suspensão por pico |
-| Chuva | > 70 km/h por mais de 1 min | 5 picos | perda de pontuação + 1 advertência |
+| Chuva | > 70 km/h por mais de 1 min | 20 picos | perda de pontuação + 1 advertência |
 | Chuva | > 70 km/h por até 1 min | não conta | só informativo |
 
 3 advertências acumuladas = 1 suspensão; 3 suspensões acumuladas = término do contrato. Eventos com motorista "SEM MOTORISTA" aparecem no painel, mas não geram penalidade.
