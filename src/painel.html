@@ -1739,7 +1739,7 @@ function dadosCompletos(){
 }
 async function fazerBackupCompleto(btn){
   const msg = $('#bkpc-msg'); const orig = btn.textContent; btn.disabled = true;
-  const hoje = new Date(); const nome = 'backup-completo-infracoes-velocidade-'+hoje.getFullYear()+'-'+p2(hoje.getMonth()+1)+'-'+p2(hoje.getDate())+'.json';
+  const hoje = new Date(); const nome = 'backup-completo-infracoes-velocidade-'+hoje.getFullYear()+'-'+p2(hoje.getMonth()+1)+'-'+p2(hoje.getDate())+'_'+p2(hoje.getHours())+'h'+p2(hoje.getMinutes())+'.json';
   try{
     await salvarArquivo(nome, JSON.stringify(dadosCompletos()));
     try{ await store.put('config', 'backupCompleto', {em:new Date().toISOString(), por:store.uid||null, arquivo:nome}); }catch(e){}
