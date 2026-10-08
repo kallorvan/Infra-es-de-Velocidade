@@ -518,7 +518,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
           <button class="btn" type="button" id="bkpc-btn">Fazer backup completo (.json)</button>
           <label class="btn ghost" for="rest-file" id="rest-lbl" style="display:inline-flex;align-items:center">Restaurar backup (.json)</label>
         </div>
-        <p class="sec-note" style="margin:0;grid-column:1/-1">Faça ao fechar cada mês e guarde o arquivo numa pasta da empresa. Ele serve para recuperar os dados se alguém apagar algo por engano ou se o painel deixar de existir. "Restaurar backup" traz tudo de volta sem apagar o que já está no painel.</p>
+        <p class="sec-note" id="bkpc-nota" style="margin:0;grid-column:1/-1">Faça ao fechar cada mês e guarde o arquivo numa pasta da empresa. Ele serve para recuperar os dados se alguém apagar algo por engano ou se o painel deixar de existir. "Restaurar backup" traz tudo de volta sem apagar o que já está no painel.</p>
         <input type="file" id="rest-file" accept=".json,application/json" hidden>
       </div>
       <div id="bkpc-msg"></div>
@@ -1709,6 +1709,7 @@ const ultBkpCompleto = () => (store.data.config.backupCompleto || {}).em || null
 function temDados(){ return Object.keys(store.data.meses).length || Object.keys(store.data.motoristas).length; }
 // Aviso de backup: quando um mês fecha (calendário virou ou já há dados de mês posterior), pede um backup completo
 // feito depois do fechamento e depois da última importação desse mês. No painel compartilhado, só para Editor/Proprietário.
+const DIAS_AVISO_LOCAL = 7;
 function mesSeguinte(m){ const [y,mm] = m.split('-').map(Number); return mm===12 ? (y+1)+'-01' : y+'-'+p2(mm+1); }
 function bkpPendente(){
   const fechados = A.meses.filter(mesFechado);
@@ -1726,8 +1727,19 @@ function renderBkpCompleto(){
   const dias = ult ? Math.floor((Date.now() - new Date(ult).getTime()) / 86400000) : null;
   $('#bkpc-ult').innerHTML = ult ? new Date(ult).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+' <span class="sec-note">('+(dias===0?'hoje':dias===1?'há 1 dia':'há '+dias+' dias')+')</span>' : '<span style="color:var(--adv)">Nenhum backup completo ainda</span>';
   const m = temDados() ? bkpPendente() : null;
-  const mostra = store.mode==='db' ? store.isEditor : store.mode==='local';
-  $('#bkpc-aviso').innerHTML = (m && mostra) ? '<div class="aviso-topo" role="status"><span><b>'+esc(mesNome(m))+' fechou.</b> Faça o backup completo e guarde o arquivo numa pasta da empresa.</span><button class="btn" type="button" data-bkpc="1" style="padding:6px 12px">Fazer backup agora</button></div>' : '';
+  const botao = '<button class="btn" type="button" data-bkpc="1" style="padding:6px 12px">Fazer backup agora</button>';
+  let aviso = '';
+  if(store.mode==='local'){
+    // arquivo aberto da pasta (SharePoint/OneDrive): os dados vivem só neste navegador, então o lembrete é semanal
+    // além do fechamento do mês
+    const semanal = temDados() && (dias===null || dias >= DIAS_AVISO_LOCAL);
+    if(m) aviso = '<b>'+esc(mesNome(m))+' fechou.</b> Faça o backup completo e salve o arquivo na pasta do SharePoint.';
+    else if(semanal) aviso = '<b>'+(dias===null?'Nenhum backup completo feito.':'Último backup completo há '+dias+' dias.')+'</b> Os dados ficam só neste navegador: salve uma cópia na pasta do SharePoint.';
+    $('#bkpc-nota').textContent = 'Os dados deste painel ficam guardados neste navegador. Salve o backup na pasta do SharePoint pelo menos uma vez por semana e ao fechar cada mês. Em outro computador, outro navegador ou depois de limpar os dados de navegação, use "Restaurar backup" com o arquivo mais recente para voltar tudo como estava.';
+  } else if(m && store.mode==='db' && store.isEditor){
+    aviso = '<b>'+esc(mesNome(m))+' fechou.</b> Faça o backup completo e guarde o arquivo numa pasta da empresa.';
+  }
+  $('#bkpc-aviso').innerHTML = aviso ? '<div class="aviso-topo" role="status"><span>'+aviso+'</span>'+botao+'</div>' : '';
 }
 function dadosCompletos(){
   return {formato:'infracoes-velocidade-completo', versao:1, geradoEm:new Date().toISOString(),
@@ -1740,7 +1752,7 @@ async function fazerBackupCompleto(btn){
   try{
     await salvarArquivo(nome, JSON.stringify(dadosCompletos()));
     try{ await store.put('config', 'backupCompleto', {em:new Date().toISOString(), por:store.uid||null, arquivo:nome}); }catch(e){}
-    msg.innerHTML = '<div class="msg ok">Backup completo salvo como <b>'+esc(nome)+'</b>. Guarde-o numa pasta da empresa.</div>';
+    msg.innerHTML = '<div class="msg ok">Backup completo salvo como <b>'+esc(nome)+'</b>. '+(store.mode==='local'?'Salve-o na pasta do SharePoint.':'Guarde-o numa pasta da empresa.')+'</div>';
     render();
   }catch(e){
     if(!(e && e.code==='declined')) msg.innerHTML = '<div class="msg err">Não foi possível salvar o backup ('+esc((e&&(e.code||e.message))||e)+').</div>';
