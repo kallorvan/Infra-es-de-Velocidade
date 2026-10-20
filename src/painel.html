@@ -46,6 +46,14 @@ h1{font-size:clamp(20px,3vw,27px);line-height:1.1;margin:0;font-weight:800;lette
 .sync{font-size:11px;color:var(--muted);font-weight:500;margin-top:5px;text-align:right;width:100%;display:flex;gap:6px;justify-content:flex-end;align-items:center}
 .sync .sd{width:6px;height:6px;border-radius:50%;background:var(--muted)}
 .sync.on .sd{background:var(--ok)} .sync.local .sd{background:var(--pre)} .sync.err .sd{background:var(--sus)} .sync.err{color:var(--sus);font-weight:600}
+.online{font-size:11px;color:var(--ink2);margin-top:4px;display:flex;gap:5px;justify-content:flex-end;align-items:center;flex-wrap:wrap;width:100%}
+.online:empty{display:none}
+.online .on-u{display:inline-flex;align-items:center;gap:4px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-weight:600}
+.online .on-u::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ok)}
+.online .on-u.eu{background:var(--card)}
+.online .linkbtn{font-size:11px}
+.pasta-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pasta-form input{font:inherit;font-size:12.5px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;min-width:180px}
 nav.tabs{max-width:var(--maxw);margin:0 auto;padding:16px 28px 0;display:flex;gap:2px;overflow-x:auto}
 .tab{appearance:none;border:0;background:transparent;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);padding:10px 16px 12px;position:relative;white-space:nowrap}
 .tab:hover,.tab[aria-selected="true"]{color:var(--ink)}
@@ -280,6 +288,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
         <select id="mes" aria-label="Selecionar mês"></select>
       </div>
       <div class="sync" id="sync"><span class="sd"></span><span id="sync-t">Conectando…</span></div>
+      <div class="online" id="online"></div>
     </div>
   </div>
   <nav class="tabs" role="tablist">
@@ -593,11 +602,70 @@ const dataBR = iso => { const [d,t]=iso.split(' '); const [y,m,dd]=d.split('-');
 // meses: eventos por mês e condição · motoristas: cadastro · comunicados: registro de envios por WhatsApp
 const COLECOES = ['meses','motoristas','comunicados','config'];
 const LS_KEY = c => c==='meses' ? 'infra-vel-meses-v1' : 'infra-vel-'+c+'-v1';
+
+/* Pasta da equipe (SharePoint/OneDrive sincronizado).
+   Cada computador grava só o próprio arquivo em "Dados do painel/dados/<dispositivo>.json", com a última versão
+   de cada registro que ele mudou e a hora da mudança. Ninguém escreve no arquivo de outro, então o OneDrive não
+   gera conflito. Ao ler, o painel junta os arquivos de todos: vale a versão mais recente de cada registro e, nos
+   meses, os eventos de todas as versões são somados sem duplicar. Exclusões ficam marcadas (registro vazio). */
+const PASTA_NOME = 'Dados do painel';
+const POLL_MS = 8000, VISTO_MS = 30000, ONLINE_MS = 150000, BKP_GUARDAR = 30;
+const lsGet = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
+const lsSet = (k, v) => { try{ localStorage.setItem(k, v); }catch(e){} };
+function idbHandle(op, val){
+  return new Promise((ok, falha) => {
+    let rq; try{ rq = indexedDB.open('infra-vel', 1); }catch(e){ falha(e); return; }
+    rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
+    rq.onerror = () => falha(rq.error);
+    rq.onsuccess = () => {
+      const tx = rq.result.transaction('kv', op==='get'?'readonly':'readwrite'), st = tx.objectStore('kv');
+      const r = op==='get' ? st.get('pasta') : op==='set' ? st.put(val, 'pasta') : st.delete('pasta');
+      r.onsuccess = () => ok(r.result); r.onerror = () => falha(r.error);
+    };
+  });
+}
+function fundir(fontes){
+  const out = {};
+  COLECOES.forEach(col => {
+    const por = {};
+    fontes.forEach(f => { const c = f && f.cols && f.cols[col]; if(c) for(const id in c){ const x = c[id]; if(x && typeof x.t==='number') (por[id] || (por[id]=[])).push(x); } });
+    const d = {};
+    for(const id in por){
+      const vs = por[id].sort((x,y) => x.t-y.t);
+      if(col==='meses'){
+        const apagado = vs.reduce((m,x) => x.b ? m : Math.max(m, x.t), 0);
+        const vivos = vs.filter(x => x.b && x.t > apagado && Array.isArray(x.b.ev));
+        if(!vivos.length) continue;
+        let doc = vivos[0].b;
+        for(const x of vivos.slice(1)){ const m = mesclar(doc, Object.assign({}, x.b, {id})); doc = m.novos ? Object.assign(m.body, {importadoEm:[doc.importadoEm, x.b.importadoEm].sort().pop()}) : doc; }
+        d[id] = doc;
+      } else {
+        const ult = vs[vs.length-1];
+        if(ult.b) d[id] = ult.b;
+      }
+    }
+    out[col] = d;
+  });
+  return out;
+}
+const pasta = {
+  dir:null, raiz:null, dados:null, online:null, backups:null, nomePasta:'',
+  disp:null, usuario:'', proprio:{cols:{}}, outros:{}, presenca:[], pend:null, gravando:null, timer:null, visto:null,
+  estado:'nenhuma', erro:'', ultimaLeitura:null, falhaGravar:'',
+  suportado(){ return typeof window.showDirectoryPicker==='function' || typeof window.__escolherPasta==='function'; },
+  dispositivo(){
+    let d = lsGet('infra-vel-dispositivo');
+    if(!d){ d = Date.now().toString(36)+Math.random().toString(36).slice(2,8); lsSet('infra-vel-dispositivo', d); }
+    return d;
+  }
+};
+
 const store = {
   mode:'loading', db:null, user:null, uid:null, canWrite:true, isEditor:false,
   data:{meses:{}, motoristas:{}, comunicados:{}, config:{}},
   get docs(){ return this.data.meses; },
   async init(onChange){
+    this.onChange = onChange;
     let db = null;
     if(window.claude && typeof window.claude.use==='function'){
       try{ db = await window.claude.use('db'); }catch(e){ db = null; }
@@ -625,22 +693,212 @@ const store = {
     } else {
       this.mode='local';
       COLECOES.forEach(col => { try{ this.data[col] = JSON.parse(localStorage.getItem(LS_KEY(col))||'{}')||{}; }catch(e){ this.data[col]={}; } });
+      pasta.usuario = lsGet('infra-vel-usuario') || '';
+      if(!pasta.suportado()){ pasta.estado = 'sem-api'; onChange(); return; }
       onChange();
+      let h = null; try{ h = await idbHandle('get'); }catch(e){}
+      if(h){
+        pasta.nomePasta = h.name;
+        let perm = 'granted';
+        try{ if(typeof h.queryPermission==='function') perm = await h.queryPermission({mode:'readwrite'}); }catch(e){}
+        if(perm==='granted' && pasta.usuario) await this.conectarPasta(h);
+        else { pasta.estado = 'reconectar'; pasta.dir = h; onChange(); }
+      }
     }
+  },
+  // escolhe (ou reabre) a pasta do projeto e passa a gravar nela
+  async conectarPasta(h){
+    try{
+      if(!h){
+        const escolher = window.__escolherPasta || (() => window.showDirectoryPicker({id:'infra-vel', mode:'readwrite'}));
+        h = await escolher();
+      }
+      if(typeof h.requestPermission==='function'){
+        let perm = 'granted';
+        try{ perm = await h.queryPermission({mode:'readwrite'}); }catch(e){}
+        if(perm!=='granted') perm = await h.requestPermission({mode:'readwrite'});
+        if(perm!=='granted') throw {code:'permissao', message:'o navegador não liberou a gravação na pasta'};
+      }
+      pasta.dir = h; pasta.nomePasta = h.name;
+      pasta.raiz = h.name===PASTA_NOME ? h : await h.getDirectoryHandle(PASTA_NOME, {create:true});
+      pasta.dados = await pasta.raiz.getDirectoryHandle('dados', {create:true});
+      pasta.online = await pasta.raiz.getDirectoryHandle('online', {create:true});
+      pasta.backups = await pasta.raiz.getDirectoryHandle('backups', {create:true});
+      try{ await idbHandle('set', h); }catch(e){}
+      pasta.disp = pasta.dispositivo();
+      pasta.proprio = {cols:{}}; pasta.outros = {};
+      try{
+        const f = await (await pasta.dados.getFileHandle(pasta.disp+'.json')).getFile();
+        const j = JSON.parse(await f.text()); if(j && j.cols) pasta.proprio = {cols:j.cols};
+      }catch(e){}
+      // na primeira conexão deste computador, leva o que estava só no navegador (com data antiga: o que já
+      // está na pasta prevalece, e o que foi apagado lá continua apagado)
+      if(lsGet('infra-vel-migrado-'+pasta.disp)!=='1'){
+        COLECOES.forEach(col => {
+          const c = pasta.proprio.cols[col] || (pasta.proprio.cols[col] = {});
+          for(const id in this.data[col]) if(!c[id]) c[id] = {t:1, b:this.data[col][id]};
+        });
+        pasta.pend = true;
+      }
+      this.mode = 'pasta'; this.uid = pasta.usuario || null; this.canWrite = true;
+      pasta.estado = 'ok'; pasta.erro = '';
+      await this._ler(true);
+      if(pasta.pend){ await this._gravar(); lsSet('infra-vel-migrado-'+pasta.disp, '1'); }
+      await this._visto();
+      clearInterval(pasta.timer);
+      pasta.timer = setInterval(() => { this._ler(false); }, POLL_MS);
+      clearInterval(pasta.visto);
+      pasta.visto = setInterval(() => { this._visto(); }, VISTO_MS);
+      this._backupDiario();
+      return true;
+    }catch(e){
+      if(e && (e.name==='AbortError')) return false;
+      pasta.estado = pasta.dir ? 'reconectar' : 'nenhuma';
+      pasta.erro = (e && (e.message||e.code)) || String(e);
+      this.onChange && this.onChange();
+      return false;
+    }
+  },
+  async _ler(sempre){
+    if(this.mode!=='pasta') return;
+    let mudou = sempre;
+    try{
+      const vistos = new Set();
+      for await (const [nome, h] of pasta.dados.entries()){
+        if(h.kind!=='file' || !/\.json$/i.test(nome) || nome===pasta.disp+'.json') continue;
+        vistos.add(nome);
+        const f = await h.getFile();
+        const at = pasta.outros[nome];
+        if(at && at.lm===f.lastModified && at.size===f.size) continue;
+        try{ const j = JSON.parse(await f.text()); pasta.outros[nome] = {lm:f.lastModified, size:f.size, cols:(j&&j.cols)||{}, usuario:j&&j.usuario}; mudou = true; }
+        catch(e){ /* arquivo ainda chegando pela sincronização: tenta na próxima leitura */ }
+      }
+      for(const nome in pasta.outros) if(!vistos.has(nome)){ delete pasta.outros[nome]; mudou = true; }
+      const pres = [];
+      for await (const [nome, h] of pasta.online.entries()){
+        if(h.kind!=='file' || !/\.json$/i.test(nome)) continue;
+        try{ const f = await h.getFile(); const j = JSON.parse(await f.text()); if(j && j.dispositivo!==pasta.disp && Date.now()-Math.max(new Date(j.visto).getTime()||0, f.lastModified) < ONLINE_MS) pres.push(j.usuario||'Sem nome'); }catch(e){}
+      }
+      const novaPres = [...new Set(pres)].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+      if(novaPres.join('|')!==pasta.presenca.join('|')){ pasta.presenca = novaPres; renderOnline(); }
+      pasta.ultimaLeitura = new Date(); pasta.erroLer = '';
+    }catch(e){ pasta.erroLer = (e && (e.message||e.name)) || 'erro'; mudou = true; }
+    if(mudou){ this._fundir(); this.onChange(); }
+  },
+  _fundir(){ this.data = fundir([pasta.proprio].concat(Object.values(pasta.outros))); },
+  _marcar(col, id, b){
+    const c = pasta.proprio.cols[col] || (pasta.proprio.cols[col] = {});
+    c[id] = {t:Math.max(Date.now(), ((c[id]&&c[id].t)||0)+1), b};
+    this._fundir();
+    clearTimeout(pasta.pend); pasta.pend = setTimeout(() => { this._gravar(); }, 300);
+  },
+  async _gravar(){
+    clearTimeout(pasta.pend); pasta.pend = null;
+    if(pasta.gravando){ await pasta.gravando; }
+    pasta.gravando = (async () => {
+      const corpo = JSON.stringify({formato:'infracoes-velocidade-pasta', versao:1, dispositivo:pasta.disp, usuario:pasta.usuario, atualizadoEm:new Date().toISOString(), cols:pasta.proprio.cols});
+      try{
+        const w = await (await pasta.dados.getFileHandle(pasta.disp+'.json', {create:true})).createWritable();
+        await w.write(corpo); await w.close();
+        pasta.falhaGravar = '';
+        this._backupDiario();
+      }catch(e){
+        pasta.falhaGravar = (e && (e.message||e.name)) || 'erro';
+        pasta.pend = setTimeout(() => { this._gravar(); }, 5000);
+      }
+    })();
+    await pasta.gravando; pasta.gravando = null;
+    this.onChange && this.onChange();
+  },
+  async _visto(sair){
+    if(this.mode!=='pasta') return;
+    try{
+      if(sair){ await pasta.online.removeEntry(pasta.disp+'.json'); return; }
+      const w = await (await pasta.online.getFileHandle(pasta.disp+'.json', {create:true})).createWritable();
+      await w.write(JSON.stringify({dispositivo:pasta.disp, usuario:pasta.usuario, visto:new Date().toISOString()})); await w.close();
+    }catch(e){}
+  },
+  // um backup completo por dia na pasta "backups", guardando os mais recentes
+  async _backupDiario(){
+    if(this.mode!=='pasta' || !temDados()) return;
+    try{
+      const hoje = new Date(), dia = hoje.getFullYear()+'-'+p2(hoje.getMonth()+1)+'-'+p2(hoje.getDate());
+      if(pasta.bkpDia===dia) return;
+      pasta.bkpDia = dia;
+      const nomes = [];
+      for await (const [nome, h] of pasta.backups.entries()) if(h.kind==='file' && /^backup-completo-infracoes-velocidade-.*\.json$/.test(nome)) nomes.push(nome);
+      if(!nomes.some(n => n.includes('-'+dia+'_'))){
+        const nome = nomeBackup(hoje);
+        await gravarNaPasta(pasta.backups, nome, JSON.stringify(dadosCompletos()));
+        nomes.push(nome);
+        this.put('config', 'backupCompleto', {em:hoje.toISOString(), por:this.uid||null, arquivo:nome, automatico:true});
+      }
+      nomes.sort();
+      for(const n of nomes.slice(0, Math.max(0, nomes.length-BKP_GUARDAR))) try{ await pasta.backups.removeEntry(n); }catch(e){}
+    }catch(e){ pasta.bkpDia = null; }
   },
   newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); },
   async put(col, id, body){
     if(this.mode==='semdb') throw {code:'sem_banco', message:'sem acesso ao banco compartilhado'};
     if(this.mode==='db'){ await this.db.collection(col).doc(id).set(body); }
+    else if(this.mode==='pasta'){ this._marcar(col, id, body); }
     else { this.data[col] = Object.assign({}, this.data[col], {[id]:body}); this._save(col); }
   },
   async del(col, id){
     if(this.mode==='semdb') throw {code:'sem_banco', message:'sem acesso ao banco compartilhado'};
     if(this.mode==='db'){ await this.db.collection(col).doc(id).delete(); }
+    else if(this.mode==='pasta'){ this._marcar(col, id, null); }
     else { const d=Object.assign({},this.data[col]); delete d[id]; this.data[col]=d; this._save(col); }
   },
   _save(col){ try{ localStorage.setItem(LS_KEY(col), JSON.stringify(this.data[col])); }catch(e){ throw {code:'local_full', message:'Não foi possível salvar neste navegador (armazenamento cheio ou bloqueado).'}; } }
 };
+async function gravarNaPasta(dir, nome, dados){
+  const w = await (await dir.getFileHandle(nome, {create:true})).createWritable();
+  await w.write(dados); await w.close();
+}
+addEventListener('pagehide', () => { if(store.mode==='pasta'){ if(pasta.pend) store._gravar(); store._visto(true); } });
+addEventListener('beforeunload', e => { if(store.mode==='pasta' && (pasta.pend || pasta.gravando)){ e.preventDefault(); e.returnValue = ''; } });
+addEventListener('focus', () => { if(store.mode==='pasta') store._ler(false); });
+function renderOnline(){
+  const el = $('#online');
+  if(store.mode!=='pasta'){ el.innerHTML = ''; return; }
+  el.innerHTML = '<span class="on-u eu" title="Você">'+esc(pasta.usuario||'Sem nome')+' (você)</span>'+
+    pasta.presenca.map(n => '<span class="on-u" title="Online agora">'+esc(n)+'</span>').join('')+
+    '<button class="linkbtn" type="button" id="on-trocar">trocar</button>';
+}
+function renderPasta(){
+  if(store.mode==='pasta'){
+    if(pasta.falhaGravar) return '<div class="aviso-topo" role="alert" style="background:var(--sus-bg);border-color:rgba(221,70,99,.4)"><span><b style="color:var(--sus)">Não foi possível gravar na pasta '+esc(pasta.nomePasta)+'.</b> As alterações estão guardadas aqui e o painel tenta de novo sozinho. Confira se o OneDrive está ligado e se você ainda tem acesso à equipe. ('+esc(pasta.falhaGravar)+')</span></div>';
+    if(pasta.erroLer) return '<div class="aviso-topo" role="alert"><span><b>Não foi possível ler a pasta '+esc(pasta.nomePasta)+'.</b> O painel tenta de novo sozinho. ('+esc(pasta.erroLer)+')</span><button class="btn" type="button" data-pasta="reconectar" style="padding:6px 12px">Reconectar pasta</button></div>';
+    return '';
+  }
+  if(store.mode!=='local') return '';
+  if(pasta.estado==='sem-api') return '<div class="aviso-topo" role="status"><span><b>Este navegador não grava na pasta da equipe.</b> Abra o arquivo no Chrome ou no Edge para salvar e ver os dados de todos. Aqui, o que você fizer fica só neste navegador.</span></div>';
+  const nome = '<input id="pasta-nome" placeholder="Seu nome" autocomplete="name" value="'+esc(pasta.usuario)+'" aria-label="Seu nome">';
+  const erro = pasta.erro ? '<div class="msg err" style="margin:6px 0 0;width:100%">Não foi possível usar a pasta: '+esc(pasta.erro)+'.</div>' : '';
+  if(pasta.estado==='reconectar') return '<div class="aviso-topo" role="status"><span><b>Reconecte a pasta '+esc(pasta.nomePasta)+'.</b> O navegador pede a sua confirmação para o painel voltar a ler e gravar os dados da equipe.</span><span class="pasta-form">'+(pasta.usuario?'':nome)+'<button class="btn" type="button" data-pasta="reconectar" style="padding:6px 12px">Reconectar pasta</button><button class="linkbtn" type="button" data-pasta="escolher">Escolher outra</button></span>'+erro+'</div>';
+  return '<div class="aviso-topo" role="status"><span><b>Conecte a pasta da equipe para salvar e compartilhar os dados.</b> Escolha a pasta onde está este arquivo (<i>Infrações de velocidade.html</i>). O painel cria nela a pasta <i>'+PASTA_NOME+'</i> e passa a gravar tudo lá. Até conectar, o que você fizer fica só neste navegador.</span><span class="pasta-form">'+nome+'<button class="btn" type="button" data-pasta="escolher" style="padding:6px 12px">Conectar pasta</button></span>'+erro+'</div>';
+}
+async function acaoPasta(tipo){
+  const inp = $('#pasta-nome');
+  if(inp){
+    const n = inp.value.trim().replace(/\s+/g,' ');
+    if(!n){ inp.focus(); inp.style.borderColor = 'var(--sus)'; return; }
+    pasta.usuario = n; lsSet('infra-vel-usuario', n);
+  }
+  if(!pasta.usuario){ pasta.estado = 'nenhuma'; render(); return; }
+  await store.conectarPasta(tipo==='reconectar' ? pasta.dir : null);
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-pasta]'); if(b){ acaoPasta(b.dataset.pasta); return; }
+  if(e.target.closest('#on-trocar')){
+    const n = (prompt('Seu nome (aparece para quem estiver usando o painel):', pasta.usuario)||'').trim().replace(/\s+/g,' ');
+    if(!n) return;
+    pasta.usuario = n; store.uid = n; lsSet('infra-vel-usuario', n);
+    store._visto(); renderOnline();
+  }
+});
+document.addEventListener('keydown', e => { if(e.key==='Enter' && e.target.id==='pasta-nome'){ const b = e.target.closest('.aviso-topo').querySelector('[data-pasta]'); if(b) b.click(); } });
 function setSync(cls, t){ const s=$('#sync'); s.className='sync '+cls; $('#sync-t').textContent=t; }
 
 /* ================= MOTOR DE PENALIDADES ================= */
@@ -716,9 +974,13 @@ function render(){
   const ultimo = meses.length ? A.ate[meses[meses.length-1]] : '';
   const ateTxt = ultimo ? 'Dados até '+dataBR(ultimo).slice(0,10) : 'Sem dados';
   if(store.mode==='db') setSync('on', ateTxt+' · compartilhado');
+  else if(store.mode==='pasta') setSync(pasta.falhaGravar||pasta.erroLer ? 'err' : 'on', ateTxt+' · pasta da equipe'+(pasta.ultimaLeitura?' · sincronizado '+pasta.ultimaLeitura.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):''));
   else if(store.mode==='local') setSync('local', ateTxt+' · salvo só neste navegador');
   else if(store.mode==='semdb') setSync('err', 'Sem acesso aos dados da equipe');
-  $('#modo-aviso').innerHTML = store.mode==='semdb' ? '<div class="aviso-topo" role="alert" style="background:var(--sus-bg);border-color:rgba(221,70,99,.4)"><span><b style="color:var(--sus)">O painel não conseguiu acessar os dados compartilhados da equipe.</b> Nada pode ser importado ou salvo agora. Recarregue a página; se continuar, confira se você entrou com a sua conta do claude.ai e se o painel foi compartilhado com você.</span></div>' : '';
+  const avPasta = renderPasta();
+  const foco = document.activeElement && document.activeElement.id==='pasta-nome';
+  if(!foco) $('#modo-aviso').innerHTML = avPasta || (store.mode==='semdb' ? '<div class="aviso-topo" role="alert" style="background:var(--sus-bg);border-color:rgba(221,70,99,.4)"><span><b style="color:var(--sus)">O painel não conseguiu acessar os dados compartilhados da equipe.</b> Nada pode ser importado ou salvo agora. Recarregue a página; se continuar, confira se você entrou com a sua conta do claude.ai e se o painel foi compartilhado com você.</span></div>' : '');
+  renderOnline();
   indexarComunicados();
   renderGeral(); renderMot(); renderCad(); renderRhCfg(); renderImp(); renderRegras();
 }
@@ -1720,13 +1982,15 @@ function renderBkpCompleto(){
   const m = temDados() ? bkpPendente() : null;
   const botao = '<button class="btn" type="button" data-bkpc="1" style="padding:6px 12px">Fazer backup agora</button>';
   let aviso = '';
-  if(store.mode==='local'){
+  if(store.mode==='pasta'){
+    $('#bkpc-nota').textContent = 'Os dados ficam na pasta '+PASTA_NOME+', na pasta da equipe, e todos que conectam a pasta veem as mesmas informações. Todo dia o painel salva sozinho um backup completo em '+PASTA_NOME+' › backups (guarda os '+BKP_GUARDAR+' mais recentes). "Restaurar backup" traz tudo de volta sem apagar o que já está no painel.';
+  } else if(store.mode==='local'){
     // arquivo aberto da pasta (SharePoint/OneDrive): os dados vivem só neste navegador, então o lembrete é semanal
     // além do fechamento do mês
     const semanal = temDados() && (dias===null || dias >= DIAS_AVISO_LOCAL);
     if(m) aviso = '<b>'+esc(mesNome(m))+' fechou.</b> Faça o backup completo e salve o arquivo na pasta do SharePoint.';
     else if(semanal) aviso = '<b>'+(dias===null?'Nenhum backup completo feito.':'Último backup completo há '+dias+' dias.')+'</b> Os dados ficam só neste navegador: salve uma cópia na pasta do SharePoint.';
-    $('#bkpc-nota').textContent = 'Os dados deste painel ficam guardados neste navegador. Salve o backup na pasta do SharePoint pelo menos uma vez por semana e ao fechar cada mês. Em outro computador, outro navegador ou depois de limpar os dados de navegação, use "Restaurar backup" com o arquivo mais recente para voltar tudo como estava.';
+    $('#bkpc-nota').textContent = 'Enquanto a pasta da equipe não estiver conectada, os dados ficam guardados neste navegador. Salve o backup na pasta do SharePoint pelo menos uma vez por semana e ao fechar cada mês. Em outro computador, outro navegador ou depois de limpar os dados de navegação, use "Restaurar backup" com o arquivo mais recente para voltar tudo como estava.';
   } else if(m && store.mode==='db' && store.isEditor){
     aviso = '<b>'+esc(mesNome(m))+' fechou.</b> Faça o backup completo e guarde o arquivo numa pasta da empresa.';
   }
@@ -1737,19 +2001,21 @@ function dadosCompletos(){
     meses:store.data.meses, motoristas:store.data.motoristas, comunicados:store.data.comunicados,
     config:Object.fromEntries(Object.entries(store.data.config).filter(([k]) => k!=='backupCompleto'))};
 }
+function nomeBackup(d){ return 'backup-completo-infracoes-velocidade-'+d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())+'_'+p2(d.getHours())+'h'+p2(d.getMinutes())+'.json'; }
 async function fazerBackupCompleto(btn){
   const msg = $('#bkpc-msg'); const orig = btn.textContent; btn.disabled = true;
-  const hoje = new Date(); const nome = 'backup-completo-infracoes-velocidade-'+hoje.getFullYear()+'-'+p2(hoje.getMonth()+1)+'-'+p2(hoje.getDate())+'_'+p2(hoje.getHours())+'h'+p2(hoje.getMinutes())+'.json';
+  const nome = nomeBackup(new Date());
   try{
     await salvarArquivo(nome, JSON.stringify(dadosCompletos()));
     try{ await store.put('config', 'backupCompleto', {em:new Date().toISOString(), por:store.uid||null, arquivo:nome}); }catch(e){}
-    msg.innerHTML = '<div class="msg ok">Backup completo salvo como <b>'+esc(nome)+'</b>. '+(store.mode==='local'?'Salve-o na pasta do SharePoint.':'Guarde-o numa pasta da empresa.')+'</div>';
+    msg.innerHTML = '<div class="msg ok">Backup completo salvo como <b>'+esc(nome)+'</b>. '+(store.mode==='pasta'?'Está na pasta '+PASTA_NOME+' › backups.':store.mode==='local'?'Salve-o na pasta do SharePoint.':'Guarde-o numa pasta da empresa.')+'</div>';
     render();
   }catch(e){
     if(!(e && e.code==='declined')) msg.innerHTML = '<div class="msg err">Não foi possível salvar o backup ('+esc((e&&(e.code||e.message))||e)+').</div>';
   }finally{ btn.disabled = false; btn.textContent = orig; }
 }
 async function salvarArquivo(nome, dados){
+  if(store.mode==='pasta' && /^backup-completo-/.test(nome)){ await gravarNaPasta(pasta.backups, nome, dados); return; }
   if(store.mode==='db'){
     const dl = await claude.use('downloads');
     if(!dl) throw {code:'unavailable'};
