@@ -8,7 +8,7 @@ Painel HTML de um arquivo só (Grupo Dínamo / Tóliman Transportes) que lê as 
 
 - **Dono:** Eduardo (Laudino). Fala português e prefere ser entrevistado antes de qualquer suposição. Pede PR + merge explicitamente quando quer.
 - **Visual:** segue o artefato "Produtividade de Motoristas · Grupo Dínamo" (cores, logos). Para páginas novas, existe a skill `anthropic-skills:layout-padrao`.
-- **Onde roda:** o `Infrações de velocidade.html` fica na pasta da equipe do Teams **Infrações de velocidade** (SharePoint). Cada pessoa adiciona o atalho no OneDrive e abre o arquivo no Chrome ou Edge.
+- **Onde roda:** o `Infrações de velocidade.html` fica no Teams na **Equipe GR**, canal privado **Infrações de velocidade** (SharePoint do canal), aba Arquivos. Cada pessoa adiciona o atalho no OneDrive e abre o arquivo no Chrome ou Edge.
 
 ## Arquivos
 
@@ -87,10 +87,10 @@ Painel HTML de um arquivo só (Grupo Dínamo / Tóliman Transportes) que lê as 
 ## Pendências e próximos passos
 
 - [ ] Confirmar com o usuário o primeiro uso real na pasta do OneDrive: conectar, reabrir (o pedido de "Reconectar pasta" funciona?), sincronização entre duas pessoas e presença online.
-- [ ] Se a pasta do HTML no Teams não estiver direto em "Arquivos" (por exemplo, numa subpasta "Sistema"), ajustar o passo 1 do guia e o post.
+- [ ] O guia em PDF ainda fala em "equipe Infrações de velocidade" e canal Geral; o local certo é Equipe GR › canal privado Infrações de velocidade (o post já foi corrigido).
 - [ ] Decidir se o artefato antigo do claude.ai (modo `db`) deve ser apagado.
 - O post de divulgação (JPEG 1080×1920 "Infrações de Velocidade mudou de lugar!") foi entregue no chat e não está no repositório. O assunto e a descrição para o Teams também foram passados no chat.
-- Post "Como acessar o painel" (JPEG 1080×1920, 3 passos: Teams › atalho no OneDrive › nome e Conectar pasta): `docs/posts/Post - Acesso ao painel pelo Teams.jpg`, fonte em `docs/posts/post-acesso-teams.html` (print com Playwright em 1080×1920). O passo 1 supõe o arquivo direto em Arquivos do canal Geral.
+- Post "Como acessar o painel" (JPEG 1080×1920, 3 passos: Teams › atalho no OneDrive › nome e Conectar pasta): `docs/posts/Post - Acesso ao painel pelo Teams.jpg`, fonte em `docs/posts/post-acesso-teams.html` (print com Playwright em 1080×1920). O passo 1 usa Equipe GR › canal privado Infrações de velocidade › Arquivos.
 
 ## Fluxo de trabalho combinado
 
