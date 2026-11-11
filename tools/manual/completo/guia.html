@@ -92,7 +92,7 @@ td b{font-weight:600}
   <div class="h-id">
     <div class="eyebrow">Guia completo · Equipe GR</div>
     <h1>Infrações de velocidade<em>Manual de uso do painel</em></h1>
-    <p class="sub">O painel lê as planilhas de excesso de velocidade da telemetria (seco e chuva), soma os picos de cada motorista no mês e aplica as regras de tolerância. Com isso ele gera o comunicado ao motorista (imagem para o WhatsApp) e o texto do e-mail ao RH. Os dados ficam na pasta do canal no Teams: todos que conectam a pasta veem as mesmas informações.</p>
+    <p class="sub">O painel lê as planilhas de excesso de velocidade da telemetria (seco e chuva), soma os picos de cada motorista no mês e aplica as regras de tolerância. Com isso ele gera a imagem dos picos para o motorista (WhatsApp) e o e-mail ao RH com a penalidade e a imagem completa. Os dados ficam na pasta do canal no Teams: todos que conectam a pasta veem as mesmas informações.</p>
   </div>
   <div class="h-sem">
     <div class="rot"><h3>Neste guia</h3><ol>
@@ -202,7 +202,7 @@ td b{font-weight:600}
   <div class="sec-head"><h2>05 · Enviar os comunicados</h2><p>Aba Motorista; cada envio fica registrado</p></div>
   <h3 class="sub3" style="margin-top:0">Motorista · WhatsApp</h3>
   <div class="lado">
-    <div class="card" style="margin:0"><p class="hint">Penalidade, Alerta preventivo (a partir de 80% da tolerância) ou Resumo do mês.</p>
+    <div class="card" style="margin:0"><p class="hint">Picos do mês, Alerta preventivo (a partir de 80% da tolerância) ou Resumo do mês. O motorista recebe só os picos; advertência, suspensão e término são comunicados pelo RH.</p>
       <ol class="passos">
         <li><span>Escolha o tipo. O pendente já vem marcado.</span></li>
         <li><span>Clique em <b>Baixar imagem (JPEG)</b> ou <b>Copiar imagem</b>.</span></li>
@@ -210,18 +210,19 @@ td b{font-weight:600}
         <li><span>Anexe ou cole a imagem na conversa e envie.</span></li>
       </ol>
       <p class="nota">Ao abrir a conversa, o envio fica registrado em <b>Comunicados enviados</b> e sai das pendências. Se a mensagem não foi enviada, use <b>Desfazer</b> no registro.</p></div>
-    <figure class="shot"><img src="prints/09-imagem-motorista.jpg" alt="Imagem do comunicado que o motorista recebe"><figcaption>A imagem que o motorista recebe</figcaption></figure>
+    <figure class="shot"><img src="prints/09-imagem-motorista.jpg" alt="Imagem dos picos que o motorista recebe"><figcaption>A imagem que o motorista recebe: só os picos</figcaption></figure>
   </div>
   <figure class="shot"><img src="prints/08-whatsapp.jpg" alt="Quadro Comunicado por WhatsApp na aba Motorista"><figcaption>Aba Motorista · Comunicado por WhatsApp</figcaption></figure>
 
   <h3 class="sub3">RH · E-mail</h3>
-  <div class="card"><p class="hint">O quadro E-mail ao RH aparece quando o motorista tem advertência, suspensão ou término no mês.</p>
+  <div class="card"><p class="hint">O quadro E-mail ao RH aparece quando o motorista tem advertência, suspensão ou término no mês. O RH recebe a imagem completa: picos, penalidade e situação acumulada.</p>
     <ol class="passos acc">
-      <li><span>Use os botões <b>Copiar</b> de <b>Para</b>, <b>Cópia</b> e <b>Assunto</b> e cole no seu e-mail.</span></li>
-      <li><span>Clique em <b>Copiar mensagem</b> e cole no corpo do e-mail. Ajuste o texto antes, se precisar.</span></li>
-      <li><span>Envie pelo seu e-mail e clique em <b>Marcar como enviado</b>.</span></li>
-    </ol></div>
-  <figure class="shot"><img src="prints/10-email-rh.jpg" alt="Quadro E-mail ao RH com para, cópia, assunto e mensagem"><figcaption>Aba Motorista · E-mail ao RH</figcaption></figure>
+      <li><span>Ajuste o texto da mensagem, se precisar.</span></li>
+      <li><span>Clique em <b>Abrir no Outlook (.eml)</b> e abra o arquivo baixado. O e-mail vem com Para, Cópia, Assunto, a mensagem e a imagem completa anexada.</span></li>
+      <li><span>Clique em <b>Enviar</b> no Outlook e, no painel, em <b>Marcar como enviado</b>.</span></li>
+    </ol>
+    <p class="nota">Sem o Outlook no computador: copie os campos com os botões <b>Copiar</b>, use <b>Baixar imagem completa</b> e anexe a imagem no seu e-mail.</p></div>
+  <figure class="shot"><img src="prints/10-email-rh.jpg" alt="Quadro E-mail ao RH com para, cópia, assunto e mensagem"><figcaption>Aba Motorista · E-mail ao RH, com Abrir no Outlook</figcaption></figure>
 
   <h3 class="sub3">Motorista inativo</h3>
   <div class="card"><p style="margin:0">Se o cadastro do motorista está <b>Inativo</b>, o envio fica bloqueado: WhatsApp e e-mail ao RH não aparecem. Para liberar, mude a situação para <b>Ativo</b> no cadastro ou importe um PDF atualizado.</p></div>
@@ -251,7 +252,7 @@ td b{font-weight:600}
   <h3 class="sub3">Aba Histórico</h3>
   <div class="card"><ul class="lista">
     <li><b>Uma linha por motorista, uma coluna por mês:</b> Adv. ×N, Susp. ×N, Término ou OK; "—" quando não houve evento. O símbolo <b>⊘ N</b> mostra quantos picos foram anulados no mês.</li>
-    <li><b>Envio da penalidade:</b> <b>M</b> = motorista (WhatsApp) e <b>RH</b> = e-mail ao RH. Verde = enviado, vermelho = pendente, âmbar = retificar, cinza = bloqueado. Passe o mouse para ver a data e quem enviou.</li>
+    <li><b>Envio:</b> <b>M</b> = picos ao motorista (WhatsApp) e <b>RH</b> = penalidade ao RH (e-mail). Verde = enviado, vermelho = pendente, âmbar = retificar, cinza = bloqueado. Passe o mouse para ver a data e quem enviou.</li>
     <li><b>Busca e filtros:</b> nome, placa ou código; Com pendência, Com penalidade, Com anulação e Término.</li>
     <li><b>Abrir a ficha:</b> clique no nome (abre o mês mais recente com eventos) ou na célula de um mês.</li>
   </ul></div>
@@ -263,7 +264,7 @@ td b{font-weight:600}
     <ol class="passos acc">
       <li><span>O canal que já tinha recebido a penalidade fica como <b>Retificar</b> (âmbar) e entra no aviso do topo.</span></li>
       <li><span><b>RH:</b> o quadro E-mail ao RH monta o e-mail de retificação, com a penalidade comunicada antes, a correta agora e os picos anulados com motivo. Copie, envie e clique em <b>Marcar como enviado</b>.</span></li>
-      <li><span><b>Motorista:</b> o quadro de WhatsApp vem com o tipo <b>Retificação</b>. Se a penalidade foi cancelada, vai só o texto; se foi ajustada, vai também a imagem atualizada. Abrir a conversa registra o envio.</span></li>
+      <li><span><b>Motorista:</b> o quadro de WhatsApp vem com o tipo <b>Picos corrigidos</b>, com a imagem de picos já recalculada. Abrir a conversa registra o envio.</span></li>
     </ol></div>
   <figure class="shot"><img src="prints/16-retificacao.jpg" alt="E-mail de retificação ao RH"><figcaption>Aba Motorista · e-mail de retificação ao RH</figcaption></figure>
 </div></section>

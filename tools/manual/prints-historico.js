@@ -1,6 +1,6 @@
 // Prints do guia completo para anulação, Histórico, pendências e retificação (dados fictícios).
 // Uso: python3 tools/build.py && node tools/manual/prints-historico.js
-// Saída: tools/manual/completo/prints/13-anular.jpg, 14-historico.jpg, 15-pendencias.jpg, 16-retificacao.jpg
+// Saída: tools/manual/completo/prints/08-whatsapp.jpg, 09-imagem-motorista.jpg, 10-email-rh.jpg, 13-anular.jpg, 14-historico.jpg, 15-pendencias.jpg, 16-retificacao.jpg
 const {chromium} = require('/opt/node-tools/node_modules/playwright');
 const path = require('path'), {pathToFileURL} = require('url');
 const {mesDoc, picos, semear} = require('../test/fixtures');
@@ -46,6 +46,14 @@ const env = (nome, mes, tipo, sig, quando) => ['e'+Math.random().toString(36).sl
   // retificação ao RH (Wagner: penalidade ajustada depois da anulação)
   await p.click('#hist-tbl tbody tr[data-nome="'+WAG+'"] td[data-mes="2026-10"]'); await p.waitForTimeout(400);
   await shot('16-retificacao.jpg', '#rh-card');
+  // comunicados de Rafael em outubro: picos ao motorista (WhatsApp) e e-mail ao RH
+  await p.click('#tab-hist'); await p.click('#hist-tbl tbody tr[data-nome="'+RAF+'"] td[data-mes="2026-10"]'); await p.waitForTimeout(400);
+  await p.waitForFunction(() => document.querySelector('#com-img').naturalWidth > 0); await p.waitForTimeout(300);
+  { const el = await p.$('#com-sec'); await el.scrollIntoViewIfNeeded(); await p.waitForTimeout(250); const bb = await el.boundingBox();
+    await p.screenshot({path:path.join(O, '08-whatsapp.jpg'), type:'jpeg', quality:88, clip:{x:bb.x, y:bb.y, width:bb.width, height:Math.min(bb.height, 560)}}); }
+  const img = await p.evaluate(async () => { const b = await (await fetch(document.querySelector('#com-img').src)).blob(); return await new Promise(r => { const f = new FileReader(); f.onload = () => r(String(f.result).split(',')[1]); f.readAsDataURL(b); }); });
+  require('fs').writeFileSync(path.join(O, '09-imagem-motorista.jpg'), Buffer.from(img, 'base64'));
+  await shot('10-email-rh.jpg', '#rh-card');
   // anulação: Carlos, setembro, 6 picos selecionados
   await p.click('#tab-hist'); await p.click('#hist-tbl tbody tr[data-nome="'+CAR+'"] td[data-mes="2026-09"]'); await p.waitForTimeout(400);
   const cbs = await p.$$('#m-ev input[data-anul]'); for(const c of cbs.slice(0, 6)) await c.check();
