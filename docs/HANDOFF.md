@@ -34,6 +34,13 @@ Spec: `docs/superpowers/specs/2026-11-11-anulacao-historico-pendencias-design.md
 - **Envio:** `sigPen(M, mes)` é a assinatura da penalidade (`pen:<mes>:<faixas>:s<susp>[:t]`). Todo envio grava `sig`; registros antigos sem `sig` usam a `chave` (`sigDe`). `estadoEnvio(M, mes)` → `{sig, wa:{st, ult}, rh:{st, ult}}` com `st` = pendente | enviado | retificar | bloqueado | nada; `pendencias()` varre todos os meses. Só vira `retificar` quando a diferença vem de anulação (compara com `A.semAnul`, a análise sem anulações), quando o último envio já era retificação ou quando a penalidade foi cancelada; penalidade que cresce com dados novos volta a `pendente`. Retificação grava `tipo:'ret'` (WhatsApp) / `'rhret'` (RH) com `sig` atual (`'nenhuma'` quando a penalidade foi cancelada). "Fora do painel" grava `tipo:'pen', via:'manual'`.
 - **Telas:** faixa `#pend-alerta`; aba `#v-hist` (`renderHist`, `histUi`); ficha abre motorista sem eventos no mês escolhido (classe `sem-mes` esconde o que é só do mês); `abrirMotMes(nome, mes?)`.
 
+## Motorista só recebe picos; RH recebe a imagem completa (11/11/2026)
+
+- O operador não comunica penalidade ao motorista: isso é feito pelo RH. `desenharComunicado(M, mes, tipo, completa)`: sem `completa` (WhatsApp) a imagem mostra só os picos (sem selo de situação, sem "cada pico gera suspensão", sem acumulado; o alerta preventivo mantém o selo de alerta). Com `completa` é a imagem antiga, usada no RH.
+- Tipos ao motorista: `pen` = "Picos do mês" e `ret` = "Picos corrigidos" (as chaves não mudaram, então os registros antigos continuam valendo). O ponto **M** e as pendências agora medem o envio dos picos; a retificação ao motorista leva sempre a imagem de picos recalculada.
+- RH: botão **Abrir no Outlook (.eml)** (`abrirEmlRH` → `montarEml`): baixa um e-mail MIME com `X-Unsent: 1`, Para/Cópia do cadastro, assunto (RFC 2047) e corpo editados no quadro e a imagem completa em anexo (`comunicado-completo-<slug>-<mes>.jpg`). **Baixar imagem completa** para quem não usa o Outlook. O corpo do e-mail (normal e retificação) cita o anexo.
+- Testes: `__painel.textosImg(nome, mes, tipo, completa)` lista os textos desenhados na imagem; `__painel.montarEml`. Prints 08, 09 e 10 do guia agora saem de `tools/manual/prints-historico.js`.
+
 ## Regras de negócio (constantes `REGRAS`, `PRE`, `ADV_P_SUS`, `SUS_P_TER`, `CHUVA_MIN_S`)
 
 | Condição | Faixa | Tolerância/mês | Acima da tolerância |

@@ -449,7 +449,9 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
             <div class="fld" style="margin-top:10px"><label for="rh-assunto">Assunto</label><div class="copyrow"><input id="rh-assunto"><button class="btn ghost" type="button" data-copy="rh-assunto">Copiar</button></div></div>
             <div class="fld" style="margin-top:10px"><label id="rh-corpo-lbl">Mensagem (pode editar antes de copiar; o negrito vai junto ao colar no e-mail)</label><div id="rh-corpo" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="rh-corpo-lbl"></div></div>
             <div class="actions" style="align-items:center">
-              <button class="btn" type="button" data-copy="rh-corpo">Copiar mensagem</button>
+              <button class="btn" type="button" id="rh-eml" title="Baixa um e-mail pronto (.eml) com Para, Cópia, Assunto, mensagem e a imagem completa anexada. Abra o arquivo no Outlook e clique em Enviar.">Abrir no Outlook (.eml)</button>
+              <button class="btn ghost" type="button" data-copy="rh-corpo">Copiar mensagem</button>
+              <button class="btn ghost" type="button" id="rh-img">Baixar imagem completa</button>
               <button class="btn ghost" type="button" id="rh-ok">Marcar como enviado</button>
               <span class="sec-note" id="rh-hint"></span>
             </div>
@@ -1862,7 +1864,8 @@ function montarEmailRH(M, mes){
   if(r.susAdv) L.push('Com '+r.advAc+' advertências acumuladas, foi gerada '+(r.susAdv===1?'1 suspensão':r.susAdv+' suspensões')+' por reincidência.');
   if(r.terminoNoMes) L.push('Com '+r.susAc+' suspensões acumuladas, o motorista atingiu o critério de término do contrato de trabalho.');
   L.push('Situação acumulada: '+r.advAc+' '+(r.advAc===1?'advertência':'advertências')+' e '+r.susAc+' '+(r.susAc===1?'suspensão':'suspensões')+'.', '');
-  L.push('Comunicado ao motorista: '+(zap ? (zap.via==='manual' ? 'registrado como enviado fora do painel em ' : 'enviado por WhatsApp em ')+new Date(zap.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+'.' : 'ainda não enviado.'), '');
+  L.push('Picos enviados ao motorista: '+(zap ? (zap.via==='manual' ? 'registrados como enviados fora do painel em ' : 'enviados por WhatsApp em ')+new Date(zap.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+'.' : 'ainda não enviados.')+' A penalidade é comunicada ao motorista pelo RH.', '');
+  L.push('Segue em anexo o comunicado completo (picos, penalidade e situação acumulada).', '');
   L.push('Atenciosamente,', 'Gestão de Frota · Grupo Dínamo / Tóliman Transportes');
   const linhas = L.map(x => typeof x==='string' ? {t:x, adv:false} : x);
   const corpo = linhas.map(x => (x.adv?'► ':'')+x.t).join('\n');
@@ -1901,6 +1904,7 @@ function montarEmailRet(M, mes, est){
     L.push('');
   }
   L.push('Situação acumulada: '+r.advAc+' '+(r.advAc===1?'advertência':'advertências')+' e '+r.susAc+' '+(r.susAc===1?'suspensão':'suspensões')+'.', '');
+  L.push('Segue em anexo o comunicado completo atualizado.', '');
   L.push('Atenciosamente,', 'Gestão de Frota · Grupo Dínamo / Tóliman Transportes');
   const linhas = L.map(x => typeof x==='string' ? {t:x, adv:false} : x);
   return {assunto, corpo:linhas.map(x => (x.adv?'► ':'')+x.t).join('\n'),
@@ -1921,7 +1925,7 @@ function renderRH(M, mes, info){
   $('#rh-para').value = cfg.para || ''; $('#rh-cc').value = cfg.cc || '';
   const ult = info.est.rh.st==='enviado' ? info.est.rh.ult : null;
   $('#rh-note').innerHTML = ult ? 'Enviado em '+new Date(ult.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : ret ? '<span class="st adv">Retificar</span>' : '<span class="st sus">Pendente</span>';
-  $('#rh-hint').innerHTML = !cfg.para ? 'Defina o e-mail do RH. <button class="linkbtn" type="button" data-rhcfg-ir="1">Configurar</button>' : 'Copie e cole no seu e-mail. Depois marque como enviado.';
+  $('#rh-hint').innerHTML = !cfg.para ? 'Defina o e-mail do RH. <button class="linkbtn" type="button" data-rhcfg-ir="1">Configurar</button>' : 'Abra no Outlook: o e-mail vem pronto, com a imagem completa anexada. Depois marque como enviado.';
   $('#rh-ok').disabled = !store.canWrite || !!ult;
   $('#rh-ok').textContent = ult ? 'Já marcado como enviado' : 'Marcar como enviado';
 }
@@ -1937,6 +1941,62 @@ async function marcarRH(){
   }catch(e){ $('#rh-hint').textContent = 'Não foi possível registrar ('+((e&&(e.code||e.message))||e)+').'; }
 }
 const textoDe = el => el.innerText.replace(/\n{3,}/g, '\n\n').trim();
+/* ---------- e-mail ao RH em arquivo .eml (Outlook abre como rascunho, com a imagem anexada) ---------- */
+const b64txt = t => btoa(unescape(encodeURIComponent(t)));
+const quebra76 = b => b.replace(/.{76}/g, '$&\r\n');
+// cabeçalho com acentos: palavras codificadas (RFC 2047) em pedaços curtos
+function cabecalho(t){
+  if(/^[\x20-\x7e]*$/.test(t)) return t;
+  const cs = Array.from(t), out = [];
+  for(let i=0;i<cs.length;i+=30) out.push('=?UTF-8?B?'+b64txt(cs.slice(i,i+30).join(''))+'?=');
+  return out.join('\r\n ');
+}
+const listaEnd = t => String(t||'').split(/[;,]/).map(x => x.trim()).filter(Boolean).join(', ');
+function montarEml({para, cc, assunto, html, texto, anexo}){
+  const B1 = '=_mix_'+Date.now().toString(36), B2 = '=_alt_'+Date.now().toString(36);
+  const H = ['X-Unsent: 1'];
+  if(listaEnd(para)) H.push('To: '+listaEnd(para));
+  if(listaEnd(cc)) H.push('Cc: '+listaEnd(cc));
+  H.push('Subject: '+cabecalho(assunto), 'MIME-Version: 1.0', 'Content-Type: multipart/mixed; boundary="'+B1+'"', '');
+  const corpoHtml = '<html><head><meta charset="utf-8"></head><body><div style="font-family:Calibri,Arial,sans-serif;font-size:11pt">'+html+'</div></body></html>';
+  const P = [
+    '--'+B1, 'Content-Type: multipart/alternative; boundary="'+B2+'"', '',
+    '--'+B2, 'Content-Type: text/plain; charset="utf-8"', 'Content-Transfer-Encoding: base64', '', quebra76(b64txt(texto)),
+    '--'+B2, 'Content-Type: text/html; charset="utf-8"', 'Content-Transfer-Encoding: base64', '', quebra76(b64txt(corpoHtml)),
+    '--'+B2+'--', ''
+  ];
+  if(anexo) P.push('--'+B1, 'Content-Type: image/jpeg; name="'+anexo.nome+'"', 'Content-Disposition: attachment; filename="'+anexo.nome+'"', 'Content-Transfer-Encoding: base64', '', quebra76(anexo.b64), '');
+  P.push('--'+B1+'--', '');
+  return H.concat(P).join('\r\n');
+}
+const blobB64 = b => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = rej; fr.readAsDataURL(b); });
+async function imagemRH(M, mes){
+  const cv = await desenharComunicado(M, mes, 'pen', true);
+  const blob = await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.92));
+  return {blob, nome:'comunicado-completo-'+slug(M.nome)+'-'+mes+'.jpg'};
+}
+function baixarArquivo(blob, nome){
+  const u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 4000);
+}
+async function abrirEmlRH(){
+  const M = A.mot.get(comUi.motorista); if(!M) return;
+  const btn = $('#rh-eml'), orig = btn.textContent, cfg = rhCfg();
+  btn.disabled = true; btn.textContent = 'Gerando…';
+  try{
+    const img = await imagemRH(M, ui.mes);
+    const eml = montarEml({para:cfg.para, cc:cfg.cc, assunto:$('#rh-assunto').value, html:$('#rh-corpo').innerHTML, texto:textoDe($('#rh-corpo')), anexo:{nome:img.nome, b64:await blobB64(img.blob)}});
+    const nome = ('E-mail RH - '+M.nome+' - '+mesNome(ui.mes)).replace(/[\\/:*?"<>|]/g, '')+'.eml';
+    baixarArquivo(new Blob([eml], {type:'message/rfc822'}), nome);
+    btn.textContent = 'E-mail gerado';
+  }catch(e){ $('#rh-hint').textContent = 'Não foi possível gerar o e-mail ('+((e&&(e.code||e.message))||e)+').'; btn.textContent = orig; }
+  setTimeout(() => { btn.disabled = false; btn.textContent = orig; }, 1800);
+}
+async function baixarImagemRH(){
+  const M = A.mot.get(comUi.motorista); if(!M) return;
+  try{ const img = await imagemRH(M, ui.mes); baixarArquivo(img.blob, img.nome); }
+  catch(e){ $('#rh-hint').textContent = 'Não foi possível gerar a imagem ('+((e&&(e.code||e.message))||e)+').'; }
+}
 async function copiarCampo(id, btn){
   const el = $('#'+id), orig = btn.textContent;
   if(el.isContentEditable){
@@ -1959,7 +2019,8 @@ async function copiarCampo(id, btn){
 
 /* ---------- comunicados por WhatsApp ---------- */
 const ALERTA_PCT = 0.8; // alerta preventivo a partir de 80% da tolerância
-const TIPO_COM = {pen:'Penalidade', alerta:'Alerta preventivo', resumo:'Resumo do mês', rh:'E-mail ao RH', ret:'Retificação', rhret:'Retificação ao RH'};
+// o motorista recebe só os picos do mês; a penalidade (advertência, suspensão, término) vai apenas ao RH
+const TIPO_COM = {pen:'Picos do mês', alerta:'Alerta preventivo', resumo:'Resumo do mês', rh:'E-mail ao RH', ret:'Picos corrigidos', rhret:'Retificação ao RH'};
 const REGRA_MSG = {b1:'Pista seca, de 90 a 95 km/h', b2:'Pista seca, de 96 a 99 km/h', b3:'Igual ou acima de 100 km/h', ch:'Chuva, acima de 70 km/h por mais de 1 minuto'};
 let comIdx = new Map();
 function indexarComunicados(){
@@ -2059,8 +2120,8 @@ async function marcarFora(){
   }catch(e){ $('#com-hint').textContent = 'Não foi possível registrar ('+((e&&(e.code||e.message))||e)+').'; }
 }
 function montarLegenda(M, mes, tipo){
-  if(tipo==='ret') return 'Olá, '+nomeProprio(M.nome)+'. Após revisão, a sua penalidade de excesso de velocidade de '+mesNome(mes).toLowerCase()+(sigPen(M, mes) ? ' foi ajustada. Segue o comunicado atualizado.' : ' foi cancelada.')+' Gestão de Frota · Grupo Dínamo / Tóliman Transportes.';
-  const nomeT = tipo==='pen' ? 'comunicado de excesso de velocidade' : tipo==='alerta' ? 'alerta preventivo de velocidade' : 'resumo de velocidade';
+  if(tipo==='ret') return 'Olá, '+nomeProprio(M.nome)+'. Após revisão, os seus picos de velocidade de '+mesNome(mes).toLowerCase()+' foram corrigidos. Segue o registro atualizado. Gestão de Frota · Grupo Dínamo / Tóliman Transportes.';
+  const nomeT = tipo==='pen' ? 'registro de picos de velocidade' : tipo==='alerta' ? 'alerta preventivo de velocidade' : 'resumo de velocidade';
   return 'Olá, '+nomeProprio(M.nome)+'. Segue seu '+nomeT+' de '+mesNome(mes).toLowerCase()+'. Gestão de Frota · Grupo Dínamo / Tóliman Transportes.';
 }
 /* ---------- imagem JPEG do comunicado ---------- */
@@ -2072,7 +2133,7 @@ function rr(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x
 function quebra(ctx, txt, maxW){ const out=[]; let l=''; String(txt).split(' ').forEach(w => { const t = l ? l+' '+w : w; if(ctx.measureText(t).width > maxW && l){ out.push(l); l=w; } else l=t; }); if(l) out.push(l); return out; }
 function selo(M, mes, tipo){
   const r = M.hist[mes], c = M.meses[mes];
-  if(tipo==='alerta') return {t:'ALERTA · PERTO DO LIMITE', cor:CV.pre, bg:'#FBEFD2', sub:'Se passar do limite: perda de pontuação avaliativa e advertência.'};
+  if(tipo==='alerta') return {t:'ALERTA · PERTO DO LIMITE', cor:CV.pre, bg:'#FBEFD2', sub:'Você está perto da tolerância do mês. Reduza a velocidade.'};
   const s = situacao(r, M);
   const susMes = r.susDir + r.susAdv;
   const partes = [];
@@ -2084,11 +2145,14 @@ function selo(M, mes, tipo){
   if(s.k==='adv') return {t:'ADVERTÊNCIA', cor:CV.adv, bg:'#FBE9D8', sub:pen};
   return {t:'DENTRO DA TOLERÂNCIA', cor:CV.ok, bg:'#DDF1E7', sub:'Nenhuma penalidade no mês até agora. Continue assim.'};
 }
-async function desenharComunicado(M, mes, tipo){
+// completa = imagem do RH (situação, penalidade e acumulado); sem ela, a imagem do motorista mostra só os picos
+async function desenharComunicado(M, mes, tipo, completa){
   try{ await Promise.all(['800 40px Archivo','600 24px Archivo','600 26px "IBM Plex Mono"'].map(f => document.fonts.load(f))); }catch(e){}
-  const W = 1080, H = 1420, P = 56;
+  const comSelo = completa || tipo==='alerta';
+  const W = 1080, H = 1420 - (comSelo ? 0 : 140) - (completa ? 0 : 184), P = 56;
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const x = cv.getContext('2d');
+  if(window.__teste){ cv.__textos = []; const ft = x.fillText.bind(x); x.fillText = (t, ...a) => { cv.__textos.push(String(t)); return ft(t, ...a); }; }
   const c = M.meses[mes], r = M.hist[mes], cad = cadDe(M.nome), info = comInfo(M, mes);
   x.fillStyle = CV.paper; x.fillRect(0,0,W,H);
   rr(x, 32, 32, W-64, H-64, 28); x.fillStyle = '#FFFFFF'; x.fill();
@@ -2110,7 +2174,7 @@ async function desenharComunicado(M, mes, tipo){
   const fy = 146, fw = W-2*P-16;
   [[CV.coral,0,.34],[CV.mauve,.34,.67],[CV.sand,.67,1]].forEach(([cor,a,b]) => { x.fillStyle = cor; x.fillRect(P+8+fw*a, fy, fw*(b-a), 6); });
   // título
-  const titulo = tipo==='alerta' ? 'Alerta preventivo de velocidade' : tipo==='resumo' ? 'Resumo de velocidade do mês' : 'Comunicado de excesso de velocidade';
+  const titulo = tipo==='alerta' ? 'Alerta preventivo de velocidade' : completa ? 'Comunicado de excesso de velocidade' : tipo==='resumo' ? 'Resumo de velocidade do mês' : 'Picos de velocidade do mês';
   x.fillStyle = CV.ink; x.font = '800 44px '+FONTE; x.fillText(titulo, P+8, fy+70);
   // bloco do motorista
   let y = fy+104;
@@ -2128,15 +2192,17 @@ async function desenharComunicado(M, mes, tipo){
   x.fillStyle = '#C9CDDB'; x.font = '500 22px '+FONTE;
   x.fillText((cad && cad.codigo ? 'Código '+cad.codigo+'   ·   ' : '')+'Placas '+[...c.placas].join(', '), P+40, y+hb-26);
   y += hb + 28;
-  // selo de situação
-  const sl = selo(M, mes, tipo);
-  x.font = '800 30px '+FONTE; const sw = x.measureText(sl.t).width + 56;
-  rr(x, P+8, y, sw, 58, 29); x.fillStyle = sl.bg; x.fill();
-  x.fillStyle = sl.cor; x.beginPath(); x.arc(P+34, y+29, 7, 0, Math.PI*2); x.fill();
-  x.fillText(sl.t, P+50, y+40);
-  x.fillStyle = CV.ink2; x.font = '500 24px '+FONTE;
-  quebra(x, sl.sub, W-2*P-16).forEach((l,i) => x.fillText(l, P+8, y+98+i*32));
-  y += 140;
+  // selo de situação (só na imagem completa e no alerta preventivo)
+  if(comSelo){
+    const sl = selo(M, mes, tipo);
+    x.font = '800 30px '+FONTE; const sw = x.measureText(sl.t).width + 56;
+    rr(x, P+8, y, sw, 58, 29); x.fillStyle = sl.bg; x.fill();
+    x.fillStyle = sl.cor; x.beginPath(); x.arc(P+34, y+29, 7, 0, Math.PI*2); x.fill();
+    x.fillText(sl.t, P+50, y+40);
+    x.fillStyle = CV.ink2; x.font = '500 24px '+FONTE;
+    quebra(x, sl.sub, W-2*P-16).forEach((l,i) => x.fillText(l, P+8, y+98+i*32));
+    y += 140;
+  }
   // faixas
   x.fillStyle = CV.muted; x.font = '700 18px '+FONTE; x.fillText('PICOS NO MÊS', P+8, y); x.textAlign='right'; x.fillText('PICOS / TOLERÂNCIA', W-P-8, y); x.textAlign='left';
   y += 16;
@@ -2157,7 +2223,7 @@ async function desenharComunicado(M, mes, tipo){
       x.fillStyle = over ? CV.coral : destaque.has(g.id) ? '#C99A2E' : CV.ink3; x.fillRect(bx, by, bw*Math.min(n/sc,1), bh);
       x.fillStyle = CV.ink; x.fillRect(bx + bw*g.tol/sc - 2, by-5, 4, bh+10);
     } else {
-      x.fillStyle = CV.muted; x.font = '500 19px '+FONTE; x.fillText(n ? 'Sem tolerância: cada pico gera suspensão' : 'Sem tolerância', bx, by+13);
+      x.fillStyle = CV.muted; x.font = '500 19px '+FONTE; x.fillText(n && completa ? 'Sem tolerância: cada pico gera suspensão' : 'Sem tolerância', bx, by+13);
     }
     y += 50;
   });
@@ -2166,6 +2232,7 @@ async function desenharComunicado(M, mes, tipo){
   x.fillStyle = CV.ink2; x.font = '500 24px '+FONTE; x.fillText('Velocidade máxima registrada', P+8, y);
   x.textAlign = 'right'; x.fillStyle = CV.ink; x.font = '600 30px '+FONUM; x.fillText(Math.max(c.vmax.seco, c.vmax.chuva)+' km/h', W-P-8, y); x.textAlign = 'left';
   y += 34;
+  if(!completa) return rodape(), cv;
   // acumulado
   const bw2 = (W-2*P-16-20)/2;
   [['ADVERTÊNCIAS ACUMULADAS', r.advAc, r.advAc%ADV_P_SUS, ADV_P_SUS, CV.adv, (ADV_P_SUS-r.advAc%ADV_P_SUS)+' para a próxima suspensão'],
@@ -2177,12 +2244,14 @@ async function desenharComunicado(M, mes, tipo){
     for(let k=0;k<tot;k++){ x.fillStyle = k<on ? cor : CV.track; x.fillRect(bx+110+k*44, y+70, 36, 14); }
     x.fillStyle = CV.muted; x.font = '500 19px '+FONTE; x.fillText(sub, bx+24, y+130);
   });
-  // rodapé
-  x.fillStyle = CV.ink; x.font = '700 23px '+FONTE;
-  x.fillText('Limites: 90 km/h na pista seca  ·  70 km/h na chuva', P+8, H-108);
-  x.fillStyle = CV.muted; x.font = '500 20px '+FONTE;
-  x.fillText('Dirija com segurança. Em caso de dúvida, procure seu gestor.', P+8, H-74);
+  rodape();
   return cv;
+  function rodape(){
+    x.fillStyle = CV.ink; x.font = '700 23px '+FONTE;
+    x.fillText('Limites: 90 km/h na pista seca  ·  70 km/h na chuva', P+8, H-108);
+    x.fillStyle = CV.muted; x.font = '500 20px '+FONTE;
+    x.fillText('Dirija com segurança. Em caso de dúvida, procure seu gestor.', P+8, H-74);
+  }
 }
 
 const comUi = {chave:null, tipo:null, texto:''};
@@ -2206,12 +2275,10 @@ function renderCom(x){
   if(comUi.chave!==chave){ comUi.chave = chave; comUi.texto = montarLegenda(M, mes, comUi.tipo); }
   const leg = $('#com-leg'); if(document.activeElement!==leg) leg.value = comUi.texto;
   const c = x.c, r = x.r;
-  // retificação de penalidade cancelada vai só com texto; ajustada leva a imagem atual da penalidade
-  const semImg = comUi.tipo==='ret' && !info.est.sig;
-  $('#com-img').closest('.com-img-wrap').hidden = semImg; $('#com-dl').hidden = semImg; $('#com-copy').hidden = semImg;
+  // a retificação ao motorista leva os picos corrigidos (a mesma imagem de picos, já recalculada)
   const tipoImg = comUi.tipo==='ret' ? 'pen' : comUi.tipo;
   const imgKey = chave+'|'+(cad?cad.codigo:'')+'|'+A.ate[mes]+'|'+[c.b1,c.b2,c.b3,c.ch,r.advAc,r.susAc].join(',');
-  if(!semImg && comUi.imgKey!==imgKey){ comUi.imgKey = imgKey; gerarImagem(M, mes, tipoImg, imgKey); }
+  if(comUi.imgKey!==imgKey){ comUi.imgKey = imgKey; gerarImagem(M, mes, tipoImg, imgKey); }
   $('#com-fora').hidden = !(store.canWrite && ((comUi.tipo==='pen' && info.est.wa.st==='pendente') || (comUi.tipo==='ret' && info.est.wa.st==='retificar')));
   const cel = cad && cad.celular;
   atualizarLinkWa();
@@ -2525,6 +2592,8 @@ cadDrop.addEventListener('drop', e => { const f=(e.dataTransfer&&e.dataTransfer.
 $('#cadimp-prev').addEventListener('click', e => { if(e.target.id==='cadimp-ok') salvarCadPend(); if(e.target.id==='cadimp-cancel'){ cadPend=null; renderCadPend(); } });
 $('#rhcfg-form').addEventListener('submit', e => { e.preventDefault(); salvarRhCfg(); });
 $('#rh-ok').addEventListener('click', marcarRH);
+$('#rh-eml').addEventListener('click', abrirEmlRH);
+$('#rh-img').addEventListener('click', baixarImagemRH);
 document.addEventListener('click', e => {
   if(e.target.closest('[data-goto-bkp]')){ setTab('imp'); $('#bkpc-sec').scrollIntoView({block:'start'}); }
   const b = e.target.closest('[data-copy]'); if(b) copiarCampo(b.dataset.copy, b);
@@ -2552,7 +2621,7 @@ setTab(ui.tab);
 render();
 store.init(render);
 // gancho só para os testes automáticos (tools/test): não existe no uso normal
-if(window.__teste) window.__painel = {A:() => A, store, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias, emailRH:(n, m) => montarEmailRH(A.mot.get(n), m).corpo};
+if(window.__teste) window.__painel = {A:() => A, store, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias, emailRH:(n, m) => montarEmailRH(A.mot.get(n), m).corpo, textosImg:async (n, m, t, c) => (await desenharComunicado(A.mot.get(n), m, t, c)).__textos, montarEml};
 })();
 </script>
 

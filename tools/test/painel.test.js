@@ -217,8 +217,8 @@ teste('retificação: e-mail traz antes, depois e picos anulados com motivo', as
   const corpo = await p.innerText('#rh-corpo');
   ok(corpo.includes('1 advertência (Seco · 90 a 95 km/h)'), 'antes: '+corpo); ok(corpo.includes('nenhuma penalidade'), 'depois');
   ok(corpo.includes('Erro de leitura SASCAR') && corpo.includes('por Teste'), 'picos anulados');
-  ok(await p.isHidden('#com-dl'), 'cancelada: sem imagem');
-  ok((await p.inputValue('#com-leg')).includes('foi cancelada'), 'texto do WhatsApp');
+  ok(await p.isVisible('#com-dl'), 'cancelada: picos corrigidos vão com imagem');
+  ok((await p.inputValue('#com-leg')).includes('picos de velocidade de setembro 2026 foram corrigidos'), 'texto do WhatsApp');
 });
 
 teste('retificação: marcar RH e abrir WhatsApp zeram as pendências', async p => {
@@ -242,7 +242,7 @@ teste('retificação: penalidade ajustada (2 adv → 1) mantém imagem e chip Re
   await abrirMotorista(p);
   igual(await p.getAttribute('#com-tipos [data-tipo="ret"]', 'aria-pressed'), 'true');
   ok(await p.isVisible('#com-dl'), 'ajustada: com imagem');
-  ok((await p.inputValue('#com-leg')).includes('foi ajustada'), 'texto');
+  ok((await p.inputValue('#com-leg')).includes('foram corrigidos'), 'texto');
   ok((await p.inputValue('#rh-assunto')).includes('· Advertência ·'), 'assunto ajustado');
 });
 
@@ -285,10 +285,50 @@ teste('final: e-mail ao RH informa o WhatsApp de retificação e o fora do paine
   await abrirMotorista(p);
   await p.evaluate(() => { const M = __painel.A().mot.get('ANA TESTE'); }); // só garante a análise
   const txt = await p.evaluate(() => __painel.emailRH('ANA TESTE', '2026-09'));
-  ok(txt.includes('Comunicado ao motorista: enviado por WhatsApp em 20/10/2026'), txt.split('\n').filter(l => l.includes('Comunicado')).join(' | '));
+  ok(txt.includes('Picos enviados ao motorista: enviados por WhatsApp em 20/10/2026'), txt.split('\n').filter(l => l.includes('motorista')).join(' | '));
   await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L36())}, motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), comunicados:Object.fromEntries([env('ANA TESTE', '2026-09', 'pen', PEN, {sig:PEN, via:'manual'})])});
   const t2 = await p.evaluate(() => __painel.emailRH('ANA TESTE', '2026-09'));
-  ok(t2.includes('Comunicado ao motorista: registrado como enviado fora do painel em 05/10/2026'), t2.split('\n').filter(l => l.includes('Comunicado')).join(' | '));
+  ok(t2.includes('Picos enviados ao motorista: registrados como enviados fora do painel em 05/10/2026'), t2.split('\n').filter(l => l.includes('motorista')).join(' | '));
+});
+
+/* ---------- motorista recebe só os picos; RH recebe a imagem completa ---------- */
+const PENALIDADE = /ADVERTÊNCIA|SUSPENS|TÉRMINO|penalidade|Perda de pontuação|advertência/;
+teste('imagem do motorista: só picos, sem penalidade nem acumulado', async p => {
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L36())}, motoristas:Object.fromEntries([cad('ANA TESTE', 101)])});
+  await abrirMotorista(p);
+  for(const t of ['pen', 'resumo', 'alerta']){
+    const tx = await p.evaluate(t => __painel.textosImg('ANA TESTE', '2026-09', t, false), t);
+    const ruim = tx.filter(x => PENALIDADE.test(x));
+    igual(ruim, [], 'tipo '+t);
+    ok(tx.some(x => x.includes('Pista seca · 90 a 95')), 'faixas presentes ('+t+')');
+  }
+  ok((await p.evaluate(() => __painel.textosImg('ANA TESTE', '2026-09', 'pen', false))).includes('Picos de velocidade do mês'), 'título');
+  igual(await p.innerText('#com-tipos [data-tipo="pen"]'), 'Picos do mês · pendente');
+  ok(!(await p.inputValue('#com-leg')).includes('excesso'), 'legenda sem penalidade');
+});
+
+teste('imagem completa (RH): situação, penalidade e acumulado', async p => {
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L36())}, motoristas:Object.fromEntries([cad('ANA TESTE', 101)])});
+  const tx = await p.evaluate(() => __painel.textosImg('ANA TESTE', '2026-09', 'pen', true));
+  ok(tx.includes('ADVERTÊNCIA') && tx.includes('ADVERTÊNCIAS ACUMULADAS') && tx.includes('SUSPENSÕES ACUMULADAS'), JSON.stringify(tx));
+});
+
+teste('RH: .eml com destinatários, assunto, corpo e imagem anexada', async p => {
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L36())}, motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), config:{rh:{para:'rh@exemplo.com; dp@exemplo.com', cc:'gestor@exemplo.com'}}});
+  await abrirMotorista(p);
+  ok((await p.innerText('#rh-corpo')).includes('Segue em anexo o comunicado completo'), 'corpo cita o anexo');
+  const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#rh-eml')]);
+  ok(/^E-mail RH - ANA TESTE - Setembro 2026\.eml$/.test(dl.suggestedFilename()), dl.suggestedFilename());
+  const eml = fs.readFileSync(await dl.path(), 'utf8');
+  ok(eml.startsWith('X-Unsent: 1\r\n'), 'rascunho');
+  ok(eml.includes('To: rh@exemplo.com, dp@exemplo.com\r\n') && eml.includes('Cc: gestor@exemplo.com\r\n'), 'destinatários');
+  ok(/Content-Type: image\/jpeg; name="comunicado-completo-ana-teste-2026-09\.jpg"/.test(eml), 'anexo');
+  const anexo = eml.split('filename="comunicado-completo-ana-teste-2026-09.jpg"')[1].split('\r\n\r\n')[1].split('\r\n--')[0].replace(/\r\n/g, '');
+  ok(Buffer.from(anexo, 'base64').slice(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])), 'JPEG válido');
+  const assunto = await p.evaluate(eml => { const m = eml.match(/Subject: ((?:.*\r\n )*.*)\r\n/)[1]; return m.split('\r\n ').map(w => { const b = w.match(/=\?UTF-8\?B\?(.*)\?=/); return b ? decodeURIComponent(escape(atob(b[1]))) : w; }).join(''); }, eml);
+  igual(assunto, await p.inputValue('#rh-assunto'));
+  const [di] = await Promise.all([p.waitForEvent('download'), p.click('#rh-img')]);
+  igual(di.suggestedFilename(), 'comunicado-completo-ana-teste-2026-09.jpg');
 });
 
 /* ---------- aba Histórico ---------- */
