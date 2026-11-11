@@ -188,6 +188,65 @@ teste('compatibilidade: envios antigos sem sig aparecem como enviados', async p 
   ok(await p.isHidden('#pend-alerta'), 'alerta do topo some sem pendências');
 });
 
+/* ---------- retificação ---------- */
+const enviadoNos2 = (sig, mes = '2026-09') => Object.fromEntries([env('ANA TESTE', mes, 'pen', sig, {sig}), env('ANA TESTE', mes, 'rh', 'rh:'+sig, {sig})]);
+const L36 = () => picos('ANA TESTE', '2026-09', 36, 92);
+const an3 = L => Object.fromEntries(L.slice(0, 3).map(l => anul('seco', l)));
+
+teste('retificação: penalidade enviada nos dois canais e anulação que cancela → 2 retificações', async p => {
+  const L = L36();
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L)}, motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), comunicados:enviadoNos2(PEN), anulacoes:an3(L)});
+  const e = await estado(p); igual([e.wa, e.rh, e.n], ['retificar', 'retificar', 2]);
+  ok((await p.innerText('#pend-alerta')).includes('2 retificações'), 'faixa');
+});
+
+teste('retificação: e-mail traz antes, depois e picos anulados com motivo', async p => {
+  const L = L36();
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L)}, motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), comunicados:enviadoNos2(PEN), anulacoes:an3(L)});
+  await abrirMotorista(p);
+  const assunto = await p.inputValue('#rh-assunto');
+  ok(assunto.startsWith('Retificação · Infração de velocidade · Penalidade cancelada · ANA TESTE · Código 101'), assunto);
+  const corpo = await p.innerText('#rh-corpo');
+  ok(corpo.includes('1 advertência (Seco · 90 a 95 km/h)'), 'antes: '+corpo); ok(corpo.includes('nenhuma penalidade'), 'depois');
+  ok(corpo.includes('Erro de leitura SASCAR') && corpo.includes('por Teste'), 'picos anulados');
+  ok(await p.isHidden('#com-dl'), 'cancelada: sem imagem');
+  ok((await p.inputValue('#com-leg')).includes('foi cancelada'), 'texto do WhatsApp');
+});
+
+teste('retificação: marcar RH e abrir WhatsApp zeram as pendências', async p => {
+  const L = L36();
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L)}, motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), comunicados:enviadoNos2(PEN), anulacoes:an3(L)});
+  await abrirMotorista(p);
+  await p.click('#rh-ok');
+  await p.click('#com-wa');
+  await p.waitForFunction(() => __painel.pendencias().length === 0);
+  const tipos = await p.evaluate(() => Object.values(__painel.store.data.comunicados).map(x => x.tipo+':'+x.sig).sort());
+  ok(tipos.includes('ret:nenhuma') && tipos.includes('rhret:nenhuma'), JSON.stringify(tipos));
+  ok(await p.isHidden('#pend-alerta'), 'faixa some');
+});
+
+teste('retificação: penalidade ajustada (2 adv → 1) mantém imagem e chip Retificação', async p => {
+  const L = L36().concat(picos('ANA TESTE', '2026-09', 6, 97, null, {desloc:40}));
+  const PEN2 = 'pen:2026-09:b1+b2:s0';
+  const b2 = L.filter(l => l.vel === 97).slice(0, 2);
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L)}, motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), comunicados:enviadoNos2(PEN2), anulacoes:Object.fromEntries(b2.map(l => anul('seco', l)))});
+  const e = await estado(p); igual([e.wa, e.rh, e.sig], ['retificar', 'retificar', PEN]);
+  await abrirMotorista(p);
+  igual(await p.getAttribute('#com-tipos [data-tipo="ret"]', 'aria-pressed'), 'true');
+  ok(await p.isVisible('#com-dl'), 'ajustada: com imagem');
+  ok((await p.inputValue('#com-leg')).includes('foi ajustada'), 'texto');
+  ok((await p.inputValue('#rh-assunto')).includes('· Advertência ·'), 'assunto ajustado');
+});
+
+teste('retificação: desfazer anulação comunicada gera nova retificação', async p => {
+  const L = L36();
+  const com = Object.assign(enviadoNos2(PEN), Object.fromEntries([env('ANA TESTE', '2026-09', 'ret', 'ret:2026-09:nenhuma', {sig:'nenhuma', enviadoEm:'2026-10-20T12:00:00.000Z'}), env('ANA TESTE', '2026-09', 'rhret', 'rhret:2026-09:nenhuma', {sig:'nenhuma', enviadoEm:'2026-10-20T12:00:00.000Z'})]));
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L)}, motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), comunicados:com, anulacoes:an3(L)});
+  let e = await estado(p); igual([e.wa, e.rh], ['enviado', 'enviado'], 'retificação enviada');
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L)}, motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), comunicados:com});
+  e = await estado(p); igual([e.wa, e.rh], ['retificar', 'retificar'], 'anulação desfeita');
+});
+
 /* ---------- runner ---------- */
 (async () => {
   const filtro = process.argv[2] || '';

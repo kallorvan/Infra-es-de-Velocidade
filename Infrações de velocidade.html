@@ -1763,30 +1763,70 @@ function montarEmailRH(M, mes){
   const html = linhas.map(x => x.t==='' ? '<div><br></div>' : x.adv ? '<div class="adv-linha"><b style="font-size:12pt">'+esc(x.t)+'</b></div>' : '<div>'+esc(x.t)+'</div>').join('');
   return {assunto, corpo, html, rotulo};
 }
+// "pen:2026-09:b1+b2:s1:t" → "2 advertências (…) + 1 suspensão + término do contrato"
+function descreverSig(sig){
+  if(!sig || sig==='nenhuma') return 'nenhuma penalidade';
+  const [, , advs, sus, ter] = sig.split(':');
+  const ids = advs ? advs.split('+') : [], n = +String(sus||'s0').slice(1) || 0, P = [];
+  if(ids.length) P.push(ids.length+' '+(ids.length===1?'advertência':'advertências')+' ('+ids.map(id => (REGRAS.find(g => g.id===id)||{nome:id}).nome).join('; ')+')');
+  if(n) P.push(n+' '+(n===1?'suspensão':'suspensões'));
+  if(ter==='t') P.push('término do contrato');
+  return P.join(' + ') || 'nenhuma penalidade';
+}
+function montarEmailRet(M, mes, est){
+  const r = M.hist[mes], cad = cadDe(M.nome), c = M.meses[mes];
+  const s0 = situacao(r, M);
+  const rotulo = !est.sig ? 'Penalidade cancelada' : s0.k==='ter' ? 'Término de contrato' : s0.k==='sus' ? 'Suspensão' : 'Advertência';
+  const assunto = 'Retificação · Infração de velocidade · '+rotulo+' · '+M.nome+(cad&&cad.codigo?' · Código '+cad.codigo:'')+' · '+mesNome(mes);
+  const quando = x => x ? new Date(x.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : '';
+  const anul = c.ev.filter(e => e.anulado).sort((a,b) => a.ts<b.ts?-1:1);
+  const L = [
+    'Prezados,', '',
+    'Após revisão dos registros da telemetria, retificamos a penalidade por excesso de velocidade comunicada anteriormente.', '',
+    'Motorista: '+M.nome,
+    'Código: '+(cad && cad.codigo ? cad.codigo : 'não cadastrado'),
+    'Período: '+mesNome(mes).toLowerCase(), '',
+    'Penalidade comunicada'+(est.rh.ult?' em '+quando(est.rh.ult):'')+': '+descreverSig(sigDe(est.rh.ult)),
+    {t:'Penalidade correta após revisão: '+descreverSig(est.sig), adv:true}, ''
+  ];
+  if(anul.length){
+    L.push('Picos anulados ('+anul.length+'):');
+    anul.forEach(e => { const a = e.anulado; L.push('- '+dataBR(e.ts)+' · '+e.placa+' · '+e.vel+' km/h · '+(e.cond==='chuva'?'chuva':'seco')+' · '+(MOTIVOS[a.motivo]||'anulado')+(a.obs?' ('+a.obs+')':'')+(a.anuladoPor?' · por '+a.anuladoPor:'')); });
+    L.push('');
+  }
+  L.push('Situação acumulada: '+r.advAc+' '+(r.advAc===1?'advertência':'advertências')+' e '+r.susAc+' '+(r.susAc===1?'suspensão':'suspensões')+'.', '');
+  L.push('Atenciosamente,', 'Gestão de Frota · Grupo Dínamo / Tóliman Transportes');
+  const linhas = L.map(x => typeof x==='string' ? {t:x, adv:false} : x);
+  return {assunto, corpo:linhas.map(x => (x.adv?'► ':'')+x.t).join('\n'),
+    html:linhas.map(x => x.t==='' ? '<div><br></div>' : x.adv ? '<div class="adv-linha"><b style="font-size:12pt">'+esc(x.t)+'</b></div>' : '<div>'+esc(x.t)+'</div>').join('')};
+}
 const rhUi = {chave:null};
 function renderRH(M, mes, info){
   const card = $('#rh-card');
-  card.hidden = !info.chaves.rh;
-  if(!info.chaves.rh) return;
+  const ret = info.est.rh.st==='retificar';
+  card.hidden = !info.chaves.rh && !ret;
+  if(card.hidden) return;
   const cfg = rhCfg();
-  const chave = info.chaves.rh+'|'+(cadDe(M.nome)||{}).codigo+'|'+A.ate[mes]+'|'+enviados(M.nome).length;
+  const chave = (ret?info.chaves.rhret:info.chaves.rh)+'|'+(cadDe(M.nome)||{}).codigo+'|'+A.ate[mes]+'|'+enviados(M.nome).length+'|'+(M.meses[mes].anulados||0);
   if(rhUi.chave!==chave){
-    rhUi.chave = chave; const e = montarEmailRH(M, mes);
+    rhUi.chave = chave; const e = ret ? montarEmailRet(M, mes, info.est) : montarEmailRH(M, mes);
     $('#rh-assunto').value = e.assunto; $('#rh-corpo').innerHTML = e.html;
   }
   $('#rh-para').value = cfg.para || ''; $('#rh-cc').value = cfg.cc || '';
-  const ult = enviados(M.nome).find(e => e.chave===info.chaves.rh);
-  $('#rh-note').innerHTML = ult ? 'Enviado em '+new Date(ult.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : '<span class="st sus">Pendente</span>';
+  const ult = info.est.rh.st==='enviado' ? info.est.rh.ult : null;
+  $('#rh-note').innerHTML = ult ? 'Enviado em '+new Date(ult.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : ret ? '<span class="st adv">Retificar</span>' : '<span class="st sus">Pendente</span>';
   $('#rh-hint').innerHTML = !cfg.para ? 'Defina o e-mail do RH. <button class="linkbtn" type="button" data-rhcfg-ir="1">Configurar</button>' : 'Copie e cole no seu e-mail. Depois marque como enviado.';
   $('#rh-ok').disabled = !store.canWrite || !!ult;
   $('#rh-ok').textContent = ult ? 'Já marcado como enviado' : 'Marcar como enviado';
 }
 async function marcarRH(){
   const M = A.mot.get(comUi.motorista); if(!M) return;
-  const info = comInfo(M, ui.mes); if(!info || !info.chaves.rh || info.inativo) return;
+  const info = comInfo(M, ui.mes); if(!info || info.inativo) return;
+  const ret = info.est.rh.st==='retificar';
+  if(!ret && !info.chaves.rh) return;
   const cfg = rhCfg();
   try{
-    await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'rh', chave:info.chaves.rh, sig:info.est.sig, assunto:$('#rh-assunto').value, texto:textoDe($('#rh-corpo')), email:cfg.para||'', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
+    await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:ret?'rhret':'rh', chave:ret?info.chaves.rhret:info.chaves.rh, sig:ret?(info.est.sig||'nenhuma'):info.est.sig, assunto:$('#rh-assunto').value, texto:textoDe($('#rh-corpo')), email:cfg.para||'', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
     render();
   }catch(e){ $('#rh-hint').textContent = 'Não foi possível registrar ('+((e&&(e.code||e.message))||e)+').'; }
 }
@@ -1813,7 +1853,7 @@ async function copiarCampo(id, btn){
 
 /* ---------- comunicados por WhatsApp ---------- */
 const ALERTA_PCT = 0.8; // alerta preventivo a partir de 80% da tolerância
-const TIPO_COM = {pen:'Penalidade', alerta:'Alerta preventivo', resumo:'Resumo do mês', rh:'E-mail ao RH'};
+const TIPO_COM = {pen:'Penalidade', alerta:'Alerta preventivo', resumo:'Resumo do mês', rh:'E-mail ao RH', ret:'Retificação', rhret:'Retificação ao RH'};
 const REGRA_MSG = {b1:'Pista seca, de 90 a 95 km/h', b2:'Pista seca, de 96 a 99 km/h', b3:'Igual ou acima de 100 km/h', ch:'Chuva, acima de 70 km/h por mais de 1 minuto'};
 let comIdx = new Map();
 function indexarComunicados(){
@@ -1832,9 +1872,12 @@ function comInfo(M, mes){
   const alerta = perto.length ? 'alerta:'+mes+':'+perto.map(g=>g.id).join('+') : null;
   const info = {chaves:{pen, alerta, resumo:'resumo:'+mes}, perto, pendente:null};
   const est = info.est = estadoEnvio(M, mes);
-  if(est.wa.st==='pendente') info.pendente = 'pen';
+  if(est.wa.st==='retificar') info.pendente = 'ret';
+  else if(est.wa.st==='pendente') info.pendente = 'pen';
   else if(alerta && (est.wa.st==='nada' || est.wa.st==='enviado') && !foiEnviado(M.nome, alerta)) info.pendente = 'alerta';
   info.chaves.rh = pen ? 'rh:'+pen : null;
+  info.chaves.ret = est.wa.st==='retificar' ? 'ret:'+mes+':'+(est.sig||'nenhuma') : null;
+  info.chaves.rhret = est.rh.st==='retificar' ? 'rhret:'+mes+':'+(est.sig||'nenhuma') : null;
   info.rhPendente = est.rh.st==='pendente';
   const cadM = cadDe(M.nome);
   info.inativo = !!(cadM && !ativo(cadM));
@@ -1899,6 +1942,7 @@ async function marcarFora(){
   }catch(e){ $('#com-hint').textContent = 'Não foi possível registrar ('+((e&&(e.code||e.message))||e)+').'; }
 }
 function montarLegenda(M, mes, tipo){
+  if(tipo==='ret') return 'Olá, '+nomeProprio(M.nome)+'. Após revisão, a sua penalidade de excesso de velocidade de '+mesNome(mes).toLowerCase()+(sigPen(M, mes) ? ' foi ajustada. Segue o comunicado atualizado.' : ' foi cancelada.')+' Gestão de Frota · Grupo Dínamo / Tóliman Transportes.';
   const nomeT = tipo==='pen' ? 'comunicado de excesso de velocidade' : tipo==='alerta' ? 'alerta preventivo de velocidade' : 'resumo de velocidade';
   return 'Olá, '+nomeProprio(M.nome)+'. Segue seu '+nomeT+' de '+mesNome(mes).toLowerCase()+'. Gestão de Frota · Grupo Dínamo / Tóliman Transportes.';
 }
@@ -2037,16 +2081,20 @@ function renderCom(x){
     $('#rh-card').hidden = true;
     return;
   }
-  const disp = {pen:!!info.chaves.pen, alerta:!!info.chaves.alerta, resumo:true};
+  const disp = {ret:!!info.chaves.ret, pen:!!info.chaves.pen, alerta:!!info.chaves.alerta, resumo:true};
   if(!comUi.tipo || !disp[comUi.tipo] || comUi.motorista!==M.nome) comUi.tipo = comUi.pedido && disp[comUi.pedido] ? comUi.pedido : (info.pendente || (disp.pen?'pen':'resumo'));
   comUi.pedido = null; comUi.motorista = M.nome;
-  $('#com-tipos').innerHTML = ['pen','alerta','resumo'].map(t => '<button class="chip" type="button" data-tipo="'+t+'" aria-pressed="'+(comUi.tipo===t)+'"'+(disp[t]?'':' disabled title="Não se aplica neste mês"')+'>'+TIPO_COM[t]+(info.pendente===t?' · pendente':'')+'</button>').join('');
+  $('#com-tipos').innerHTML = (disp.ret?['ret','pen','alerta','resumo']:['pen','alerta','resumo']).map(t => '<button class="chip" type="button" data-tipo="'+t+'" aria-pressed="'+(comUi.tipo===t)+'"'+(disp[t]?'':' disabled title="Não se aplica neste mês"')+'>'+TIPO_COM[t]+(info.pendente===t?' · pendente':'')+'</button>').join('');
   const chave = M.nome+'|'+mes+'|'+comUi.tipo;
   if(comUi.chave!==chave){ comUi.chave = chave; comUi.texto = montarLegenda(M, mes, comUi.tipo); }
   const leg = $('#com-leg'); if(document.activeElement!==leg) leg.value = comUi.texto;
   const c = x.c, r = x.r;
+  // retificação de penalidade cancelada vai só com texto; ajustada leva a imagem atual da penalidade
+  const semImg = comUi.tipo==='ret' && !info.est.sig;
+  $('#com-img').closest('.com-img-wrap').hidden = semImg; $('#com-dl').hidden = semImg; $('#com-copy').hidden = semImg;
+  const tipoImg = comUi.tipo==='ret' ? 'pen' : comUi.tipo;
   const imgKey = chave+'|'+(cad?cad.codigo:'')+'|'+A.ate[mes]+'|'+[c.b1,c.b2,c.b3,c.ch,r.advAc,r.susAc].join(',');
-  if(comUi.imgKey!==imgKey){ comUi.imgKey = imgKey; gerarImagem(M, mes, comUi.tipo, imgKey); }
+  if(!semImg && comUi.imgKey!==imgKey){ comUi.imgKey = imgKey; gerarImagem(M, mes, tipoImg, imgKey); }
   $('#com-fora').hidden = !(store.canWrite && comUi.tipo==='pen' && info.est.wa.st==='pendente');
   const cel = cad && cad.celular;
   atualizarLinkWa();
@@ -2119,6 +2167,7 @@ async function registrarEnvio(){
   const info = comInfo(M, ui.mes);
   const body = {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:comUi.tipo, chave:info.chaves[comUi.tipo], texto:comUi.texto, celular:cad.celular, enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null};
   if(comUi.tipo==='pen') body.sig = info.est.sig;
+  if(comUi.tipo==='ret') body.sig = info.est.sig || 'nenhuma';
   try{ await store.put('comunicados', store.newId(), body); render(); }
   catch(e){ $('#com-hint').textContent = 'O WhatsApp abriu, mas não foi possível registrar o envio ('+((e&&(e.code||e.message))||e)+').'; }
 }
