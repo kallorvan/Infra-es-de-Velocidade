@@ -1,0 +1,286 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guia completo · Infrações de Velocidade</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="layout.css">
+<style>
+.wrap{max-width:1040px}
+section{padding:44px 0}
+.hero-grid{grid-template-columns:minmax(0,1fr) 380px;grid-template-areas:"id sem"}
+.hero h1{font-size:46px}
+.hero h1 em{font-size:30px}
+.hero p.sub{max-width:52ch;font-size:14.5px;margin-bottom:0}
+.rot{border:1px solid var(--navy3);background:var(--navy2);padding:20px 22px}
+.rot h3{font-size:15px;text-transform:uppercase;color:#fff;letter-spacing:.06em;margin-bottom:10px}
+.rot ol{list-style:none;margin:0;padding:0;counter-reset:r}
+.rot li{counter-increment:r;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid var(--navy3);color:#fff;font-size:13.5px;font-weight:500}
+.rot li:first-child{border-top:0}
+.rot li::before{content:counter(r,decimal-leading-zero);font-family:var(--disp);font-weight:700;font-size:22px;color:var(--accent);line-height:1}
+.rot a{color:inherit;text-decoration:none}
+.lead{font-size:15px;max-width:74ch;margin:0 0 20px}
+h3.sub3{font-size:18px;text-transform:uppercase;color:var(--navy);margin:28px 0 10px}
+.passos{list-style:none;margin:0;padding:0;counter-reset:p}
+.passos li{counter-increment:p;display:grid;grid-template-columns:30px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid #F1F4F8;font-size:14.5px}
+.passos li:last-child{border-bottom:0}
+.passos li::before{content:counter(p);width:26px;height:26px;background:var(--navy);color:#fff;font-family:var(--disp);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.passos.acc li::before{background:var(--accent)}
+.lista{margin:0;padding:0;list-style:none}
+.lista li{padding:9px 0 9px 16px;border-bottom:1px solid #F1F4F8;font-size:14.5px;position:relative}
+.lista li:last-child{border-bottom:0}
+.lista li::before{content:"";position:absolute;left:0;top:17px;width:6px;height:6px;background:var(--navy)}
+.k{font-family:var(--mono);font-size:12px;background:var(--paper);border:1px solid var(--line);padding:1px 6px;border-radius:2px;white-space:nowrap}
+.nota{margin:16px 0 0;font-size:13.5px;color:var(--steel);border-left:3px solid var(--line);padding:2px 0 2px 12px}
+.nota.alerta{border-left-color:var(--accent);color:var(--ink)}
+.nota.ok{border-left-color:#2E7D52;color:var(--ink)}
+.req{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);margin-bottom:22px}
+.req div{background:#fff;padding:14px 16px;font-size:13px;color:var(--steel)}
+.req b{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--navy);margin-bottom:5px;font-weight:600}
+figure.shot{margin:18px 0 0;background:#fff;border:1px solid var(--line);padding:10px}
+figure.shot img{display:block;width:100%;height:auto;border:1px solid #F1F4F8}
+figure.shot.estreita{max-width:440px}
+figure.shot figcaption{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel);margin-top:8px}
+.card + .card, .card + figure, figure + .card{margin-top:18px}
+.grid2{grid-template-columns:1fr 1fr}
+.lado{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;align-items:start}
+.lado figure.shot{margin:0}
+td b{font-weight:600}
+@media(max-width:820px){.hero-grid{grid-template-columns:1fr;grid-template-areas:"id" "sem"}.grid2,.lado{grid-template-columns:1fr}.req{grid-template-columns:1fr 1fr}.top nav{display:none}.hero h1{font-size:38px}}
+@page{size:A4;margin:12mm 0}
+@page:first{margin-top:0}
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-size:13px}
+  .stickytop{position:static;box-shadow:none}
+  .top nav{display:none}
+  .wrap{max-width:none;padding:0 15mm}
+  .hero{padding:26px 0}
+  .hero-grid{grid-template-columns:minmax(0,1fr) 300px !important;grid-template-areas:"id sem" !important}
+  .hero h1{font-size:40px !important}
+  .grid2{grid-template-columns:1fr 1fr !important;gap:14px}
+  .lado{grid-template-columns:minmax(0,1fr) 290px !important}
+  .req{grid-template-columns:repeat(4,1fr) !important}
+  section{padding:22px 0;break-inside:auto}
+  section.np{break-before:auto}
+  section{padding:16px 0}
+  .sec-head{margin-bottom:14px;break-after:avoid}
+  h3.sub3{break-after:avoid;margin-top:20px}
+  .card,.rot,tr,.passos li,figure.shot,.req{break-inside:avoid}
+  .card{padding:16px 18px}
+  .lead{font-size:13.5px;margin-bottom:14px}
+  .passos li,.lista li{font-size:13px;padding:7px 0}
+  .lista li{padding-left:16px}.lista li::before{top:14px}
+  td{padding:8px 10px} th{padding:0 10px 8px}
+  footer{break-inside:avoid;padding:20px 0}
+}
+</style>
+</head><body>
+
+<div class="stickytop" id="stickytop">
+<header class="top"><div class="wrap top-in">
+  <img src="logo.png" alt="Grupo Dínamo · Tóliman Transportes">
+  <div class="rule"></div>
+  <div class="who">Guia completo<b>Infrações de Velocidade</b></div>
+  <nav><a href="#acesso">Acesso</a><a href="#importar">Importar</a><a href="#cadastro">Cadastro</a><a href="#visao">Visão geral</a><a href="#avisos">Comunicados</a><a href="#backup">Backup</a><a href="#regras">Regras</a><a href="#problemas">Problemas</a></nav>
+</div></header>
+</div>
+
+<div class="hero"><div class="wrap hero-grid">
+  <div class="h-id">
+    <div class="eyebrow">Guia completo · Equipe GR</div>
+    <h1>Infrações de velocidade<em>Manual de uso do painel</em></h1>
+    <p class="sub">O painel lê as planilhas de excesso de velocidade da telemetria (seco e chuva), soma os picos de cada motorista no mês e aplica as regras de tolerância. Com isso ele gera o comunicado ao motorista (imagem para o WhatsApp) e o texto do e-mail ao RH. Os dados ficam na pasta do canal no Teams: todos que conectam a pasta veem as mesmas informações.</p>
+  </div>
+  <div class="h-sem">
+    <div class="rot"><h3>Neste guia</h3><ol>
+      <li><a href="#acesso">Primeiro acesso</a></li>
+      <li><a href="#importar">Importar a planilha do dia</a></li>
+      <li><a href="#cadastro">Cadastro de motoristas</a></li>
+      <li><a href="#visao">Visão geral</a></li>
+      <li><a href="#avisos">Enviar os comunicados</a></li>
+      <li><a href="#backup">Backup</a></li>
+      <li><a href="#regras">Regras</a></li>
+      <li><a href="#problemas">Problemas comuns</a></li>
+    </ol></div>
+  </div>
+</div></div>
+
+<section id="acesso"><div class="wrap">
+  <div class="sec-head"><h2>01 · Primeiro acesso</h2><p>Uma vez em cada computador; depois é só abrir o arquivo</p><span class="tag">1ª vez</span></div>
+  <div class="req">
+    <div><b>Canal</b>Ter acesso ao canal privado Infrações de velocidade, na Equipe GR.</div>
+    <div><b>OneDrive</b>Ícone de nuvem perto do relógio, com a conta da empresa.</div>
+    <div><b>Navegador</b>Chrome ou Edge. Firefox e Safari não gravam na pasta.</div>
+    <div><b>Seu nome</b>O painel pede na primeira vez, para mostrar quem está usando.</div>
+  </div>
+
+  <div class="grid2">
+    <div class="card"><h3>Abra os arquivos do canal</h3><p class="hint">No Teams</p>
+      <ol class="passos">
+        <li><span>Vá em <b>Equipes</b> › <b>Equipe GR</b> › canal <b>Infrações de velocidade</b> (canal privado, com cadeado).</span></li>
+        <li><span>Clique na aba <b>Arquivos</b> no alto do canal.</span></li>
+        <li><span>Confira o arquivo <b>Infrações de velocidade.html</b> e a pasta <b>Dados do painel</b>.</span></li>
+      </ol>
+      <p class="nota alerta">Não abra o painel dentro do Teams: por lá ele não grava os dados. Se o canal não aparecer, peça para ser adicionado.</p></div>
+    <div class="card"><h3>Vincule a pasta ao seu OneDrive</h3><p class="hint">Atalho: não copia nada, todos usam a mesma pasta</p>
+      <ol class="passos">
+        <li><span>Na aba Arquivos, clique em <span class="k">⋯</span> › <b>Adicionar atalho ao OneDrive</b> (ou <b>Abrir no SharePoint</b> e procure a opção lá).</span></li>
+        <li><span>Abra o Explorador (<span class="k">Win</span> + <span class="k">E</span>) › <b>OneDrive - empresa</b> › pasta do atalho. Pode levar alguns minutos para aparecer.</span></li>
+        <li><span>Botão direito na pasta › <b>Sempre manter neste dispositivo</b>.</span></li>
+      </ol>
+      <p class="nota">Sem a opção de atalho? Use <b>Sincronizar</b>. Só uma das duas, nunca as duas no mesmo computador.</p></div>
+  </div>
+
+  <h3 class="sub3">Abra o painel e conecte a pasta</h3>
+  <div class="card"><ol class="passos acc">
+    <li><span>Botão direito em <b>Infrações de velocidade.html</b> › <b>Abrir com</b> › Chrome ou Edge.</span></li>
+    <li><span>No aviso do topo, digite <b>seu nome</b> e clique em <b>Conectar pasta</b>.</span></li>
+    <li><span>Escolha a <b>mesma pasta</b> onde está o arquivo e clique em <b>Selecionar pasta</b>.</span></li>
+    <li><span>Clique em <b>Editar arquivos</b> e, se aparecer, em <b>Permitir em todas as visitas</b>.</span></li>
+  </ol></div>
+  <figure class="shot"><img src="prints/01-conectar.jpg" alt="Aviso para conectar a pasta, com o campo de nome"><figcaption>Primeira vez: nome + Conectar pasta</figcaption></figure>
+  <figure class="shot"><img src="prints/02-topo-online.jpg" alt="Topo do painel com pasta sincronizada e usuários online"><figcaption>Conectado: pasta da equipe · sincronizado e quem está online</figcaption></figure>
+  <p class="nota ok">Na primeira conexão o painel cria a pasta <b>Dados do painel</b> e leva para ela o que estava só no seu navegador. Não mexa nem apague nada dentro dela.</p>
+  <p class="nota">No dia a dia: abra o arquivo pelo Explorador. Se aparecer <b>Reconectar pasta</b>, clique e confirme. O que um colega importa aparece para você em poucos segundos. O link <b>trocar</b>, ao lado do seu nome, muda o nome. O painel tem cinco abas: <b>Visão geral</b>, <b>Motorista</b>, <b>Cadastro de motoristas</b>, <b>Importar planilhas</b> e <b>Regras</b>; o mês fica no canto superior direito.</p>
+</div></section>
+
+<section id="importar" class="np"><div class="wrap">
+  <div class="sec-head"><h2>02 · Importar a planilha do dia</h2><p>Os eventos novos são somados ao mês</p><span class="tag">Diário</span></div>
+  <div class="card"><ol class="passos">
+    <li><span>Abra a aba <b>Importar planilhas</b>.</span></li>
+    <li><span>Arraste a planilha "Infrações de Velocidade" exportada da telemetria para a área tracejada, ou clique nela para escolher o arquivo. Seco e chuva podem ir juntos ou separados.</span></li>
+    <li><span>Confira o quadro <b>Conferir antes de salvar</b>: mês, condição, eventos novos e já salvos.</span></li>
+    <li><span>Clique em <b>Salvar no painel</b>. A mensagem verde confirma quantos eventos foram somados.</span></li>
+  </ol>
+  <p class="nota">Reenviar um arquivo não duplica nada: eventos já salvos aparecem em <b>Já salvos</b> e são ignorados. O mês vem da coluna Data e a condição (seco ou chuva), da coluna Tipo Evento.</p></div>
+  <figure class="shot"><img src="prints/03-importar.jpg" alt="Aba Importar planilhas com o quadro Conferir antes de salvar"><figcaption>Aba Importar planilhas · Conferir antes de salvar</figcaption></figure>
+</div></section>
+
+<section id="cadastro" class="np"><div class="wrap">
+  <div class="sec-head"><h2>03 · Cadastro de motoristas</h2><p>Do PDF "Cadastro de Motoristas - Detalhado", com ativos e inativos</p></div>
+  <p class="lead">Importe de novo sempre que houver motorista novo ou celular alterado. O código identifica o motorista; o nome da telemetria é ligado ao cadastro pelo nome.</p>
+  <div class="card"><ol class="passos">
+    <li><span>Abra a aba <b>Cadastro de motoristas</b> e vá até <b>Importar cadastro (PDF)</b>.</span></li>
+    <li><span>Arraste o PDF para a área tracejada. O painel lê Código, Nome do Motorista, Celular e Situação de cada página.</span></li>
+    <li><span>Confira o resumo: novos, alterados, sem celular válido e motoristas da telemetria não encontrados no PDF.</span></li>
+    <li><span>Clique em <b>Salvar no cadastro</b>.</span></li>
+  </ol></div>
+  <figure class="shot"><img src="prints/05-cadastro-conferir.jpg" alt="Conferência do PDF de cadastro antes de salvar"><figcaption>Conferir antes de salvar o cadastro</figcaption></figure>
+  <h3 class="sub3">Correções e e-mail do RH</h3>
+  <div class="card"><ul class="lista">
+    <li><b>Corrigir um motorista na hora:</b> clique no nome dele na lista Motoristas, ou preencha o formulário no topo da aba (Nome, Código, Celular, Situação), e clique em <b>Salvar cadastro</b>.</li>
+    <li><b>Falta cadastrar:</b> motorista que aparece na telemetria mas não está no PDF. Cadastre com o código do sistema.</li>
+    <li><b>Celular:</b> só vale para WhatsApp com DDD e 9 dígitos começando com 9. Fixo ou incompleto aparece em cinza e o motorista fica como <b>Sem celular</b>.</li>
+    <li><b>E-mail do RH:</b> preencha uma vez <b>Para</b> e <b>Cópia</b> e clique em <b>Salvar e-mail do RH</b>. É usado nos e-mails de advertência, suspensão e término.</li>
+  </ul></div>
+  <figure class="shot"><img src="prints/04-cadastro.jpg" alt="Aba Cadastro de motoristas"><figcaption>Aba Cadastro de motoristas</figcaption></figure>
+</div></section>
+
+<section id="visao" class="np"><div class="wrap">
+  <div class="sec-head"><h2>04 · Visão geral</h2><p>O mês escolhido: totais no topo, situação de cada motorista abaixo</p></div>
+  <figure class="shot" style="margin-top:0"><img src="prints/06-visao-geral.jpg" alt="Aba Visão geral com totais e tabela de motoristas"><figcaption>Aba Visão geral</figcaption></figure>
+  <div class="card" style="margin-top:18px"><table>
+    <thead><tr><th style="width:22%">O que aparece</th><th>O que significa</th></tr></thead>
+    <tbody>
+      <tr><td><b>Totais</b></td><td>Motoristas com eventos, picos no seco e na chuva, advertências, suspensões, términos de contrato e comunicados pendentes.</td></tr>
+      <tr><td><b>Situação</b></td><td>Advertência, Suspensão, Término de contrato, Dentro da tolerância ou Sem motorista identificado.</td></tr>
+      <tr><td><b>Barras</b></td><td>Picos do mês em cada faixa. O traço escuro marca a tolerância; barra vermelha = tolerância estourada.</td></tr>
+      <tr><td><b>Acumulado</b></td><td>Advertências e suspensões somando todos os meses importados.</td></tr>
+      <tr><td><b>Filtros e busca</b></td><td>Com penalidade, Término, Suspensão, Advertência, Dentro da tolerância e Comunicado pendente. A busca aceita nome ou placa.</td></tr>
+      <tr><td><b>Envio</b></td><td><b>Enviar</b> quando falta comunicado; o ícone verde diz qual (WhatsApp, e-mail ao RH ou os dois). Depois aparece <b>✓ Enviado</b>; motorista inativo aparece como <b>Inativo · bloqueado</b>.</td></tr>
+    </tbody></table>
+  <p class="confnote">Clique no nome do motorista ou em <b>Enviar</b> para abrir a aba <b>Motorista</b> dele. Abaixo da tabela ficam os gráficos de distribuição das velocidades no seco e na chuva.</p></div>
+  <figure class="shot"><img src="prints/07-situacao.jpg" alt="Tabela de situação filtrada por Com penalidade"><figcaption>Situação dos motoristas · filtro Com penalidade</figcaption></figure>
+</div></section>
+
+<section id="avisos" class="np"><div class="wrap">
+  <div class="sec-head"><h2>05 · Enviar os comunicados</h2><p>Aba Motorista; cada envio fica registrado</p></div>
+  <h3 class="sub3" style="margin-top:0">Motorista · WhatsApp</h3>
+  <div class="lado">
+    <div class="card" style="margin:0"><p class="hint">Penalidade, Alerta preventivo (a partir de 80% da tolerância) ou Resumo do mês.</p>
+      <ol class="passos">
+        <li><span>Escolha o tipo. O pendente já vem marcado.</span></li>
+        <li><span>Clique em <b>Baixar imagem (JPEG)</b> ou <b>Copiar imagem</b>.</span></li>
+        <li><span>Clique em <b>Abrir conversa no WhatsApp</b>. A conversa abre com um texto curto já escrito.</span></li>
+        <li><span>Anexe ou cole a imagem na conversa e envie.</span></li>
+      </ol>
+      <p class="nota">Ao abrir a conversa, o envio fica registrado em <b>Comunicados enviados</b> e sai das pendências. Se a mensagem não foi enviada, use <b>Desfazer</b> no registro.</p></div>
+    <figure class="shot"><img src="prints/09-imagem-motorista.jpg" alt="Imagem do comunicado que o motorista recebe"><figcaption>A imagem que o motorista recebe</figcaption></figure>
+  </div>
+  <figure class="shot"><img src="prints/08-whatsapp.jpg" alt="Quadro Comunicado por WhatsApp na aba Motorista"><figcaption>Aba Motorista · Comunicado por WhatsApp</figcaption></figure>
+
+  <h3 class="sub3">RH · E-mail</h3>
+  <div class="card"><p class="hint">O quadro E-mail ao RH aparece quando o motorista tem advertência, suspensão ou término no mês.</p>
+    <ol class="passos acc">
+      <li><span>Use os botões <b>Copiar</b> de <b>Para</b>, <b>Cópia</b> e <b>Assunto</b> e cole no seu e-mail.</span></li>
+      <li><span>Clique em <b>Copiar mensagem</b> e cole no corpo do e-mail. Ajuste o texto antes, se precisar.</span></li>
+      <li><span>Envie pelo seu e-mail e clique em <b>Marcar como enviado</b>.</span></li>
+    </ol></div>
+  <figure class="shot"><img src="prints/10-email-rh.jpg" alt="Quadro E-mail ao RH com para, cópia, assunto e mensagem"><figcaption>Aba Motorista · E-mail ao RH</figcaption></figure>
+
+  <h3 class="sub3">Motorista inativo</h3>
+  <div class="card"><p style="margin:0">Se o cadastro do motorista está <b>Inativo</b>, o envio fica bloqueado: WhatsApp e e-mail ao RH não aparecem. Para liberar, mude a situação para <b>Ativo</b> no cadastro ou importe um PDF atualizado.</p></div>
+  <figure class="shot"><img src="prints/11-inativo.jpg" alt="Aviso de envio bloqueado para motorista inativo"><figcaption>Envio bloqueado · cadastro inativo</figcaption></figure>
+</div></section>
+
+<section id="backup" class="np"><div class="wrap">
+  <div class="sec-head"><h2>06 · Backup</h2><p>Automático com a pasta conectada</p></div>
+  <p class="lead">Todo dia o painel salva um backup completo em <b>Dados do painel › backups</b> e guarda os 30 mais recentes. Ele leva todos os meses, o cadastro, os envios registrados e o e-mail do RH.</p>
+  <div class="grid2">
+    <div class="card"><h3>Backup na hora</h3><p class="hint">Antes de uma mudança grande, como apagar um mês.</p>
+      <ol class="passos"><li><span>Aba <b>Importar planilhas</b> › <b>Fazer backup completo (.json)</b>. O arquivo, com data e hora no nome, vai para a mesma pasta backups.</span></li></ol></div>
+    <div class="card"><h3>Restaurar um backup</h3><p class="hint">Não apaga nada que já está no painel.</p>
+      <ol class="passos">
+        <li><span>Aba <b>Importar planilhas</b> › <b>Restaurar backup (.json)</b>.</span></li>
+        <li><span>Em <b>Dados do painel › backups</b>, escolha o da data desejada › <b>Restaurar tudo</b>.</span></li>
+      </ol></div>
+  </div>
+  <figure class="shot"><img src="prints/12-backup.jpg" alt="Quadro Backup completo"><figcaption>Aba Importar planilhas · Backup completo</figcaption></figure>
+  <p class="nota">Eventos restaurados são somados sem duplicar e, no cadastro, vale a versão mais recente de cada motorista. O que você restaurar aparece para toda a equipe.</p>
+  <p class="nota alerta"><b>Sem a pasta conectada</b> (aviso amarelo no topo), os dados ficam só naquele navegador e o backup não é automático: o painel avisa quando um mês fecha ou o último backup tem 7 dias ou mais, e o botão baixa o arquivo. O melhor é conectar a pasta.</p>
+</div></section>
+
+<section id="regras"><div class="wrap">
+  <div class="sec-head"><h2>07 · Regras</h2><p>Picos de cada motorista no mês; acima da tolerância da faixa, penalidade</p></div>
+  <div class="card"><div class="tblbox"><table>
+    <thead><tr><th>Condição</th><th>Faixa</th><th>Tolerância/mês</th><th>Acima da tolerância</th></tr></thead>
+    <tbody>
+      <tr><td>Seco</td><td>87 a 89 km/h</td><td>pré-infração</td><td><span class="pill warn">só informativo</span></td></tr>
+      <tr><td>Seco</td><td>90 a 95 km/h</td><td>35 picos</td><td>perda de pontuação + <span class="pill">1 advertência</span></td></tr>
+      <tr><td>Seco</td><td>96 a 99 km/h</td><td>5 picos</td><td>perda de pontuação + <span class="pill">1 advertência</span></td></tr>
+      <tr><td>Seco</td><td>100 km/h ou mais</td><td>nenhuma</td><td><span class="pill">1 suspensão por pico</span></td></tr>
+      <tr><td>Chuva</td><td>acima de 70 km/h por mais de 1 min</td><td>20 picos</td><td>perda de pontuação + <span class="pill">1 advertência</span></td></tr>
+      <tr><td>Chuva</td><td>acima de 70 km/h por até 1 min</td><td>não conta</td><td><span class="pill warn">só informativo</span></td></tr>
+    </tbody></table></div>
+  <p class="confnote"><b>3 advertências</b> acumuladas = 1 suspensão. <b>3 suspensões</b> acumuladas = término do contrato.</p></div>
+</div></section>
+
+<section id="problemas" style="padding-top:0"><div class="wrap">
+  <div class="sec-head"><h2>08 · Problemas comuns</h2></div>
+  <div class="card"><div class="tblbox"><table>
+    <thead><tr><th style="width:36%">Problema</th><th>O que fazer</th></tr></thead>
+    <tbody>
+      <tr><td><b>O canal não aparece no Teams</b></td><td>Peça para ser adicionado ao canal Infrações de velocidade da Equipe GR.</td></tr>
+      <tr><td><b>Não existe "Adicionar atalho ao OneDrive"</b></td><td>Use <b>Abrir no SharePoint</b> e procure a opção lá; se não houver, use <b>Sincronizar</b>.</td></tr>
+      <tr><td><b>O atalho não aparece no Explorador</b></td><td>Confira se o OneDrive está conectado (nuvem perto do relógio) e aguarde alguns minutos.</td></tr>
+      <tr><td><b>Painel abre como texto ou dentro do Teams</b></td><td>Abra pelo Explorador com <b>Abrir com</b> › Chrome ou Edge.</td></tr>
+      <tr><td><b>Painel vazio ou pedindo para conectar</b></td><td>Clique em <b>Reconectar pasta</b> (ou <b>Conectar pasta</b> e escolha a pasta do arquivo).</td></tr>
+      <tr><td><b>Aviso vermelho "Não foi possível gravar na pasta"</b></td><td>Confira o OneDrive e o acesso ao canal. O painel guarda as alterações e tenta de novo sozinho.</td></tr>
+      <tr><td><b>O que um colega fez não apareceu</b></td><td>Aguarde o OneDrive sincronizar (segundos a poucos minutos) e deixe a pasta em <b>Sempre manter neste dispositivo</b>.</td></tr>
+      <tr><td><b>"Este navegador não grava na pasta"</b></td><td>Você está no Firefox ou no Safari: abra no Chrome ou no Edge.</td></tr>
+      <tr><td><b>Botão do WhatsApp não funciona</b></td><td>Motorista sem celular válido ou com cadastro inativo: corrija na aba Cadastro de motoristas.</td></tr>
+      <tr><td><b>Motorista como "Falta cadastrar"</b></td><td>O nome da telemetria não foi achado no PDF: cadastre com o código do sistema.</td></tr>
+      <tr><td><b>Importei a mesma planilha duas vezes</b></td><td>Sem problema: eventos repetidos são ignorados.</td></tr>
+      <tr><td><b>Leitor de planilha ou PDF não carregou</b></td><td>Verifique a internet e recarregue a página.</td></tr>
+      <tr><td><b>O nome no topo está errado</b></td><td>Clique em <b>trocar</b>, ao lado do seu nome.</td></tr>
+    </tbody></table></div></div>
+</div></section>
+
+<footer><div class="wrap foot">
+  <img src="logo-light.png" alt="Grupo Dínamo · Tóliman Transportes">
+  <p>Guia completo do painel Infrações de Velocidade, versão de novembro de 2026. Os prints usam dados fictícios.
+    <span class="src">Dúvidas · Equipe GR</span>
+    <span class="rel">Versão curta: <b>Manual rápido - Infrações de velocidade.pdf</b></span></p>
+</div></footer>
+</body></html>

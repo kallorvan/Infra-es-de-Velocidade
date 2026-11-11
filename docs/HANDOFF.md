@@ -71,6 +71,7 @@ Painel HTML de um arquivo só (Grupo Dínamo / Tóliman Transportes) que lê as 
   - Prints como blobs do doc. Para exportar: `export` em PDF A4 com `pictures:"fit"`; o resultado vai para um arquivo de tool-results (JSON com `bytes_b64`).
 - **Manual rápido (Claude Docs):** https://claude.ai/artifact/DJkM5GPG5Hn7LasGkJ2CkK
   - doc `63a8055f-9f8c-46a1-b12e-74bdb4c58e34`, aba `2464f03e-9075`, corpo `4ff8b66c-1f55`. Versão curta, só texto (rascunho). A versão oficial está no layout padrão Tóliman: fonte `tools/manual/rapido/manual.html` (+ `layout.css` e logos copiados do Layout Base), gerada por `python3 tools/manual/rapido/build.py` em `docs/Manual rápido - Infrações de velocidade.html` (arquivo único) e `.pdf` (A4, 4 páginas).
+- **Guia completo (layout Tóliman):** fonte `tools/manual/completo/guia.html` + `prints/` (12 prints fictícios tirados do manual antigo), gerado por `python3 tools/manual/completo/build.py` em `docs/Guia completo - Infrações de velocidade.html` e `.pdf` (A4, 11 páginas). Junta o manual de uso e o guia de acesso, já com Equipe GR › canal privado Infrações de velocidade. Substitui o "Manual de uso" antigo, que ficou desatualizado.
 - **Guia de acesso:** https://claude.ai/artifact/CGqeDjQiSiwtyQMNBw3ucR
   - doc `5b4aa888-7549-4564-a69d-2dbd4750e986`, aba `3fdcb927-70bd`, corpo `c8280f0b-e423`. Só texto, sem prints do Teams.
 
