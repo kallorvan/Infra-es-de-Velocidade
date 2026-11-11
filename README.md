@@ -4,11 +4,9 @@ Painel HTML que lê as planilhas "Infrações de Velocidade" da telemetria (seco
 
 ## Manual
 
-Passo a passo com os prints das telas: [`docs/Manual de uso - Infrações de velocidade.pdf`](<docs/Manual de uso - Infrações de velocidade.pdf>). Os prints usam dados fictícios.
-
-- Guia completo no layout Tóliman, com prints: [`docs/Guia completo - Infrações de velocidade.pdf`](<docs/Guia completo - Infrações de velocidade.pdf>) (fonte em `tools/manual/completo/`, `python3 tools/manual/completo/build.py`).
+- Guia completo no layout Tóliman, com prints (dados fictícios) e o primeiro acesso pelo Teams: [`docs/Guia completo - Infrações de velocidade.pdf`](<docs/Guia completo - Infrações de velocidade.pdf>) (fonte em `tools/manual/completo/`, `python3 tools/manual/completo/build.py`).
 - Versão curta, sem prints: [`docs/Manual rápido - Infrações de velocidade.pdf`](<docs/Manual rápido - Infrações de velocidade.pdf>). Fonte no layout Tóliman em `tools/manual/rapido/` (`python3 tools/manual/rapido/build.py`).
-- Primeiro acesso pela equipe do Teams (atalho no OneDrive, abrir no navegador, conectar a pasta): [`docs/Guia de acesso à pasta da equipe no Teams.pdf`](<docs/Guia de acesso à pasta da equipe no Teams.pdf>).
+- Post de primeiro acesso (imagem para o Teams): [`docs/posts/Post - Acesso ao painel pelo Teams.jpg`](<docs/posts/Post - Acesso ao painel pelo Teams.jpg>).
 - Contexto técnico e pendências para quem continuar o projeto: [`docs/HANDOFF.md`](docs/HANDOFF.md).
 
 ## Uso diário
