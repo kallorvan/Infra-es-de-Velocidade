@@ -70,6 +70,71 @@ teste('backup leva e restaura anulações', async p => {
   const r = await hist(p, 'EDU TESTE', '2026-09'); igual(r.anulados, 3); igual(r.advs, []);
 });
 
+/* ---------- anulações: tela ---------- */
+const abrirMotorista = async (p, nome, mes) => {
+  if(mes) await p.selectOption('#mes', mes);
+  await p.click('#tab-mot');
+  if(nome) await p.selectOption('#m-sel', nome);
+};
+const marcar = async (p, filtroTexto, n) => {
+  const linhas = await p.$$('#m-ev tbody tr');
+  let k = 0;
+  for(const tr of linhas){ if(k >= n) break; const t = await tr.innerText(); const cb = await tr.$('input[data-anul]'); if(cb && (!filtroTexto || t.includes(filtroTexto))){ await cb.check(); k++; } }
+  return k;
+};
+
+teste('UI: selecionar 3 picos, motivo SASCAR, prévia e confirmar', async p => {
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 36, 92))}});
+  await abrirMotorista(p);
+  igual(await marcar(p, '', 3), 3, 'caixas');
+  ok(await p.isVisible('#anul-bar'), 'barra visível');
+  await p.selectOption('#anul-motivo', 'sascar');
+  const prev = await p.innerText('#anul-prev');
+  ok(prev.includes('36 → 33'), 'prévia contagem: '+prev); ok(prev.includes('Advertência → Dentro da tolerância'), 'prévia situação: '+prev);
+  await p.click('#anul-ok');
+  await p.waitForFunction(() => document.querySelectorAll('#m-ev tr.anulada').length === 3);
+  ok((await p.innerText('#m-hero')).includes('Dentro da tolerância'), 'hero');
+  ok((await p.innerText('#m-ev')).includes('Erro de leitura SASCAR'), 'motivo na linha');
+  ok(!(await p.isVisible('#anul-bar')), 'barra some');
+  const n = await p.evaluate(() => Object.keys(__painel.store.data.anulacoes).length); igual(n, 3, 'gravadas');
+});
+
+teste('UI: desfazer anulação na linha', async p => {
+  const L = picos('ANA TESTE', '2026-09', 36, 92);
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L)}, anulacoes:Object.fromEntries([anul('seco', L[0])])});
+  await abrirMotorista(p);
+  await p.click('[data-anul-desfazer]');
+  await p.waitForFunction(() => !document.querySelector('#m-ev tr.anulada'));
+  igual(await p.evaluate(() => Object.keys(__painel.store.data.anulacoes).length), 0);
+});
+
+teste('UI: motivo Outro exige observação', async p => {
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 36, 92))}});
+  await abrirMotorista(p); await marcar(p, '', 1);
+  await p.selectOption('#anul-motivo', 'outro');
+  ok(await p.isDisabled('#anul-ok'), 'desabilitado sem obs');
+  await p.fill('#anul-obs', 'Velocímetro trocado em 05/09');
+  ok(!(await p.isDisabled('#anul-ok')), 'habilitado com obs');
+});
+
+teste('UI: prévia avisa mês seguinte afetado', async p => {
+  const set = picos('BIA TESTE', '2026-09', 36, 92).concat(picos('BIA TESTE', '2026-09', 6, 97, null, {desloc:40}));
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', set), '2026-10-seco': mesDoc('2026-10', 'seco', picos('BIA TESTE', '2026-10', 36, 92))}});
+  await abrirMotorista(p, 'BIA TESTE', '2026-09');
+  igual(await marcar(p, '97 km/h', 2), 2);
+  await p.selectOption('#anul-motivo', 'caminhao');
+  const prev = await p.innerText('#anul-prev');
+  ok(prev.includes('Outubro 2026'), 'mês seguinte: '+prev);
+});
+
+teste('RF3: seleção com chave que deixou de existir é descartada', async p => {
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 36, 92)), '2026-09-chuva': mesDoc('2026-09', 'chuva', picos('ANA TESTE', '2026-09', 3, 75, null, {dur:120}))}});
+  await abrirMotorista(p); await marcar(p, 'Chuva', 1);
+  ok(await p.isVisible('#anul-bar'), 'barra');
+  await p.evaluate(() => __painel.store.del('meses', '2026-09-chuva').then(__painel.render));
+  ok(!(await p.isVisible('#anul-bar')), 'barra some sem seleção válida');
+});
+
 /* ---------- runner ---------- */
 (async () => {
   const filtro = process.argv[2] || '';

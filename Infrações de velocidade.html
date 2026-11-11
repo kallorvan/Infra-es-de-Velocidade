@@ -221,6 +221,20 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 .fld input[aria-invalid="true"]{border-color:var(--sus)}
 .fld .err{font-size:11px;color:var(--sus);min-height:0}
 .fld textarea{font-family:var(--f-ui);line-height:1.5;resize:vertical;min-height:260px}
+/* anulação de picos */
+#m-ev .sel{width:30px;padding-right:0}
+#m-ev input[data-anul],#anul-all{width:15px;height:15px;accent-color:var(--coral);cursor:pointer}
+#m-ev tr.anulada td{color:var(--muted)}
+#m-ev tr.anulada td.risca{text-decoration:line-through}
+.st.anul{background:var(--track);color:var(--ink2)}
+.anul-quem{font-size:11px;color:var(--muted);margin-top:3px}
+.anul-bar{position:sticky;bottom:10px;z-index:5;margin-top:12px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--coral);border-radius:10px;padding:14px 16px;box-shadow:0 -6px 18px rgba(28,37,67,.08)}
+.anul-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;font-size:13px}
+.anul-campos{display:grid;grid-template-columns:minmax(200px,1fr) 2fr;gap:10px 12px;margin-top:10px}
+.anul-campos select{width:100%}
+.anul-prev{font-size:12.5px;margin-top:10px;line-height:1.65;color:var(--ink2)}
+.anul-prev b{color:var(--ink)}
+@media(max-width:640px){.anul-campos{grid-template-columns:1fr}}
 .com-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px}
 .com-tipos{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .com-img-wrap{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;place-items:center;min-height:200px}
@@ -435,9 +449,19 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
         <div class="sec-h"><h2>Eventos do mês</h2><span class="sec-note" id="m-ev-note"></span></div>
         <div class="tbl-scroll">
           <table id="m-ev" style="min-width:640px">
-            <thead><tr><th>Data e hora</th><th>Condição</th><th>Placa</th><th class="r">Velocidade</th><th>Faixa</th><th class="r">Duração</th></tr></thead>
+            <thead><tr><th class="sel"><input type="checkbox" id="anul-all" aria-label="Selecionar todos os picos para anular"></th><th>Data e hora</th><th>Condição</th><th>Placa</th><th class="r">Velocidade</th><th>Faixa</th><th class="r">Duração</th><th>Anulação</th></tr></thead>
             <tbody></tbody>
           </table>
+        </div>
+        <div class="anul-bar" id="anul-bar" hidden>
+          <div class="anul-h"><b id="anul-n"></b><span class="sec-note">Use quando o pico foi causado por falha no caminhão ou erro de leitura.</span><button class="linkbtn" type="button" id="anul-limpar">Limpar seleção</button></div>
+          <div class="anul-campos">
+            <div class="fld"><label for="anul-motivo">Motivo</label><select class="inp" id="anul-motivo"><option value="">Escolha o motivo</option><option value="caminhao">Falha no caminhão (sensor/velocidade)</option><option value="sascar">Erro de leitura SASCAR</option><option value="outro">Outro</option></select></div>
+            <div class="fld"><label for="anul-obs" id="anul-obs-lab">Observação (opcional)</label><input id="anul-obs" type="text" autocomplete="off" placeholder="Ex.: sensor trocado em 05/09, chamado SASCAR 1234"></div>
+          </div>
+          <div class="anul-prev" id="anul-prev"></div>
+          <div class="actions"><button class="btn" type="button" id="anul-ok" disabled>Confirmar anulação</button></div>
+          <div id="anul-msg"></div>
         </div>
       </div>
     </div>
@@ -919,7 +943,7 @@ function setSync(cls, t){ const s=$('#sync'); s.className='sync '+cls; $('#sync-
 let A = null; // análise atual
 function analisar(docs, anul){
   const meses = new Set(); const mot = new Map(); const ate = {};
-  const anIdx = new Map(); Object.values(anul || {}).forEach(a => { if(a && a.chave) anIdx.set(a.chave, a); });
+  const anIdx = new Map(); Object.entries(anul || {}).forEach(([id, a]) => { if(a && a.chave) anIdx.set(a.chave, Object.assign({id}, a)); });
   Object.values(docs).forEach(doc => {
     if(!doc || !Array.isArray(doc.ev)) return;
     meses.add(doc.mes);
@@ -1087,7 +1111,7 @@ function renderGeral(){
   // gráficos
   ['seco','chuva'].forEach(cond => {
     const cont = {}; let tot=0, curtos=0;
-    L.forEach(x => x.c.ev.forEach(e => { if(e.cond!==cond) return; const k=e.fx||'_'; (cont[e.vel]||(cont[e.vel]={}))[k]=((cont[e.vel]||{})[k]||0)+1; tot++; if(e.fx==='chc') curtos++; }));
+    L.forEach(x => x.c.ev.forEach(e => { if(e.cond!==cond || e.anulado) return; const k=e.fx||'_'; (cont[e.vel]||(cont[e.vel]={}))[k]=((cont[e.vel]||{})[k]||0)+1; tot++; if(e.fx==='chc') curtos++; }));
     $('#cs-'+cond).textContent = tot ? fmt(tot)+' eventos em '+mesNome(ui.mes)+(cond==='chuva'?' · '+fmt(tot-curtos)+' acima de 1 min':'') : 'Sem eventos importados para '+mesNome(ui.mes);
     histograma('#ch-'+cond, '#lg-'+cond, cond, cont);
   });
@@ -1220,9 +1244,70 @@ function renderMot(){
   }).join('');
 
   $('#m-ev-note').textContent = c.ev.length+' '+(c.ev.length===1?'evento':'eventos');
-  $('#m-ev tbody').innerHTML = c.ev.map(e => '<tr><td class="mini-n">'+dataBR(e.ts)+'</td><td>'+(e.cond==='chuva'?'Chuva':'Seco')+'</td><td class="mini-n">'+esc(e.placa)+'</td><td class="r mini-n" style="font-weight:600">'+e.vel+' km/h</td><td>'+(e.fx?'<span class="band-tag"><i style="background:'+FAIXA_INFO[e.fx].cor+'"></i>'+FAIXA_INFO[e.fx].nome+'</span>':'<span class="zero">—</span>')+'</td><td class="r mini-n">'+dur(e.dur)+'</td></tr>').join('');
+  const ctxAnul = M.nome+'|'+ui.mes;
+  if(anulUi.ctx!==ctxAnul){ anulUi.ctx = ctxAnul; anulUi.sel.clear(); anulUi.motivo = ''; anulUi.obs = ''; }
+  const livres = new Set(c.ev.filter(e => !e.anulado).map(e => e.chave));
+  [...anulUi.sel].forEach(k => { if(!livres.has(k)) anulUi.sel.delete(k); }); // seleção de pico que não existe mais
+  anulUi.M = M; anulUi.mes = ui.mes;
+  const pode = store.canWrite;
+  $('#anul-all').hidden = !pode || !livres.size;
+  $('#m-ev tbody').innerHTML = c.ev.map(e => {
+    const a = e.anulado;
+    const sel = a || !pode ? '' : '<input type="checkbox" data-anul="'+esc(e.chave)+'"'+(anulUi.sel.has(e.chave)?' checked':'')+' aria-label="Anular o pico de '+dataBR(e.ts)+'">';
+    const anulTd = a ? '<span class="st anul">'+esc(MOTIVOS[a.motivo]||'Anulado')+'</span><div class="anul-quem">'+(a.obs?esc(a.obs)+' · ':'')+(a.anuladoPor?'por '+esc(a.anuladoPor)+' · ':'')+(a.anuladoEm?new Date(a.anuladoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'')+(pode?' · <button class="linkbtn" type="button" data-anul-desfazer="'+esc(a.id)+'">Desfazer</button>':'')+'</div>' : '';
+    return '<tr'+(a?' class="anulada"':'')+'><td class="sel">'+sel+'</td><td class="mini-n risca">'+dataBR(e.ts)+'</td><td class="risca">'+(e.cond==='chuva'?'Chuva':'Seco')+'</td><td class="mini-n risca">'+esc(e.placa)+'</td><td class="r mini-n risca" style="font-weight:600">'+e.vel+' km/h</td><td class="risca">'+(e.fx?'<span class="band-tag"><i style="background:'+FAIXA_INFO[e.fx].cor+'"></i>'+FAIXA_INFO[e.fx].nome+'</span>':'<span class="zero">—</span>')+'</td><td class="r mini-n risca">'+dur(e.dur)+'</td><td>'+anulTd+'</td></tr>';
+  }).join('');
+  renderAnulBar();
 }
 
+/* ---------- anulação de picos ---------- */
+const anulUi = {sel:new Set(), motivo:'', obs:'', ctx:null, M:null, mes:null};
+// roda o cálculo como se os picos escolhidos já estivessem anulados e compara com o atual
+function preverAnulacao(M, mes, chaves){
+  const sim = Object.assign({}, store.data.anulacoes);
+  chaves.forEach((k, i) => { sim['__prev'+i] = {chave:k}; });
+  const B = analisar(store.docs, sim), M2 = B.mot.get(M.nome);
+  const c1 = M.meses[mes], c2 = M2.meses[mes];
+  const faixas = REGRAS.filter(g => c1[g.id]!==c2[g.id]).map(g => ({nome:g.nome, antes:c1[g.id], depois:c2[g.id]}));
+  const sit = m => [situacao(M.hist[m], M).t, situacao(M2.hist[m], M2).t];
+  const afetados = A.meses.filter(m => m>mes).map(m => { const [a, d] = sit(m); return {mes:m, antes:a, depois:d}; }).filter(x => x.antes!==x.depois);
+  const [sa, sd] = sit(mes);
+  return {faixas, antes:sa, depois:sd, afetados};
+}
+function renderAnulBar(){
+  const bar = $('#anul-bar'), n = anulUi.sel.size, M = anulUi.M, mes = anulUi.mes;
+  const tot = $('#anul-all'); if(tot){ const livres = $('#m-ev tbody').querySelectorAll('input[data-anul]').length; tot.checked = n>0 && n===livres; tot.indeterminate = n>0 && n<livres; }
+  bar.hidden = !n || !store.canWrite || !M;
+  if(bar.hidden) return;
+  $('#anul-n').textContent = n===1 ? 'Anular 1 pico' : 'Anular '+n+' picos';
+  const mot = $('#anul-motivo'), obs = $('#anul-obs');
+  if(document.activeElement!==mot) mot.value = anulUi.motivo;
+  if(document.activeElement!==obs) obs.value = anulUi.obs;
+  const exigeObs = anulUi.motivo==='outro';
+  $('#anul-obs-lab').textContent = exigeObs ? 'Observação (obrigatória)' : 'Observação (opcional)';
+  $('#anul-ok').disabled = !anulUi.motivo || (exigeObs && !anulUi.obs.trim());
+  const pv = preverAnulacao(M, mes, [...anulUi.sel]);
+  const L = pv.faixas.map(f => esc(f.nome)+': <b>'+f.antes+' → '+f.depois+'</b> picos');
+  L.push('Situação em '+mesNome(mes)+': '+(pv.antes===pv.depois ? 'não muda ('+esc(pv.antes)+')' : '<b>'+esc(pv.antes)+' → '+esc(pv.depois)+'</b>'));
+  if(pv.afetados.length) L.push('Também muda: '+pv.afetados.map(x => '<b>'+mesNome(x.mes)+'</b> ('+esc(x.antes)+' → '+esc(x.depois)+')').join(', '));
+  $('#anul-prev').innerHTML = L.join('<br>');
+}
+async function anularSelecionados(){
+  const M = anulUi.M, mes = anulUi.mes; if(!M || !anulUi.sel.size || $('#anul-ok').disabled) return;
+  const evs = M.meses[mes].ev.filter(e => anulUi.sel.has(e.chave) && !e.anulado);
+  const quando = new Date().toISOString();
+  $('#anul-ok').disabled = true;
+  try{
+    for(const e of evs) await comRetentativa(() => store.put('anulacoes', idAnul(e.chave), {chave:e.chave, mes, cond:e.cond, motorista:M.nome, ts:e.ts, placa:e.placa, vel:e.vel, dur:e.dur, motivo:anulUi.motivo, obs:anulUi.obs.trim(), anuladoEm:quando, anuladoPor:store.uid||null}));
+    anulUi.sel.clear(); anulUi.motivo = ''; anulUi.obs = '';
+    $('#anul-msg').innerHTML = '';
+    render();
+  }catch(err){ $('#anul-msg').innerHTML = '<div class="msg err">Não foi possível anular ('+esc((err&&(err.code||err.message))||err)+'). Tente de novo.</div>'; renderAnulBar(); }
+}
+async function desfazerAnulacao(id){
+  try{ await store.del('anulacoes', id); render(); }
+  catch(err){ $('#anul-msg').innerHTML = '<div class="msg err">Não foi possível desfazer a anulação.</div>'; }
+}
 /* ---------- importar ---------- */
 let pendente = null; // {grupos:[...]} aguardando confirmação
 let armado = null;
@@ -2136,6 +2221,16 @@ function abrirMot(nome){ ui.motorista = nome; renderMot(); setTab('mot'); window
 $('#tbody').addEventListener('click', e => { const tr=e.target.closest('tr[data-m]'); if(tr) abrirMot(tr.dataset.m); });
 $('#tbody').addEventListener('keydown', e => { if(e.key!=='Enter') return; const tr=e.target.closest('tr[data-m]'); if(tr) abrirMot(tr.dataset.m); });
 $('#m-sel').addEventListener('change', e => { ui.motorista = e.target.value; renderMot(); });
+$('#m-ev').addEventListener('change', e => {
+  const cb = e.target.closest('input[data-anul]');
+  if(cb){ if(cb.checked) anulUi.sel.add(cb.dataset.anul); else anulUi.sel.delete(cb.dataset.anul); renderAnulBar(); return; }
+  if(e.target.id==='anul-all'){ const marcar = e.target.checked; $('#m-ev tbody').querySelectorAll('input[data-anul]').forEach(x => { x.checked = marcar; if(marcar) anulUi.sel.add(x.dataset.anul); else anulUi.sel.delete(x.dataset.anul); }); renderAnulBar(); }
+});
+$('#m-ev').addEventListener('click', e => { const b = e.target.closest('[data-anul-desfazer]'); if(b) desfazerAnulacao(b.dataset.anulDesfazer); });
+$('#anul-motivo').addEventListener('change', e => { anulUi.motivo = e.target.value; renderAnulBar(); });
+$('#anul-obs').addEventListener('input', e => { anulUi.obs = e.target.value; renderAnulBar(); });
+$('#anul-ok').addEventListener('click', anularSelecionados);
+$('#anul-limpar').addEventListener('click', () => { anulUi.sel.clear(); $('#m-ev tbody').querySelectorAll('input[data-anul]').forEach(x => { x.checked = false; }); renderAnulBar(); });
 $('#m-prev').addEventListener('click', () => { const s=$('#m-sel'); if(s.selectedIndex>0){ ui.motorista=s.options[s.selectedIndex-1].value; renderMot(); } });
 $('#m-next').addEventListener('click', () => { const s=$('#m-sel'); if(s.selectedIndex<s.options.length-1){ ui.motorista=s.options[s.selectedIndex+1].value; renderMot(); } });
 $('#file').addEventListener('change', e => { const f=[...e.target.files]; e.target.value=''; if(f.length) arquivos(f); });
