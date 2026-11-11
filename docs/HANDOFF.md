@@ -69,6 +69,8 @@ Painel HTML de um arquivo só (Grupo Dínamo / Tóliman Transportes) que lê as 
 - **Manual (Claude Docs):** https://claude.ai/artifact/UohuwoongUKf5vX2RZYmL1
   - doc `e12c2bb1-65e0-4b0e-a36d-5e8ab4701096`, aba `da28d0ae-a8c2`, corpo `26071660-448d`, rev 18.
   - Prints como blobs do doc. Para exportar: `export` em PDF A4 com `pictures:"fit"`; o resultado vai para um arquivo de tool-results (JSON com `bytes_b64`).
+- **Manual rápido (Claude Docs):** https://claude.ai/artifact/DJkM5GPG5Hn7LasGkJ2CkK
+  - doc `63a8055f-9f8c-46a1-b12e-74bdb4c58e34`, aba `2464f03e-9075`, corpo `4ff8b66c-1f55`. Versão curta, só texto; PDF em `docs/Manual rápido - Infrações de velocidade.pdf`.
 - **Guia de acesso:** https://claude.ai/artifact/CGqeDjQiSiwtyQMNBw3ucR
   - doc `5b4aa888-7549-4564-a69d-2dbd4750e986`, aba `3fdcb927-70bd`, corpo `c8280f0b-e423`. Só texto, sem prints do Teams.
 

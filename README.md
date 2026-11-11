@@ -6,6 +6,7 @@ Painel HTML que lê as planilhas "Infrações de Velocidade" da telemetria (seco
 
 Passo a passo com os prints das telas: [`docs/Manual de uso - Infrações de velocidade.pdf`](<docs/Manual de uso - Infrações de velocidade.pdf>). Os prints usam dados fictícios.
 
+- Versão curta, sem prints: [`docs/Manual rápido - Infrações de velocidade.pdf`](<docs/Manual rápido - Infrações de velocidade.pdf>).
 - Primeiro acesso pela equipe do Teams (atalho no OneDrive, abrir no navegador, conectar a pasta): [`docs/Guia de acesso à pasta da equipe no Teams.pdf`](<docs/Guia de acesso à pasta da equipe no Teams.pdf>).
 - Contexto técnico e pendências para quem continuar o projeto: [`docs/HANDOFF.md`](docs/HANDOFF.md).
 
