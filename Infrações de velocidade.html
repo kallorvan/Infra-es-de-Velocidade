@@ -2207,6 +2207,8 @@ addEventListener('scroll', () => top.classList.toggle('stuck', scrollY>4), {pass
 setTab(ui.tab);
 render();
 store.init(render);
+// gancho só para os testes automáticos (tools/test): não existe no uso normal
+if(window.__teste) window.__painel = {A:() => A, store, analisar, render};
 })();
 </script>
 
