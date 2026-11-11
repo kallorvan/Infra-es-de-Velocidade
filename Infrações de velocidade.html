@@ -1050,6 +1050,7 @@ try{ const t = localStorage.getItem('infra-vel-tab'); if(t) ui.tab=t; }catch(e){
 
 function render(){
   A = analisar(store.docs, store.data.anulacoes);
+  A.semAnul = Object.keys(store.data.anulacoes||{}).length ? analisar(store.docs, {}).mot : A.mot;
   cadVinc = null;
   const sel = $('#mes');
   const meses = A.meses;
@@ -1843,7 +1844,7 @@ function montarEmailRH(M, mes){
   const partes = [];
   if(r.advs.length) partes.push(r.advs.length+' '+(r.advs.length===1?'advertência':'advertências'));
   if(r.susDir) partes.push(r.susDir+' '+(r.susDir===1?'suspensão':'suspensões')+' por velocidade igual ou acima de 100 km/h');
-  const zap = enviados(M.nome).find(e => e.chave===info.chaves.pen);
+  const zap = info.est.wa.st==='enviado' ? info.est.wa.ult : null;
   const L = [
     'Prezados,', '',
     'Informamos penalidade por excesso de velocidade registrada pela telemetria.', '',
@@ -1861,7 +1862,7 @@ function montarEmailRH(M, mes){
   if(r.susAdv) L.push('Com '+r.advAc+' advertências acumuladas, foi gerada '+(r.susAdv===1?'1 suspensão':r.susAdv+' suspensões')+' por reincidência.');
   if(r.terminoNoMes) L.push('Com '+r.susAc+' suspensões acumuladas, o motorista atingiu o critério de término do contrato de trabalho.');
   L.push('Situação acumulada: '+r.advAc+' '+(r.advAc===1?'advertência':'advertências')+' e '+r.susAc+' '+(r.susAc===1?'suspensão':'suspensões')+'.', '');
-  L.push('Comunicado ao motorista: '+(zap ? 'enviado por WhatsApp em '+new Date(zap.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+'.' : 'ainda não enviado.'), '');
+  L.push('Comunicado ao motorista: '+(zap ? (zap.via==='manual' ? 'registrado como enviado fora do painel em ' : 'enviado por WhatsApp em ')+new Date(zap.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+'.' : 'ainda não enviado.'), '');
   L.push('Atenciosamente,', 'Gestão de Frota · Grupo Dínamo / Tóliman Transportes');
   const linhas = L.map(x => typeof x==='string' ? {t:x, adv:false} : x);
   const corpo = linhas.map(x => (x.adv?'► ':'')+x.t).join('\n');
@@ -2010,9 +2011,16 @@ function estadoEnvio(M, mes){
   const sig = sigPen(M, mes);
   const lst = enviados(M.nome).filter(e => e.mes===mes);
   const cadM = cadDe(M.nome), inativo = !!(cadM && !ativo(cadM));
+  // assinatura que a penalidade teria sem nenhuma anulação
+  const M0 = A && A.semAnul && A.semAnul.get(M.nome), sig0 = M0 ? sigPen(M0, mes) : sig;
   const canal = tipos => {
     const ult = lst.find(e => tipos.includes(e.tipo) && sigDe(e)) || null; // lista já vem do mais recente para o mais antigo
-    let st = !ult ? (sig ? 'pendente' : 'nada') : sigDe(ult)===(sig||'nenhuma') ? 'enviado' : 'retificar';
+    let st;
+    if(!ult) st = sig ? 'pendente' : 'nada';
+    else if(sigDe(ult)===(sig||'nenhuma')) st = 'enviado';
+    // retifica só o que mudou por anulação (ou o que já tinha sido retificado);
+    // penalidade que cresceu com dados novos do mês é uma pendência normal
+    else st = (['ret','rhret'].includes(ult.tipo) || sigDe(ult)===(sig0||'nenhuma') || !sig) ? 'retificar' : 'pendente';
     if(inativo && st!=='nada' && st!=='enviado') st = 'bloqueado';
     return {st, ult};
   };
@@ -2040,9 +2048,13 @@ function renderPendAlerta(){
 }
 async function marcarFora(){
   const M = A.mot.get(comUi.motorista); if(!M) return;
-  const info = comInfo(M, ui.mes); if(!info || info.est.wa.st!=='pendente') return;
+  const info = comInfo(M, ui.mes); if(!info) return;
+  const ret = info.est.wa.st==='retificar';
+  if(!ret && info.est.wa.st!=='pendente') return;
   try{
-    await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'pen', via:'manual', chave:info.chaves.pen, sig:info.est.sig, enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
+    await store.put('comunicados', store.newId(), ret
+      ? {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'ret', via:'manual', chave:info.chaves.ret, sig:info.est.sig||'nenhuma', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null}
+      : {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'pen', via:'manual', chave:info.chaves.pen, sig:info.est.sig, enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
     render();
   }catch(e){ $('#com-hint').textContent = 'Não foi possível registrar ('+((e&&(e.code||e.message))||e)+').'; }
 }
@@ -2200,7 +2212,7 @@ function renderCom(x){
   const tipoImg = comUi.tipo==='ret' ? 'pen' : comUi.tipo;
   const imgKey = chave+'|'+(cad?cad.codigo:'')+'|'+A.ate[mes]+'|'+[c.b1,c.b2,c.b3,c.ch,r.advAc,r.susAc].join(',');
   if(!semImg && comUi.imgKey!==imgKey){ comUi.imgKey = imgKey; gerarImagem(M, mes, tipoImg, imgKey); }
-  $('#com-fora').hidden = !(store.canWrite && comUi.tipo==='pen' && info.est.wa.st==='pendente');
+  $('#com-fora').hidden = !(store.canWrite && ((comUi.tipo==='pen' && info.est.wa.st==='pendente') || (comUi.tipo==='ret' && info.est.wa.st==='retificar')));
   const cel = cad && cad.celular;
   atualizarLinkWa();
   const ult = enviados(M.nome).find(e => e.chave===info.chaves[comUi.tipo]);
@@ -2540,7 +2552,7 @@ setTab(ui.tab);
 render();
 store.init(render);
 // gancho só para os testes automáticos (tools/test): não existe no uso normal
-if(window.__teste) window.__painel = {A:() => A, store, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias};
+if(window.__teste) window.__painel = {A:() => A, store, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias, emailRH:(n, m) => montarEmailRH(A.mot.get(n), m).corpo};
 })();
 </script>
 

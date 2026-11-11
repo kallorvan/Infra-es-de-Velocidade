@@ -255,6 +255,42 @@ teste('retificação: desfazer anulação comunicada gera nova retificação', a
   e = await estado(p); igual([e.wa, e.rh], ['retificar', 'retificar'], 'anulação desfeita');
 });
 
+/* ---------- correções da revisão final ---------- */
+teste('final: retificação sem celular pode ser marcada fora do painel', async p => {
+  const L = L36();
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L)}, motoristas:Object.fromEntries([cad('ANA TESTE', 101, 'Ativo', '')]), comunicados:Object.fromEntries([env('ANA TESTE', '2026-09', 'pen', PEN, {sig:PEN, via:'manual'})]), anulacoes:an3(L)});
+  igual((await estado(p)).wa, 'retificar');
+  await abrirMotorista(p);
+  ok(await p.isVisible('#com-fora'), 'botão visível em retificar');
+  await p.click('#com-fora');
+  await p.waitForFunction(() => __painel.estadoEnvio(__painel.A().mot.get('ANA TESTE'), '2026-09').wa.st === 'enviado');
+  const r = await p.evaluate(() => Object.values(__painel.store.data.comunicados).find(x => x.tipo === 'ret'));
+  igual([r.via, r.sig], ['manual', 'nenhuma']);
+});
+
+teste('final: penalidade que cresce com dados novos do mês (sem anulação) volta a pendente, não retificar', async p => {
+  const L = L36().concat(picos('ANA TESTE', '2026-09', 6, 97, null, {desloc:40}));
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L)}, motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), comunicados:enviadoNos2(PEN)});
+  const e = await estado(p); igual([e.wa, e.rh, e.sig], ['pendente', 'pendente', 'pen:2026-09:b1+b2:s0']);
+  await abrirMotorista(p);
+  ok(!(await p.inputValue('#rh-assunto')).startsWith('Retificação'), 'e-mail normal');
+});
+
+teste('final: e-mail ao RH informa o WhatsApp de retificação e o fora do painel', async p => {
+  const L = L36().concat(picos('ANA TESTE', '2026-09', 6, 97, null, {desloc:40}));
+  const PEN2 = 'pen:2026-09:b1+b2:s0';
+  const b2 = L.filter(l => l.vel === 97).slice(0, 2);
+  const com = Object.fromEntries([env('ANA TESTE', '2026-09', 'pen', PEN2, {sig:PEN2}), env('ANA TESTE', '2026-09', 'ret', 'ret:2026-09:'+PEN, {sig:PEN, enviadoEm:'2026-10-20T12:00:00.000Z'})]);
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L)}, motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), comunicados:com, anulacoes:Object.fromEntries(b2.map(l => anul('seco', l)))});
+  await abrirMotorista(p);
+  await p.evaluate(() => { const M = __painel.A().mot.get('ANA TESTE'); }); // só garante a análise
+  const txt = await p.evaluate(() => __painel.emailRH('ANA TESTE', '2026-09'));
+  ok(txt.includes('Comunicado ao motorista: enviado por WhatsApp em 20/10/2026'), txt.split('\n').filter(l => l.includes('Comunicado')).join(' | '));
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L36())}, motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), comunicados:Object.fromEntries([env('ANA TESTE', '2026-09', 'pen', PEN, {sig:PEN, via:'manual'})])});
+  const t2 = await p.evaluate(() => __painel.emailRH('ANA TESTE', '2026-09'));
+  ok(t2.includes('Comunicado ao motorista: registrado como enviado fora do painel em 05/10/2026'), t2.split('\n').filter(l => l.includes('Comunicado')).join(' | '));
+});
+
 /* ---------- aba Histórico ---------- */
 const doisMot = () => {
   const ana = picos('ANA TESTE', '2026-09', 36, 92, 'AAA1A11'), anaOut = picos('ANA TESTE', '2026-10', 10, 92, 'AAA1A11');

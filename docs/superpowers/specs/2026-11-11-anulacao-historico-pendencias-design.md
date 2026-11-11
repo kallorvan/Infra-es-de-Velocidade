@@ -76,7 +76,8 @@ Seja `atual` a assinatura de agora (ou `nenhuma` se não há penalidade) e `ulti
 | cadastro inativo | bloqueado (não conta como pendência) |
 | há penalidade e nenhum envio | pendente |
 | `ultimo.sig` = `atual` | enviado |
-| `ultimo.sig` ≠ `atual` | retificar |
+| `ultimo.sig` ≠ `atual`, e a diferença vem de anulação (`ultimo.sig` = assinatura sem anulações), ou o último envio já era retificação, ou a penalidade foi cancelada | retificar |
+| `ultimo.sig` ≠ `atual` por dados novos do mês (penalidade cresceu sem anulação) | pendente (envio normal) |
 | sem penalidade e nenhum envio | nada a enviar |
 
 O alerta preventivo e o resumo do mês continuam como hoje e não entram nas pendências.
@@ -87,7 +88,7 @@ Faixa abaixo do cabeçalho, só quando há pendências: "**N pendências de envi
 
 ### Marcar como enviado (fora do painel)
 
-No quadro de WhatsApp da aba Motorista, botão **Marcar como enviado (fora do painel)** quando o estado é pendente. Grava um registro `tipo:'pen'`, `via:'manual'`, com `sig`. O RH já tem "Marcar como enviado".
+No quadro de WhatsApp da aba Motorista, botão **Marcar como enviado (fora do painel)** quando o estado é pendente ou retificar (neste caso grava `tipo:'ret'`, `via:'manual'`). Grava um registro `tipo:'pen'`, `via:'manual'`, com `sig`. O RH já tem "Marcar como enviado".
 
 ### Retificação
 
