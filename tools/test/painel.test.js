@@ -4,6 +4,14 @@ const path = require('path'), {pathToFileURL} = require('url');
 const {mesDoc, picos, semear} = require('./fixtures');
 const URL0 = pathToFileURL(path.join(__dirname, '..', '..', 'Infrações de velocidade.html')).href;
 
+const fs = require('fs');
+const XLSX_JS = path.join(__dirname, '.cache', 'xlsx.full.min.js'); // baixe com: cd tools/test/.cache && npm pack xlsx@0.18.5
+const temXlsx = fs.existsSync(XLSX_JS);
+// só o próprio arquivo é carregado; a biblioteca de planilhas vem do cache local quando existe
+const rotas = p => p.route('**/*', r => { const u = r.request().url();
+  if(u.startsWith('file:')) return r.continue();
+  if(temXlsx && u.includes('xlsx.full')) return r.fulfill({path:XLSX_JS, contentType:'text/javascript'});
+  return r.abort(); });
 const testes = [];
 const teste = (nome, fn) => testes.push({nome, fn});
 function ok(c, msg){ if(!c) throw new Error('falhou: '+(msg || '')); }
@@ -315,6 +323,67 @@ teste('ficha: histórico disciplinar mostra meses posteriores ao escolhido', asy
   ok(tl.includes('Outubro 2026') && tl.includes('Setembro 2026'), tl);
 });
 
+/* ---------- pasta da equipe e regressão ---------- */
+// pasta simulada com o armazenamento privado do navegador (OPFS), como em tools/manual/prints.js
+const conectarPasta = async (p, disp, nome, idbSufixo) => {
+  await p.addInitScript(([d, n, suf]) => {
+    window.__escolherPasta = async () => (await navigator.storage.getDirectory()).getDirectoryHandle('Equipe', {create:true});
+    if(!sessionStorage.x){ sessionStorage.x = 1; localStorage.setItem('infra-vel-dispositivo', d); localStorage.setItem('infra-vel-usuario', n); }
+    // este Chromium de teste cai ao reler da IndexedDB um atalho de pasta OPFS: cada aba usa a sua base
+    if(suf){ const o = indexedDB.open.bind(indexedDB); indexedDB.open = (x, v) => o(x+suf, v); }
+  }, [disp, nome, idbSufixo]);
+  if(p.url().startsWith('http')) await p.reload(); else await viaHttp(p);
+  await p.click('[data-pasta="escolher"]');
+  await p.waitForFunction(() => __painel.store.mode === 'pasta', null, {timeout:15000});
+};
+
+const HTTP0 = 'http://localhost:8765/painel.html'; // a pasta simulada (OPFS) não existe em páginas file://
+const viaHttp = async pg => { await pg.route(HTTP0, r => r.fulfill({path:decodeURIComponent(new URL(URL0).pathname), contentType:'text/html; charset=utf-8'})); await pg.goto(HTTP0); };
+
+teste('pasta: anulação feita na aba A aparece na aba B após a leitura', async (p, ctx) => {
+  await viaHttp(p);
+  await p.evaluate(async () => { const r = await navigator.storage.getDirectory(); for await (const [n] of r.entries()) await r.removeEntry(n, {recursive:true}); });
+  await conectarPasta(p, 'pcana', 'Ana Souza', '');
+  const L = picos('ANA TESTE', '2026-09', 36, 92);
+  await p.evaluate(d => __painel.store.put('meses', '2026-09-seco', d).then(__painel.render), mesDoc('2026-09', 'seco', L));
+  const B = await ctx.newPage(); B.setDefaultTimeout(20000);
+  await rotas(B); await B.addInitScript(() => { window.__teste = true; });
+  await conectarPasta(B, 'pcbruno', 'Bruno Lima', '-b');
+  await B.waitForFunction(() => { const M = __painel.A().mot.get('ANA TESTE'); return M && M.meses['2026-09'].b1 === 36; });
+  const [id, reg] = anul('seco', L[0], 'caminhao');
+  await p.evaluate(([i, r]) => __painel.store.put('anulacoes', i, Object.assign(r, {anuladoPor:'Ana Souza'})).then(__painel.render), [id, reg]);
+  await B.waitForFunction(() => __painel.A().mot.get('ANA TESTE').meses['2026-09'].anulados === 1);
+  igual(await B.evaluate(() => __painel.A().mot.get('ANA TESTE').meses['2026-09'].b1), 35);
+});
+
+teste('regressão: importar planilha, salvar cadastro, comunicado e RH continuam funcionando', async p => {
+  if(!temXlsx) throw new Error('falta tools/test/.cache/xlsx.full.min.js (cd tools/test/.cache && npm pack xlsx@0.18.5 e extraia package/dist/xlsx.full.min.js)');
+  await semear(p, {config:{rh:{para:'rh@exemplo.com.br', cc:''}}});
+  // planilha fictícia gerada no próprio navegador com a biblioteca do painel
+  const b64 = await p.evaluate(() => {
+    const rows = [['Infrações de Velocidade'], [], ['Data', 'Veículo', 'Motorista', 'Duração', 'Velocidade', 'Tipo Evento', 'Limite']];
+    for(let i = 0; i < 36; i++) rows.push([String(1 + (i % 28)).padStart(2, '0')+'/09/2026 10:'+String(i).padStart(2, '0')+':00', 'REG1A23', 'ANA TESTE', '00:30', 92, 'Excesso de velocidade - Seco', 90]);
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Infrações');
+    return XLSX.write(wb, {type:'base64', bookType:'xlsx'});
+  });
+  await p.click('#tab-imp');
+  await p.setInputFiles('#file', {name:'teste-seco.xlsx', mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer:Buffer.from(b64, 'base64')});
+  await p.click('#imp-ok');
+  await p.waitForFunction(() => { const M = __painel.A().mot.get('ANA TESTE'); return M && M.meses['2026-09'].b1 === 36; });
+  // cadastro manual
+  await p.click('#tab-cad');
+  await p.fill('#cad-nome', 'ANA TESTE'); await p.fill('#cad-cod', '101'); await p.fill('#cad-cel', '(13) 99123-4567');
+  await p.click('#cad-form button[type="submit"]');
+  await p.waitForFunction(() => Object.values(__painel.store.data.motoristas).some(m => m.codigo === '101'));
+  // comunicado e RH
+  await abrirMotorista(p);
+  await p.click('#com-wa');
+  await p.waitForFunction(() => __painel.estadoEnvio(__painel.A().mot.get('ANA TESTE'), '2026-09').wa.st === 'enviado');
+  ok((await p.inputValue('#rh-assunto')).startsWith('Infração de velocidade · Advertência · ANA TESTE'), 'assunto RH');
+  await p.click('#rh-ok');
+  await p.waitForFunction(() => __painel.pendencias().length === 0);
+});
+
 /* ---------- runner ---------- */
 (async () => {
   const filtro = process.argv[2] || '';
@@ -327,7 +396,7 @@ teste('ficha: histórico disciplinar mostra meses posteriores ao escolhido', asy
     p.setDefaultTimeout(+process.env.TIMEOUT || 5000);
     const erros = [];
     p.on('pageerror', e => erros.push(e.message));
-    await p.route('**/*', r => r.request().url().startsWith('file:') ? r.continue() : r.abort());
+    await rotas(p);
     await p.addInitScript(() => { window.__teste = true; });
     p.on('dialog', d => d.accept());
     try{
