@@ -227,6 +227,25 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 #m-ev tr.anulada td{color:var(--muted)}
 #m-ev tr.anulada td.risca{text-decoration:line-through}
 .st.anul{background:var(--track);color:var(--ink2)}
+#mot-body.sem-mes .so-mes{display:none}
+.pontos{display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle}
+.ponto{display:inline-grid;place-items:center;min-width:22px;height:18px;padding:0 4px;border-radius:5px;font-size:9.5px;font-weight:800;letter-spacing:.02em;cursor:default}
+.ponto.ok{background:var(--ok-bg);color:var(--ok)}
+.ponto.pend{background:var(--sus);color:#fff}
+.ponto.ret{background:#C98A1B;color:#fff}
+.ponto.bloq{background:var(--track);color:var(--muted)}
+#hist-tbl{min-width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+#hist-tbl th,#hist-tbl td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:middle;background:var(--card)}
+#hist-tbl thead th{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+#hist-tbl .nm{position:sticky;left:0;z-index:1;box-shadow:1px 0 0 var(--line);min-width:190px}
+#hist-tbl .nm-btn{font-size:12.5px;color:var(--ink);text-decoration:none;font-weight:700;text-align:left}
+#hist-tbl .nm-btn:hover{color:var(--coral);text-decoration:underline}
+#hist-tbl .cod-h{font-size:10.5px;color:var(--muted);margin-top:2px}
+#hist-tbl td.cel{cursor:pointer}
+#hist-tbl td.cel:hover{background:var(--hover)}
+#hist-tbl td.vazio{color:var(--track-ink)}
+.anul-n{display:inline-block;margin-left:5px;font-size:10.5px;font-weight:700;color:var(--ink3)}
+.hist-leg{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:11.5px;color:var(--muted)}
 .anul-quem{font-size:11px;color:var(--muted);margin-top:3px}
 .anul-bar{position:sticky;bottom:10px;z-index:5;margin-top:12px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--coral);border-radius:10px;padding:14px 16px;box-shadow:0 -6px 18px rgba(28,37,67,.08)}
 .anul-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;font-size:13px}
@@ -322,6 +341,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" id="tab-geral" aria-selected="true" aria-controls="v-geral">Visão geral</button>
     <button class="tab" role="tab" id="tab-mot" aria-selected="false" aria-controls="v-mot">Motorista</button>
+    <button class="tab" role="tab" id="tab-hist" aria-selected="false" aria-controls="v-hist">Histórico</button>
     <button class="tab" role="tab" id="tab-cad" aria-selected="false" aria-controls="v-cad">Cadastro de motoristas</button>
     <button class="tab" role="tab" id="tab-imp" aria-selected="false" aria-controls="v-imp">Importar planilhas</button>
     <button class="tab" role="tab" id="tab-reg" aria-selected="false" aria-controls="v-reg">Regras</button>
@@ -390,7 +410,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       </div>
       <div class="hero" id="m-hero"></div>
 
-      <div class="sec" id="com-sec">
+      <div class="sec so-mes" id="com-sec">
         <div class="sec-h"><h2>Comunicado por WhatsApp</h2><span class="sec-note" id="com-note"></span></div>
         <div class="msg info" id="com-bloq" hidden></div>
         <div class="com-grid" id="com-grid">
@@ -437,7 +457,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
         </div>
       </div>
 
-      <div class="sec">
+      <div class="sec so-mes">
         <div class="sec-h"><h2>Picos do mês contra a tolerância</h2><span class="sec-note" id="m-mes-note"></span></div>
         <div class="rules-grid" id="m-rules"></div>
       </div>
@@ -452,7 +472,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
         <div class="card timeline" id="m-tl"></div>
       </div>
 
-      <div class="sec">
+      <div class="sec so-mes">
         <div class="sec-h"><h2>Eventos do mês</h2><span class="sec-note" id="m-ev-note"></span></div>
         <div class="tbl-scroll">
           <table id="m-ev" style="min-width:640px">
@@ -475,6 +495,24 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
   </section>
 
   <!-- CADASTRO -->
+  <section id="v-hist" role="tabpanel" aria-labelledby="tab-hist" hidden>
+    <div class="sec">
+      <div class="sec-h"><h2>Histórico dos motoristas</h2><span class="sec-note" id="hist-note"></span></div>
+      <div class="tools">
+        <input type="search" id="hist-q" placeholder="Buscar nome, placa ou código" aria-label="Buscar nome, placa ou código">
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="hist-chips">
+          <button class="chip" type="button" data-f="todos" aria-pressed="true">Todos</button>
+          <button class="chip" type="button" data-f="pend" aria-pressed="false">Com pendência</button>
+          <button class="chip" type="button" data-f="pen" aria-pressed="false">Com penalidade</button>
+          <button class="chip" type="button" data-f="anul" aria-pressed="false">Com anulação</button>
+          <button class="chip" type="button" data-f="ter" aria-pressed="false">Término</button>
+        </div>
+      </div>
+      <div class="tbl-scroll" style="margin-top:12px"><table id="hist-tbl"></table></div>
+      <div class="hist-leg"><span>Envio da penalidade: <b>M</b> = motorista (WhatsApp), <b>RH</b> = e-mail ao RH ·</span><span><span class="ponto ok">M</span> enviado</span><span><span class="ponto pend">M</span> pendente</span><span><span class="ponto ret">M</span> retificar</span><span><span class="ponto bloq">M</span> bloqueado</span><span><span class="anul-n">⊘ 3</span> picos anulados</span><span>Clique no nome ou no mês para abrir a ficha.</span></div>
+    </div>
+  </section>
+
   <section id="v-cad" role="tabpanel" aria-labelledby="tab-cad" hidden>
     <div class="sec">
       <div class="sec-h"><h2 id="cad-title">Cadastrar motorista</h2><span class="sec-note">Para corrigir um motorista sem esperar o próximo PDF</span></div>
@@ -1031,7 +1069,7 @@ function render(){
   renderOnline();
   indexarComunicados();
   renderPendAlerta();
-  renderGeral(); renderMot(); renderCad(); renderRhCfg(); renderImp(); renderRegras();
+  renderGeral(); renderMot(); renderHist(); renderCad(); renderRhCfg(); renderImp(); renderRegras();
 }
 
 /* ---------- visão geral ---------- */
@@ -1198,14 +1236,24 @@ function hideTip(){ $('#tip').hidden=true; }
 /* ---------- motorista ---------- */
 function renderMot(){
   const L = linhasMes();
-  const has = L.length>0;
+  L.sort((a,b)=> ST_ORD[a.s.k]-ST_ORD[b.s.k] || a.M.nome.localeCompare(b.M.nome,'pt-BR'));
+  // motorista aberto pelo Histórico continua na ficha mesmo sem eventos no mês escolhido
+  const fora = ui.motorista && A.mot.has(ui.motorista) && !L.some(x=>x.M.nome===ui.motorista) ? A.mot.get(ui.motorista) : null;
+  const has = L.length>0 || !!fora;
   $('#mot-empty').hidden = has; $('#mot-body').hidden = !has;
   if(!has) return;
-  L.sort((a,b)=> ST_ORD[a.s.k]-ST_ORD[b.s.k] || a.M.nome.localeCompare(b.M.nome,'pt-BR'));
-  if(!ui.motorista || !L.some(x=>x.M.nome===ui.motorista)) ui.motorista = L[0].M.nome;
+  if(!fora && (!ui.motorista || !L.some(x=>x.M.nome===ui.motorista))) ui.motorista = L[0].M.nome;
   const idx = L.findIndex(x=>x.M.nome===ui.motorista);
-  $('#m-sel').innerHTML = L.map(x => '<option value="'+esc(x.M.nome)+'"'+(x.M.nome===ui.motorista?' selected':'')+'>'+esc(x.M.nome)+' — '+esc(x.s.t)+'</option>').join('');
-  $('#m-prev').disabled = idx<=0; $('#m-next').disabled = idx>=L.length-1;
+  $('#m-sel').innerHTML = (fora ? '<option value="'+esc(fora.nome)+'" selected>'+esc(fora.nome)+' — sem eventos no mês</option>' : '') + L.map(x => '<option value="'+esc(x.M.nome)+'"'+(x.M.nome===ui.motorista?' selected':'')+'>'+esc(x.M.nome)+' — '+esc(x.s.t)+'</option>').join('');
+  $('#m-prev').disabled = !!fora || idx<=0; $('#m-next').disabled = !fora && idx>=L.length-1;
+  $('#mot-body').classList.toggle('sem-mes', !!fora);
+  if(fora){
+    const nMeses = Object.keys(fora.meses).length;
+    $('#m-hero').innerHTML = '<div class="cod">'+mesNome(ui.mes)+'</div><h3>'+esc(fora.nome)+'</h3><div class="meta"><span class="pill">Sem eventos em '+mesNome(ui.mes)+'</span><span class="pill">'+nMeses+' '+(nMeses===1?'mês':'meses')+' com eventos no histórico</span></div>';
+    anulUi.M = null; anulUi.sel.clear(); renderAnulBar();
+    renderMotHist(fora, fora.hist[ui.mes]);
+    return;
+  }
   const x = L[idx], M=x.M, c=x.c, r=x.r;
   const susMes = r.susDir + r.susAdv;
   const pills = [];
@@ -1229,28 +1277,7 @@ function renderMot(){
       '<div class="outcome">'+(over?'<span class="st '+(g.pena==='sus'?'sus':'adv')+'">'+esc(res)+'</span>':esc(res))+'</div></div>';
   }).join('') + '<div class="rule-box"><div class="rh"><span class="rt"><span class="band-tag"><i style="background:var(--pre)"></i>Pré-infração · 87 a 89 km/h</span></span><span class="rr">informativo</span></div><div class="mini-n" style="font-size:20px;font-weight:600">'+c.pre+'</div><div class="outcome">Não gera penalidade</div></div>' + '<div class="rule-box"><div class="rh"><span class="rt"><span class="band-tag"><i style="background:var(--track-ink)"></i>Chuva · acima de 70 km/h por até 1 min</span></span><span class="rr">informativo</span></div><div class="mini-n" style="font-size:20px;font-weight:600">'+c.chc+'</div><div class="outcome">Não conta para a tolerância</div></div>';
 
-  const dots = (n, tot, cls) => '<div class="dots '+cls+'">'+Array.from({length:tot},(_,i)=>'<i class="'+(i<n?'on':'')+'"></i>').join('')+'</div>';
-  const advCiclo = r.advAc % ADV_P_SUS;
-  $('#m-ladder').innerHTML =
-    '<div class="step"><div class="lab">Advertências acumuladas</div><div class="val">'+r.advAc+'</div>'+dots(advCiclo, ADV_P_SUS, '')+'<div class="sec-note" style="margin-top:7px">'+(ADV_P_SUS-advCiclo)+' para a próxima suspensão</div></div>'+
-    '<div class="step"><div class="lab">Suspensões acumuladas</div><div class="val">'+r.susAc+'<small> / '+SUS_P_TER+'</small></div>'+dots(Math.min(r.susAc,SUS_P_TER), SUS_P_TER, 's')+'<div class="sec-note" style="margin-top:7px">'+(r.termino?'Limite atingido':(SUS_P_TER-r.susAc)+' para o término do contrato')+'</div></div>'+
-    '<div class="step"><div class="lab">Contrato</div><div style="margin-top:4px">'+(r.termino?'<span class="st ter">Término indicado em '+esc(mesNome(M.terminoEm))+'</span>':'<span class="st ok">Ativo</span>')+'</div><div class="sec-note" style="margin-top:10px">'+Object.keys(M.meses).length+' '+(Object.keys(M.meses).length===1?'mês':'meses')+' com eventos no histórico</div></div>';
-
-  const ate = A.meses.filter(m => m<=ui.mes).reverse();
-  $('#m-tl').innerHTML = ate.map(m => {
-    const h = M.hist[m], cm = M.meses[m];
-    let what = [];
-    if(!cm) what.push('<span style="color:var(--muted)">Sem eventos</span>');
-    else {
-      h.advs.forEach(id => { const g=REGRAS.find(z=>z.id===id); what.push('<span class="st adv">Advertência · '+esc(g.faixa)+(g.cond==='chuva'?' chuva':'')+' ('+cm[id]+'/'+g.tol+')</span>'); });
-      if(h.susDir) what.push('<span class="st sus">'+h.susDir+' susp. por ≥ 100 km/h</span>');
-      if(h.susAdv) what.push('<span class="st sus">'+h.susAdv+' susp. por 3 advertências</span>');
-      if(h.terminoNoMes) what.push('<span class="st ter">Término de contrato</span>');
-      if(!h.advs.length && !h.susDir && !h.susAdv) what.push('<span class="st ok">Dentro da tolerância</span>');
-      what.push('<span style="color:var(--muted)">'+(cm.b1+cm.b2+cm.b3)+' picos seco · '+cm.ch+' chuva > 1 min'+(cm.chc?' (+'+cm.chc+' curtos)':'')+'</span>');
-    }
-    return '<div class="tl'+(m===ui.mes?' sel':'')+'"><div class="mo">'+mesNome(m)+'</div><div class="what">'+what.join('')+'</div><div class="acc mini-n">adv. '+h.advAc+' · susp. '+h.susAc+'</div></div>';
-  }).join('');
+  renderMotHist(M, r);
 
   $('#m-ev-note').textContent = c.ev.length+' '+(c.ev.length===1?'evento':'eventos');
   const ctxAnul = M.nome+'|'+ui.mes;
@@ -1267,6 +1294,84 @@ function renderMot(){
     return '<tr'+(a?' class="anulada"':'')+'><td class="sel">'+sel+'</td><td class="mini-n risca">'+dataBR(e.ts)+'</td><td class="risca">'+(e.cond==='chuva'?'Chuva':'Seco')+'</td><td class="mini-n risca">'+esc(e.placa)+'</td><td class="r mini-n risca" style="font-weight:600">'+e.vel+' km/h</td><td class="risca">'+(e.fx?'<span class="band-tag"><i style="background:'+FAIXA_INFO[e.fx].cor+'"></i>'+FAIXA_INFO[e.fx].nome+'</span>':'<span class="zero">—</span>')+'</td><td class="r mini-n risca">'+dur(e.dur)+'</td><td>'+anulTd+'</td></tr>';
   }).join('');
   renderAnulBar();
+}
+
+function renderMotHist(M, r){
+  const dots = (n, tot, cls) => '<div class="dots '+cls+'">'+Array.from({length:tot},(_,i)=>'<i class="'+(i<n?'on':'')+'"></i>').join('')+'</div>';
+  const advCiclo = r.advAc % ADV_P_SUS;
+  $('#m-ladder').innerHTML =
+    '<div class="step"><div class="lab">Advertências acumuladas</div><div class="val">'+r.advAc+'</div>'+dots(advCiclo, ADV_P_SUS, '')+'<div class="sec-note" style="margin-top:7px">'+(ADV_P_SUS-advCiclo)+' para a próxima suspensão</div></div>'+
+    '<div class="step"><div class="lab">Suspensões acumuladas</div><div class="val">'+r.susAc+'<small> / '+SUS_P_TER+'</small></div>'+dots(Math.min(r.susAc,SUS_P_TER), SUS_P_TER, 's')+'<div class="sec-note" style="margin-top:7px">'+(r.termino?'Limite atingido':(SUS_P_TER-r.susAc)+' para o término do contrato')+'</div></div>'+
+    '<div class="step"><div class="lab">Contrato</div><div style="margin-top:4px">'+(r.termino?'<span class="st ter">Término indicado em '+esc(mesNome(M.terminoEm))+'</span>':'<span class="st ok">Ativo</span>')+'</div><div class="sec-note" style="margin-top:10px">'+Object.keys(M.meses).length+' '+(Object.keys(M.meses).length===1?'mês':'meses')+' com eventos no histórico</div></div>';
+
+  $('#m-tl').innerHTML = A.meses.slice().reverse().map(m => {
+    const h = M.hist[m], cm = M.meses[m];
+    let what = [];
+    if(!cm) what.push('<span style="color:var(--muted)">Sem eventos</span>');
+    else {
+      h.advs.forEach(id => { const g=REGRAS.find(z=>z.id===id); what.push('<span class="st adv">Advertência · '+esc(g.faixa)+(g.cond==='chuva'?' chuva':'')+' ('+cm[id]+'/'+g.tol+')</span>'); });
+      if(h.susDir) what.push('<span class="st sus">'+h.susDir+' susp. por ≥ 100 km/h</span>');
+      if(h.susAdv) what.push('<span class="st sus">'+h.susAdv+' susp. por 3 advertências</span>');
+      if(h.terminoNoMes) what.push('<span class="st ter">Término de contrato</span>');
+      if(!h.advs.length && !h.susDir && !h.susAdv) what.push('<span class="st ok">Dentro da tolerância</span>');
+      what.push('<span style="color:var(--muted)">'+(cm.b1+cm.b2+cm.b3)+' picos seco · '+cm.ch+' chuva > 1 min'+(cm.chc?' (+'+cm.chc+' curtos)':'')+'</span>');
+      if(cm.anulados) what.push('<span class="st anul">'+cm.anulados+(cm.anulados===1?' pico anulado':' picos anulados')+'</span>');
+      what.push(pontosEnvio(M, m));
+    }
+    return '<div class="tl'+(m===ui.mes?' sel':'')+'"><div class="mo">'+mesNome(m)+'</div><div class="what">'+what.join('')+'</div><div class="acc mini-n">adv. '+h.advAc+' · susp. '+h.susAc+'</div></div>';
+  }).join('');
+}
+
+/* ---------- aba Histórico ---------- */
+const PONTO_TXT = {enviado:'enviado', pendente:'pendente', retificar:'retificar', bloqueado:'bloqueado (cadastro inativo)'};
+const PONTO_CLS = {enviado:'ok', pendente:'pend', retificar:'ret', bloqueado:'bloq'};
+function pontosEnvio(M, mes){
+  const e = estadoEnvio(M, mes);
+  if(e.wa.st==='nada' && e.rh.st==='nada') return '';
+  const um = (canal, rot, nome) => { const x = e[canal]; if(x.st==='nada') return ''; const u = x.st==='enviado' && x.ult;
+    return '<span class="ponto '+canal.replace('wa','m')+' '+PONTO_CLS[x.st]+'" title="'+nome+': '+PONTO_TXT[x.st]+(u?' em '+new Date(u.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+(u.enviadoPor?' por '+esc(u.enviadoPor):'')+(u.via==='manual'?' (fora do painel)':''):'')+'">'+rot+'</span>'; };
+  return '<span class="pontos">'+um('wa','M','Motorista')+um('rh','RH','RH')+'</span>';
+}
+const histUi = {q:'', f:'todos'};
+function renderHist(){
+  const tbl = $('#hist-tbl'); if(!tbl) return;
+  document.querySelectorAll('#hist-chips .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f===histUi.f)));
+  const meses = A.meses;
+  const q = norm(histUi.q);
+  const linhas = [];
+  A.mot.forEach(M => {
+    if(M.semId) return;
+    const ms = Object.keys(M.meses);
+    const cadM = cadDe(M.nome);
+    const est = ms.map(m => estadoEnvio(M, m));
+    const pend = est.some(e => ['pendente','retificar'].includes(e.wa.st) || ['pendente','retificar'].includes(e.rh.st));
+    const f = histUi.f;
+    if(f==='pend' && !pend) return;
+    if(f==='pen' && !ms.some(m => sigPen(M, m))) return;
+    if(f==='anul' && !ms.some(m => M.meses[m].anulados)) return;
+    if(f==='ter' && !M.terminoEm) return;
+    if(q){ const placas = ms.flatMap(m => [...M.meses[m].placas]); if(!(norm(M.nome).includes(q) || placas.some(pl => norm(pl).includes(q)) || (cadM && norm(cadM.codigo).includes(q)))) return; }
+    const ult = M.hist[meses[meses.length-1]];
+    linhas.push({M, pend, ult, cadM});
+  });
+  linhas.sort((a,b) => (b.pend-a.pend) || (b.ult.susAc-a.ult.susAc) || (b.ult.advAc-a.ult.advAc) || a.M.nome.localeCompare(b.M.nome,'pt-BR'));
+  $('#hist-note').textContent = linhas.length+(linhas.length===1?' motorista':' motoristas')+' · '+meses.length+(meses.length===1?' mês':' meses');
+  const SEL = {adv:'adv', sus:'sus', ter:'ter', tol:'ok', ok:'ok'};
+  tbl.innerHTML = '<thead><tr><th class="nm">Motorista</th>'+meses.map(m => '<th data-mes="'+m+'">'+mesCurto(m)+'</th>').join('')+'<th>Acumulado</th><th>Contrato</th></tr></thead><tbody>'+
+    (linhas.length ? linhas.map(({M, ult, cadM}) => '<tr data-nome="'+esc(M.nome)+'"><td class="nm"><button class="linkbtn nm-btn" type="button" data-hist-mot="'+esc(M.nome)+'">'+esc(M.nome)+'</button>'+(cadM&&cadM.codigo?'<div class="cod-h">cód. '+esc(cadM.codigo)+(ativo(cadM)?'':' · inativo')+'</div>':'')+'</td>'+
+      meses.map(m => { const c = M.meses[m]; if(!c) return '<td data-mes="'+m+'" class="vazio">—</td>';
+        const h = M.hist[m], st = situacao(h, M), sus = h.susDir + h.susAdv;
+        const rot = st.k==='ter' ? (h.terminoNoMes ? 'Término' : 'Término (anterior)') : st.k==='sus' ? 'Susp. ×'+sus : st.k==='adv' ? 'Adv. ×'+h.advs.length : 'OK';
+        return '<td data-mes="'+m+'" data-nome="'+esc(M.nome)+'" class="cel"><span class="st '+SEL[st.k]+'">'+rot+'</span>'+(c.anulados?'<span class="anul-n" title="'+c.anulados+(c.anulados===1?' pico anulado':' picos anulados')+'">⊘ '+c.anulados+'</span>':'')+pontosEnvio(M, m)+'</td>'; }).join('')+
+      '<td class="mini-n">adv. '+ult.advAc+' · susp. '+ult.susAc+'</td><td>'+(M.terminoEm?'<span class="st ter">Término em '+mesCurto(M.terminoEm)+'</span>':'<span class="st ok">Ativo</span>')+'</td></tr>').join('')
+    : '<tr><td colspan="'+(meses.length+3)+'" class="vazio" style="text-align:center;padding:22px">Nenhum motorista com esse filtro.</td></tr>')+'</tbody>';
+}
+function abrirMotMes(nome, mes){
+  const M = A.mot.get(nome); if(!M) return;
+  ui.motorista = nome;
+  ui.mes = mes || Object.keys(M.meses).sort().pop() || ui.mes;
+  $('#mes').value = ui.mes;
+  renderGeral(); renderMot(); setTab('mot'); window.scrollTo({top:0});
 }
 
 /* ---------- anulação de picos ---------- */
@@ -2326,7 +2431,7 @@ function renderRegras(){
 /* ================= EVENTOS ================= */
 function setTab(t){
   ui.tab = t;
-  ['geral','mot','cad','imp','reg'].forEach(k => { $('#tab-'+k).setAttribute('aria-selected', String(k===t)); $('#v-'+k).hidden = k!==t; });
+  ['geral','mot','hist','cad','imp','reg'].forEach(k => { $('#tab-'+k).setAttribute('aria-selected', String(k===t)); $('#v-'+k).hidden = k!==t; });
   try{ localStorage.setItem('infra-vel-tab', t); }catch(e){}
 }
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.id.slice(4))));
@@ -2349,7 +2454,10 @@ $('#anul-motivo').addEventListener('change', e => { anulUi.motivo = e.target.val
 $('#anul-obs').addEventListener('input', e => { anulUi.obs = e.target.value; renderAnulBar(); });
 $('#anul-ok').addEventListener('click', anularSelecionados);
 $('#com-fora').addEventListener('click', marcarFora);
-$('#pend-alerta').addEventListener('click', e => { if(!e.target.closest('[data-pend-ver]')) return; ui.filtro = 'com'; setTab('geral'); renderGeral(); });
+$('#pend-alerta').addEventListener('click', e => { if(!e.target.closest('[data-pend-ver]')) return; histUi.f = 'pend'; renderHist(); setTab('hist'); window.scrollTo({top:0}); });
+$('#hist-q').addEventListener('input', e => { histUi.q = e.target.value; renderHist(); });
+$('#hist-chips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; histUi.f = b.dataset.f; renderHist(); });
+$('#hist-tbl').addEventListener('click', e => { const b = e.target.closest('[data-hist-mot]'); if(b){ abrirMotMes(b.dataset.histMot); return; } const td = e.target.closest('td.cel'); if(td) abrirMotMes(td.dataset.nome, td.dataset.mes); });
 $('#anul-limpar').addEventListener('click', () => { anulUi.sel.clear(); $('#m-ev tbody').querySelectorAll('input[data-anul]').forEach(x => { x.checked = false; }); renderAnulBar(); });
 $('#m-prev').addEventListener('click', () => { const s=$('#m-sel'); if(s.selectedIndex>0){ ui.motorista=s.options[s.selectedIndex-1].value; renderMot(); } });
 $('#m-next').addEventListener('click', () => { const s=$('#m-sel'); if(s.selectedIndex<s.options.length-1){ ui.motorista=s.options[s.selectedIndex+1].value; renderMot(); } });

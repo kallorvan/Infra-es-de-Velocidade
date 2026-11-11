@@ -247,6 +247,74 @@ teste('retificação: desfazer anulação comunicada gera nova retificação', a
   e = await estado(p); igual([e.wa, e.rh], ['retificar', 'retificar'], 'anulação desfeita');
 });
 
+/* ---------- aba Histórico ---------- */
+const doisMot = () => {
+  const ana = picos('ANA TESTE', '2026-09', 36, 92, 'AAA1A11'), anaOut = picos('ANA TESTE', '2026-10', 10, 92, 'AAA1A11');
+  const bia = picos('BIA TESTE', '2026-09', 5, 92, 'BBB2B22');
+  return {'2026-09-seco': mesDoc('2026-09', 'seco', ana.concat(bia)), '2026-10-seco': mesDoc('2026-10', 'seco', anaOut)};
+};
+
+teste('histórico: linha por motorista e coluna por mês, com pontos M/RH', async p => {
+  await semear(p, {meses:doisMot(), motoristas:Object.fromEntries([cad('ANA TESTE', 101), cad('BIA TESTE', 102)]), comunicados:Object.fromEntries([env('ANA TESTE', '2026-09', 'pen', PEN, {sig:PEN})])});
+  await p.click('#tab-hist');
+  igual(await p.$$eval('#hist-tbl thead th[data-mes]', t => t.map(x => x.dataset.mes)), ['2026-09', '2026-10']);
+  igual(await p.$$eval('#hist-tbl tbody tr', t => t.length), 2);
+  const cel = '#hist-tbl tbody tr[data-nome="ANA TESTE"] td[data-mes="2026-09"]';
+  ok((await p.innerText(cel)).includes('Adv.'), 'selo');
+  ok(await p.$(cel+' .ponto.m.ok'), 'M enviado'); ok(await p.$(cel+' .ponto.rh.pend'), 'RH pendente');
+  ok((await p.getAttribute(cel+' .ponto.m', 'title')).includes('por Teste'), 'quem enviou');
+  ok(!(await p.$('#hist-tbl tbody tr[data-nome="BIA TESTE"] .ponto')), 'sem penalidade sem pontos');
+  ok((await p.innerText('#hist-tbl tbody tr[data-nome="BIA TESTE"] td[data-mes="2026-10"]')).trim() === '—', 'mês sem evento');
+});
+
+teste('histórico: anulações aparecem na célula do mês', async p => {
+  const L = picos('ANA TESTE', '2026-09', 36, 92);
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', L)}, anulacoes:an3(L)});
+  await p.click('#tab-hist');
+  ok((await p.innerText('#hist-tbl td[data-mes="2026-09"] .anul-n')).includes('3'), 'marcador');
+});
+
+teste('histórico: filtro Com pendência e busca por placa', async p => {
+  await semear(p, {meses:doisMot(), motoristas:Object.fromEntries([cad('ANA TESTE', 101), cad('BIA TESTE', 102)])});
+  await p.click('#tab-hist');
+  await p.click('#hist-chips [data-f="pend"]');
+  igual(await p.$$eval('#hist-tbl tbody tr', t => t.map(x => x.dataset.nome)), ['ANA TESTE']);
+  await p.click('#hist-chips [data-f="todos"]');
+  await p.fill('#hist-q', 'bbb2');
+  igual(await p.$$eval('#hist-tbl tbody tr', t => t.map(x => x.dataset.nome)), ['BIA TESTE']);
+  await p.fill('#hist-q', '102');
+  igual(await p.$$eval('#hist-tbl tbody tr', t => t.map(x => x.dataset.nome)), ['BIA TESTE'], 'por código');
+});
+
+teste('histórico: Ver no alerta abre a aba filtrada', async p => {
+  await semear(p, {meses:doisMot(), motoristas:Object.fromEntries([cad('ANA TESTE', 101), cad('BIA TESTE', 102)])});
+  await p.click('#pend-alerta [data-pend-ver]');
+  ok(await p.isVisible('#v-hist'), 'aba');
+  igual(await p.getAttribute('#hist-chips [data-f="pend"]', 'aria-pressed'), 'true');
+});
+
+teste('histórico: abrir ficha pelo nome e trocar para mês sem eventos', async p => {
+  await semear(p, {meses:doisMot()});
+  await p.selectOption('#mes', '2026-10');
+  await p.click('#tab-hist');
+  await p.click('#hist-tbl tbody tr[data-nome="BIA TESTE"] [data-hist-mot]');
+  ok(await p.isVisible('#v-mot'), 'aba Motorista');
+  igual(await p.inputValue('#mes'), '2026-09', 'mês mais recente com eventos');
+  ok((await p.innerText('#m-hero')).includes('BIA TESTE'), 'ficha da Bia');
+  await p.selectOption('#mes', '2026-10');
+  ok((await p.innerText('#m-hero')).includes('BIA TESTE'), 'continua na Bia');
+  ok((await p.innerText('#m-hero')).includes('Sem eventos em Outubro 2026'), 'sem eventos');
+  ok(await p.isHidden('#com-sec'), 'sem quadro de envio');
+  ok((await p.innerText('#m-tl')).includes('Setembro 2026'), 'timeline');
+});
+
+teste('ficha: histórico disciplinar mostra meses posteriores ao escolhido', async p => {
+  await semear(p, {meses:doisMot()});
+  await abrirMotorista(p, 'ANA TESTE', '2026-09');
+  const tl = await p.innerText('#m-tl');
+  ok(tl.includes('Outubro 2026') && tl.includes('Setembro 2026'), tl);
+});
+
 /* ---------- runner ---------- */
 (async () => {
   const filtro = process.argv[2] || '';
@@ -256,6 +324,7 @@ teste('retificação: desfazer anulação comunicada gera nova retificação', a
     n++;
     const ctx = await b.newContext({viewport:{width:1280, height:900}});
     const p = await ctx.newPage();
+    p.setDefaultTimeout(+process.env.TIMEOUT || 5000);
     const erros = [];
     p.on('pageerror', e => erros.push(e.message));
     await p.route('**/*', r => r.request().url().startsWith('file:') ? r.continue() : r.abort());
