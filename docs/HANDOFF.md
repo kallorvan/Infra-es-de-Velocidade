@@ -22,6 +22,17 @@ Painel HTML de um arquivo só (Grupo Dínamo / Tóliman Transportes) que lê as 
 | `tools/manual/gerar_ficticios.py` | Gera os dados fictícios dos prints (backup JSON, planilhas do dia, PDF do cadastro). |
 | `tools/manual/prints.js` | Playwright: tira os 12 prints do manual (ver "Prints do manual"). |
 | `README.md` | Resumo de uso e regras. |
+| `tools/test/painel.test.js`, `tools/test/fixtures.js` | Testes Playwright (31 cenários, dados fictícios). Rodar depois de toda mudança: `python3 tools/build.py && node tools/test/painel.test.js [filtro]`. O gancho `window.__painel` só existe com `window.__teste`. |
+| `tools/manual/prints-historico.js` | Prints 13 a 16 do guia completo (anulação, Histórico, pendências, retificação). |
+
+## Anulação, Histórico e pendências (11/11/2026)
+
+Spec: `docs/superpowers/specs/2026-11-11-anulacao-historico-pendencias-design.md` · plano: `docs/superpowers/plans/2026-11-11-anulacao-historico-pendencias.md`.
+
+- **Coleção `anulacoes`** (em `COLECOES`, sincroniza pela pasta e vai no backup). Id = `slug(chave)`, chave = `cond|ts|motorista|placa|vel` (`chaveAnul`). Corpo: `{chave, mes, cond, motorista, ts, placa, vel, dur, motivo, obs, anuladoEm, anuladoPor}`; motivos em `MOTIVOS`. Desfazer = `store.del`.
+- **Motor:** `analisar(docs, anul)` mantém o evento anulado em `c.ev` (com `ev.anulado`) mas não conta em faixas, `vmax`, gráficos e penalidades; `c.anulados` = quantidade. A tela de anulação usa `preverAnulacao()` (roda o cálculo com as anulações simuladas).
+- **Envio:** `sigPen(M, mes)` é a assinatura da penalidade (`pen:<mes>:<faixas>:s<susp>[:t]`). Todo envio grava `sig`; registros antigos sem `sig` usam a `chave` (`sigDe`). `estadoEnvio(M, mes)` → `{sig, wa:{st, ult}, rh:{st, ult}}` com `st` = pendente | enviado | retificar | bloqueado | nada; `pendencias()` varre todos os meses. Retificação grava `tipo:'ret'` (WhatsApp) / `'rhret'` (RH) com `sig` atual (`'nenhuma'` quando a penalidade foi cancelada). "Fora do painel" grava `tipo:'pen', via:'manual'`.
+- **Telas:** faixa `#pend-alerta`; aba `#v-hist` (`renderHist`, `histUi`); ficha abre motorista sem eventos no mês escolhido (classe `sem-mes` esconde o que é só do mês); `abrirMotMes(nome, mes?)`.
 
 ## Regras de negócio (constantes `REGRAS`, `PRE`, `ADV_P_SUS`, `SUS_P_TER`, `CHUVA_MIN_S`)
 
@@ -91,6 +102,7 @@ Painel HTML de um arquivo só (Grupo Dínamo / Tóliman Transportes) que lê as 
 
 - [ ] Confirmar com o usuário o primeiro uso real na pasta do OneDrive: conectar, reabrir (o pedido de "Reconectar pasta" funciona?), sincronização entre duas pessoas e presença online.
 - [ ] Decidir se o artefato antigo do claude.ai (modo `db`) deve ser apagado.
+- [ ] Conferir com o usuário, no uso real, a primeira rodada de pendências: meses antigos tratados por fora precisam do "Marcar como enviado (fora do painel)".
 - O post de divulgação (JPEG 1080×1920 "Infrações de Velocidade mudou de lugar!") foi entregue no chat e não está no repositório. O assunto e a descrição para o Teams também foram passados no chat.
 - Post "Como acessar o painel" (JPEG 1080×1920, 3 passos: Teams › atalho no OneDrive › nome e Conectar pasta): `docs/posts/Post - Acesso ao painel pelo Teams.jpg`, fonte em `docs/posts/post-acesso-teams.html` (print com Playwright em 1080×1920). O passo 1 usa Equipe GR › canal privado Infrações de velocidade › Arquivos.
 

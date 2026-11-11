@@ -72,6 +72,8 @@ td b{font-weight:600}
   .passos li,.lista li{font-size:13px;padding:7px 0}
   .lista li{padding-left:16px}.lista li::before{top:14px}
   td{padding:8px 10px} th{padding:0 10px 8px}
+  #problemas td{padding:5px 10px;font-size:12px}
+  #problemas .sec-head{margin-bottom:8px}
   footer{break-inside:avoid;padding:20px 0}
 }
 </style>
@@ -82,7 +84,7 @@ td b{font-weight:600}
   <img src="logo.png" alt="Grupo Dínamo · Tóliman Transportes">
   <div class="rule"></div>
   <div class="who">Guia completo<b>Infrações de Velocidade</b></div>
-  <nav><a href="#acesso">Acesso</a><a href="#importar">Importar</a><a href="#cadastro">Cadastro</a><a href="#visao">Visão geral</a><a href="#avisos">Comunicados</a><a href="#backup">Backup</a><a href="#regras">Regras</a><a href="#problemas">Problemas</a></nav>
+  <nav><a href="#acesso">Acesso</a><a href="#importar">Importar</a><a href="#cadastro">Cadastro</a><a href="#visao">Visão geral</a><a href="#avisos">Comunicados</a><a href="#anular">Anular</a><a href="#historico">Histórico</a><a href="#backup">Backup</a><a href="#regras">Regras</a><a href="#problemas">Problemas</a></nav>
 </div></header>
 </div>
 
@@ -99,6 +101,8 @@ td b{font-weight:600}
       <li><a href="#cadastro">Cadastro de motoristas</a></li>
       <li><a href="#visao">Visão geral</a></li>
       <li><a href="#avisos">Enviar os comunicados</a></li>
+      <li><a href="#anular">Anular picos</a></li>
+      <li><a href="#historico">Histórico e pendências</a></li>
       <li><a href="#backup">Backup</a></li>
       <li><a href="#regras">Regras</a></li>
       <li><a href="#problemas">Problemas comuns</a></li>
@@ -142,7 +146,7 @@ td b{font-weight:600}
   <figure class="shot"><img src="prints/01-conectar.jpg" alt="Aviso para conectar a pasta, com o campo de nome"><figcaption>Primeira vez: nome + Conectar pasta</figcaption></figure>
   <figure class="shot"><img src="prints/02-topo-online.jpg" alt="Topo do painel com pasta sincronizada e usuários online"><figcaption>Conectado: pasta da equipe · sincronizado e quem está online</figcaption></figure>
   <p class="nota ok">Na primeira conexão o painel cria a pasta <b>Dados do painel</b> e leva para ela o que estava só no seu navegador. Não mexa nem apague nada dentro dela.</p>
-  <p class="nota">No dia a dia: abra o arquivo pelo Explorador. Se aparecer <b>Reconectar pasta</b>, clique e confirme. O que um colega importa aparece para você em poucos segundos. O link <b>trocar</b>, ao lado do seu nome, muda o nome. O painel tem cinco abas: <b>Visão geral</b>, <b>Motorista</b>, <b>Cadastro de motoristas</b>, <b>Importar planilhas</b> e <b>Regras</b>; o mês fica no canto superior direito.</p>
+  <p class="nota">No dia a dia: abra o arquivo pelo Explorador. Se aparecer <b>Reconectar pasta</b>, clique e confirme. O que um colega importa aparece para você em poucos segundos. O link <b>trocar</b>, ao lado do seu nome, muda o nome. O painel tem seis abas: <b>Visão geral</b>, <b>Motorista</b>, <b>Histórico</b>, <b>Cadastro de motoristas</b>, <b>Importar planilhas</b> e <b>Regras</b>; o mês fica no canto superior direito.</p>
 </div></section>
 
 <section id="importar" class="np"><div class="wrap">
@@ -224,9 +228,49 @@ td b{font-weight:600}
   <figure class="shot"><img src="prints/11-inativo.jpg" alt="Aviso de envio bloqueado para motorista inativo"><figcaption>Envio bloqueado · cadastro inativo</figcaption></figure>
 </div></section>
 
+<section id="anular" class="np"><div class="wrap">
+  <div class="sec-head"><h2>06 · Anular picos</h2><p>Falha no caminhão ou erro de leitura da SASCAR</p></div>
+  <p class="lead">Quando um pico não aconteceu de verdade, anule-o na ficha do motorista. A planilha importada não muda: o pico fica na lista, riscado, com o motivo, e deixa de contar. O painel refaz as penalidades e o acumulado de todos os meses.</p>
+  <div class="card"><ol class="passos">
+    <li><span>Na aba <b>Motorista</b>, escolha o motorista e o mês e vá até <b>Eventos do mês</b>.</span></li>
+    <li><span>Marque a caixa dos picos a anular (a caixa do cabeçalho marca todos).</span></li>
+    <li><span>Escolha o <b>motivo</b>: Falha no caminhão (sensor/velocidade), Erro de leitura SASCAR ou Outro. Em "Outro", a observação é obrigatória.</span></li>
+    <li><span>Confira a prévia: picos antes e depois, a situação do mês e os meses seguintes que também mudam.</span></li>
+    <li><span>Clique em <b>Confirmar anulação</b>.</span></li>
+  </ol>
+  <p class="nota">Para voltar atrás, clique em <b>Desfazer</b> na linha do pico anulado. Cada anulação guarda quem fez e quando, e vale para toda a equipe.</p>
+  <p class="nota alerta">Anular um pico de um mês pode mudar os meses seguintes: por exemplo, tirar uma advertência de setembro desfaz a suspensão por 3 advertências de outubro.</p></div>
+  <figure class="shot"><img src="prints/13-anular.jpg" alt="Barra de anulação com motivo, observação e prévia do efeito"><figcaption>Aba Motorista · anular picos com prévia do efeito</figcaption></figure>
+</div></section>
+
+<section id="historico" class="np"><div class="wrap">
+  <div class="sec-head"><h2>07 · Histórico e pendências</h2><p>Todos os motoristas, todos os meses, com o envio de cada penalidade</p></div>
+  <h3 class="sub3" style="margin-top:0">Aviso de pendências no topo</h3>
+  <p class="lead">Quando falta enviar alguma penalidade, de qualquer mês, aparece uma faixa no topo do painel com o total ao motorista, ao RH e de retificações. <b>Ver</b> abre o Histórico já filtrado em <b>Com pendência</b>. Cadastros inativos não contam, porque o envio está bloqueado.</p>
+  <figure class="shot" style="margin-top:0"><img src="prints/15-pendencias.jpg" alt="Faixa de pendências de envio no topo do painel"><figcaption>Faixa de pendências no topo</figcaption></figure>
+  <h3 class="sub3">Aba Histórico</h3>
+  <div class="card"><ul class="lista">
+    <li><b>Uma linha por motorista, uma coluna por mês:</b> Adv. ×N, Susp. ×N, Término ou OK; "—" quando não houve evento. O símbolo <b>⊘ N</b> mostra quantos picos foram anulados no mês.</li>
+    <li><b>Envio da penalidade:</b> <b>M</b> = motorista (WhatsApp) e <b>RH</b> = e-mail ao RH. Verde = enviado, vermelho = pendente, âmbar = retificar, cinza = bloqueado. Passe o mouse para ver a data e quem enviou.</li>
+    <li><b>Busca e filtros:</b> nome, placa ou código; Com pendência, Com penalidade, Com anulação e Término.</li>
+    <li><b>Abrir a ficha:</b> clique no nome (abre o mês mais recente com eventos) ou na célula de um mês.</li>
+  </ul></div>
+  <figure class="shot"><img src="prints/14-historico.jpg" alt="Aba Histórico com motoristas por mês e os pontos de envio"><figcaption>Aba Histórico</figcaption></figure>
+  <h3 class="sub3">Marcar como enviado (fora do painel)</h3>
+  <div class="card"><p style="margin:0">Se o comunicado ao motorista já foi entregue sem passar pelo painel (por exemplo, nos meses antes de ele existir), use <b>Marcar como enviado (fora do painel)</b> no quadro de WhatsApp. O registro guarda quem marcou. Para o RH, use <b>Marcar como enviado</b> no quadro do e-mail.</p></div>
+  <h3 class="sub3">Retificação</h3>
+  <div class="card"><p class="hint">Quando uma anulação muda uma penalidade que já foi enviada.</p>
+    <ol class="passos acc">
+      <li><span>O canal que já tinha recebido a penalidade fica como <b>Retificar</b> (âmbar) e entra no aviso do topo.</span></li>
+      <li><span><b>RH:</b> o quadro E-mail ao RH monta o e-mail de retificação, com a penalidade comunicada antes, a correta agora e os picos anulados com motivo. Copie, envie e clique em <b>Marcar como enviado</b>.</span></li>
+      <li><span><b>Motorista:</b> o quadro de WhatsApp vem com o tipo <b>Retificação</b>. Se a penalidade foi cancelada, vai só o texto; se foi ajustada, vai também a imagem atualizada. Abrir a conversa registra o envio.</span></li>
+    </ol></div>
+  <figure class="shot"><img src="prints/16-retificacao.jpg" alt="E-mail de retificação ao RH"><figcaption>Aba Motorista · e-mail de retificação ao RH</figcaption></figure>
+</div></section>
+
 <section id="backup" class="np"><div class="wrap">
-  <div class="sec-head"><h2>06 · Backup</h2><p>Automático com a pasta conectada</p></div>
-  <p class="lead">Todo dia o painel salva um backup completo em <b>Dados do painel › backups</b> e guarda os 30 mais recentes. Ele leva todos os meses, o cadastro, os envios registrados e o e-mail do RH.</p>
+  <div class="sec-head"><h2>08 · Backup</h2><p>Automático com a pasta conectada</p></div>
+  <p class="lead">Todo dia o painel salva um backup completo em <b>Dados do painel › backups</b> e guarda os 30 mais recentes. Ele leva todos os meses, o cadastro, os envios registrados, os picos anulados e o e-mail do RH.</p>
   <div class="grid2">
     <div class="card"><h3>Backup na hora</h3><p class="hint">Antes de uma mudança grande, como apagar um mês.</p>
       <ol class="passos"><li><span>Aba <b>Importar planilhas</b> › <b>Fazer backup completo (.json)</b>. O arquivo, com data e hora no nome, vai para a mesma pasta backups.</span></li></ol></div>
@@ -242,7 +286,7 @@ td b{font-weight:600}
 </div></section>
 
 <section id="regras"><div class="wrap">
-  <div class="sec-head"><h2>07 · Regras</h2><p>Picos de cada motorista no mês; acima da tolerância da faixa, penalidade</p></div>
+  <div class="sec-head"><h2>09 · Regras</h2><p>Picos de cada motorista no mês; acima da tolerância da faixa, penalidade</p></div>
   <div class="card"><div class="tblbox"><table>
     <thead><tr><th>Condição</th><th>Faixa</th><th>Tolerância/mês</th><th>Acima da tolerância</th></tr></thead>
     <tbody>
@@ -257,7 +301,7 @@ td b{font-weight:600}
 </div></section>
 
 <section id="problemas" style="padding-top:0"><div class="wrap">
-  <div class="sec-head"><h2>08 · Problemas comuns</h2></div>
+  <div class="sec-head"><h2>10 · Problemas comuns</h2></div>
   <div class="card"><div class="tblbox"><table>
     <thead><tr><th style="width:36%">Problema</th><th>O que fazer</th></tr></thead>
     <tbody>
@@ -271,6 +315,8 @@ td b{font-weight:600}
       <tr><td><b>"Este navegador não grava na pasta"</b></td><td>Você está no Firefox ou no Safari: abra no Chrome ou no Edge.</td></tr>
       <tr><td><b>Botão do WhatsApp não funciona</b></td><td>Motorista sem celular válido ou com cadastro inativo: corrija na aba Cadastro de motoristas.</td></tr>
       <tr><td><b>Motorista como "Falta cadastrar"</b></td><td>O nome da telemetria não foi achado no PDF: cadastre com o código do sistema.</td></tr>
+      <tr><td><b>Anulei o pico errado</b></td><td>Clique em <b>Desfazer</b> na linha do pico, na aba Motorista. Se a penalidade já tinha sido comunicada, o painel pede a retificação.</td></tr>
+      <tr><td><b>Aviso de pendências com meses antigos</b></td><td>Se o comunicado já foi entregue por fora, use <b>Marcar como enviado (fora do painel)</b> no WhatsApp e <b>Marcar como enviado</b> no RH.</td></tr>
       <tr><td><b>Importei a mesma planilha duas vezes</b></td><td>Sem problema: eventos repetidos são ignorados.</td></tr>
       <tr><td><b>Leitor de planilha ou PDF não carregou</b></td><td>Verifique a internet e recarregue a página.</td></tr>
       <tr><td><b>O nome no topo está errado</b></td><td>Clique em <b>trocar</b>, ao lado do seu nome.</td></tr>

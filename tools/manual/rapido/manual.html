@@ -67,7 +67,7 @@ td b{font-weight:600}
   <img src="logo.png" alt="Grupo Dínamo · Tóliman Transportes">
   <div class="rule"></div>
   <div class="who">Manual de uso<b>Infrações de Velocidade</b></div>
-  <nav><a href="#abrir">Abrir</a><a href="#importar">Importar</a><a href="#visao">Visão geral</a><a href="#avisos">Comunicados</a><a href="#cad">Cadastro</a><a href="#regras">Regras</a><a href="#problemas">Problemas</a></nav>
+  <nav><a href="#abrir">Abrir</a><a href="#importar">Importar</a><a href="#visao">Visão geral</a><a href="#avisos">Comunicados</a><a href="#anular">Anular e Histórico</a><a href="#cad">Cadastro</a><a href="#regras">Regras</a><a href="#problemas">Problemas</a></nav>
 </div></header>
 </div>
 
@@ -98,7 +98,7 @@ td b{font-weight:600}
   <p class="nota ok">Está tudo certo quando o topo mostra <b>pasta da equipe · sincronizado</b> e o seu nome com um ponto verde.</p>
   <p class="nota alerta">Não abra pelo Teams, Firefox ou Safari: nesses o painel não grava os dados.</p>
   </div>
-  <p class="nota">O painel tem cinco abas: <b>Visão geral</b>, <b>Motorista</b>, <b>Cadastro de motoristas</b>, <b>Importar planilhas</b> e <b>Regras</b>. O mês fica no canto superior direito.</p>
+  <p class="nota">O painel tem seis abas: <b>Visão geral</b>, <b>Motorista</b>, <b>Histórico</b>, <b>Cadastro de motoristas</b>, <b>Importar planilhas</b> e <b>Regras</b>. O mês fica no canto superior direito.</p>
 </div></section>
 
 <section id="importar" style="padding-top:0"><div class="wrap">
@@ -147,6 +147,26 @@ td b{font-weight:600}
   </div>
 </div></section>
 
+<section id="anular" style="padding-top:0"><div class="wrap">
+  <div class="sec-head"><h2>Anular picos e pendências</h2><p>Falha no caminhão, erro de leitura e o que falta enviar</p></div>
+  <div class="grid2">
+    <div class="card"><h3>Anular picos</h3><p class="hint">Aba Motorista › Eventos do mês. O pico fica riscado e deixa de contar.</p>
+      <ol class="passos">
+        <li><span>Marque a caixa dos picos a anular.</span></li>
+        <li><span>Escolha o motivo: <b>Falha no caminhão</b>, <b>Erro de leitura SASCAR</b> ou <b>Outro</b> (com observação).</span></li>
+        <li><span>Confira a prévia e clique em <b>Confirmar anulação</b>.</span></li>
+      </ol>
+      <p class="nota">Errou? <b>Desfazer</b> na linha do pico. A anulação refaz o acumulado dos meses seguintes.</p></div>
+    <div class="card"><h3>Histórico e pendências</h3><p class="hint">Aba Histórico: todos os motoristas, mês a mês.</p>
+      <ul class="passos" style="list-style:none">
+        <li><span><b>Faixa no topo</b>: penalidades de qualquer mês ainda não enviadas. <b>Ver</b> abre o Histórico filtrado.</span></li>
+        <li><span><b>M</b> (motorista) e <b>RH</b> em cada mês: verde enviado, vermelho pendente, âmbar retificar.</span></li>
+        <li><span><b>Retificar</b>: penalidade já enviada que mudou depois de uma anulação. O painel monta o e-mail e a mensagem de retificação.</span></li>
+      </ul>
+      <p class="nota">Já entregue por fora do painel? <b>Marcar como enviado (fora do painel)</b>.</p></div>
+  </div>
+</div></section>
+
 <section id="cad"><div class="wrap">
   <div class="sec-head"><h2>Cadastro e backup</h2><p>Aba Cadastro de motoristas e aba Importar planilhas</p></div>
   <div class="grid2">
@@ -190,6 +210,7 @@ td b{font-weight:600}
       <tr><td><b>O que um colega fez não apareceu</b></td><td>Aguarde o OneDrive sincronizar e deixe a pasta em <b>Sempre manter neste dispositivo</b>.</td></tr>
       <tr><td><b>Botão do WhatsApp não aparece</b></td><td>Motorista sem celular válido ou inativo: corrija no cadastro.</td></tr>
       <tr><td><b>Motorista como "Falta cadastrar"</b></td><td>O nome da telemetria não foi achado no PDF: cadastre com o código do sistema.</td></tr>
+      <tr><td><b>Anulei o pico errado</b></td><td>Clique em <b>Desfazer</b> na linha do pico, na aba Motorista.</td></tr>
       <tr><td><b>Leitor de planilha ou PDF não carregou</b></td><td>Verifique a internet e recarregue a página.</td></tr>
     </tbody></table></div></div>
 </div></section>
