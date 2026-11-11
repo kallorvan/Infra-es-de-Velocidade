@@ -1,0 +1,203 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual rápido · Infrações de Velocidade</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="layout.css">
+<style>
+.wrap{max-width:1040px}
+section{padding:44px 0}
+.hero-grid{grid-template-columns:minmax(0,1fr) 380px;grid-template-areas:"id sem"}
+.hero h1{font-size:46px}
+.hero h1 em{font-size:30px}
+.hero p.sub{max-width:52ch;font-size:14.5px;margin-bottom:0}
+.rot{border:1px solid var(--navy3);background:var(--navy2);padding:20px 22px}
+.rot h3{font-size:15px;text-transform:uppercase;color:#fff;letter-spacing:.06em;margin-bottom:12px}
+.rot ol{list-style:none;margin:0;padding:0;counter-reset:r}
+.rot li{counter-increment:r;display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:baseline;padding:8px 0;border-top:1px solid var(--navy3);color:#B9C4D6;font-size:13.5px}
+.rot li:first-child{border-top:0}
+.rot li::before{content:counter(r,decimal-leading-zero);font-family:var(--disp);font-weight:700;font-size:24px;color:var(--accent);line-height:1}
+.rot li b{color:#fff;font-weight:600;display:block}
+.lead{font-size:15px;max-width:72ch;margin:0 0 20px}
+.passos{list-style:none;margin:0;padding:0;counter-reset:p}
+.passos li{counter-increment:p;display:grid;grid-template-columns:30px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid #F1F4F8;font-size:14.5px}
+.passos li:last-child{border-bottom:0}
+.passos li::before{content:counter(p);width:26px;height:26px;background:var(--navy);color:#fff;font-family:var(--disp);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.passos.acc li::before{background:var(--accent)}
+.k{font-family:var(--mono);font-size:12px;background:var(--paper);border:1px solid var(--line);padding:1px 6px;border-radius:2px;white-space:nowrap}
+.nota{margin:16px 0 0;font-size:13px;color:var(--steel);border-left:3px solid var(--line);padding:2px 0 2px 12px}
+.nota.alerta{border-left-color:var(--accent);color:var(--ink)}
+.nota.ok{border-left-color:#2E7D52;color:var(--ink)}
+.grid2{grid-template-columns:1fr 1fr}
+.card .hint{margin:0 0 10px}
+td b{font-weight:600}
+.swatch{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+@media(max-width:820px){.hero-grid{grid-template-columns:1fr;grid-template-areas:"id" "sem"}.grid2{grid-template-columns:1fr}.top nav{display:none}.hero h1{font-size:38px}}
+@page{size:A4;margin:12mm 0}
+@page:first{margin-top:0}
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-size:13px}
+  .stickytop{position:static;box-shadow:none}
+  .top nav{display:none}
+  .wrap{max-width:none;padding:0 15mm}
+  .hero{padding:26px 0}
+  section{padding:24px 0;break-inside:auto}
+  section#avisos{break-before:page}
+  .hero-grid{grid-template-columns:minmax(0,1fr) 300px !important;grid-template-areas:"id sem" !important}
+  .hero h1{font-size:40px !important}
+  .grid2{grid-template-columns:1fr 1fr !important;gap:14px}
+  .card{padding:16px 18px}
+  footer{break-inside:avoid}
+  td{padding:8px 10px}
+  th{padding:0 10px 8px}
+  .confnote{margin-top:12px;padding-top:10px}
+  .sec-head{margin-bottom:16px;break-after:avoid}
+  .card,.rot,tr,.passos li{break-inside:avoid}
+  .lead{font-size:13.5px;margin-bottom:14px}
+  .passos li{font-size:13px;padding:7px 0}
+  footer{padding:20px 0}
+}
+</style>
+</head><body>
+
+<div class="stickytop" id="stickytop">
+<header class="top"><div class="wrap top-in">
+  <img src="logo.png" alt="Grupo Dínamo · Tóliman Transportes">
+  <div class="rule"></div>
+  <div class="who">Manual de uso<b>Infrações de Velocidade</b></div>
+  <nav><a href="#abrir">Abrir</a><a href="#importar">Importar</a><a href="#visao">Visão geral</a><a href="#avisos">Comunicados</a><a href="#cad">Cadastro</a><a href="#regras">Regras</a><a href="#problemas">Problemas</a></nav>
+</div></header>
+</div>
+
+<div class="hero"><div class="wrap hero-grid">
+  <div class="h-id">
+    <div class="eyebrow">Manual rápido · Equipe GR</div>
+    <h1>Infrações de velocidade<em>Como usar o painel</em></h1>
+    <p class="sub">O painel lê as planilhas de excesso de velocidade da telemetria (seco e chuva), soma os picos de cada motorista no mês e mostra quem passou da tolerância. Com isso ele gera o comunicado ao motorista (imagem para o WhatsApp) e o texto do e-mail ao RH.</p>
+  </div>
+  <div class="h-sem">
+    <div class="rot"><h3>A rotina em 4 passos</h3><ol>
+      <li><span><b>Importar a planilha do dia</b>Aba Importar planilhas</span></li>
+      <li><span><b>Ver quem passou da tolerância</b>Aba Visão geral</span></li>
+      <li><span><b>Avisar o motorista</b>Imagem pelo WhatsApp</span></li>
+      <li><span><b>Avisar o RH</b>Advertência, suspensão ou término</span></li>
+    </ol></div>
+  </div>
+</div></div>
+
+<section id="abrir"><div class="wrap">
+  <div class="sec-head"><h2>Abrir o painel</h2><p>Equipe GR › canal Infrações de velocidade</p></div>
+  <p class="lead">O arquivo fica no canal privado <b>Infrações de velocidade</b> da <b>Equipe GR</b>, no Teams. Na primeira vez em cada computador, siga o post "Como acessar o painel" (atalho no OneDrive + Conectar pasta). Depois disso:</p>
+  <div class="card"><ol class="passos">
+    <li><span>Abra o Explorador (<span class="k">Win</span> + <span class="k">E</span>) › <b>OneDrive</b> › pasta do canal.</span></li>
+    <li><span>Botão direito em <b>Infrações de velocidade.html</b> › <b>Abrir com</b> › Chrome ou Edge.</span></li>
+    <li><span>Se aparecer <b>Reconectar pasta</b>, clique e confirme.</span></li>
+  </ol>
+  <p class="nota ok">Está tudo certo quando o topo mostra <b>pasta da equipe · sincronizado</b> e o seu nome com um ponto verde.</p>
+  <p class="nota alerta">Não abra pelo Teams, Firefox ou Safari: nesses o painel não grava os dados.</p>
+  </div>
+  <p class="nota">O painel tem cinco abas: <b>Visão geral</b>, <b>Motorista</b>, <b>Cadastro de motoristas</b>, <b>Importar planilhas</b> e <b>Regras</b>. O mês fica no canto superior direito.</p>
+</div></section>
+
+<section id="importar" style="padding-top:0"><div class="wrap">
+  <div class="sec-head"><h2>Todo dia: importar a planilha</h2><p>Os eventos novos são somados ao mês</p><span class="tag">Diário</span></div>
+  <div class="card"><ol class="passos">
+    <li><span>Abra a aba <b>Importar planilhas</b>.</span></li>
+    <li><span>Arraste a planilha "Infrações de Velocidade" da telemetria para a área tracejada. Seco e chuva podem ir juntos.</span></li>
+    <li><span>Confira o quadro <b>Conferir antes de salvar</b>: mês, condição, eventos novos e já salvos.</span></li>
+    <li><span>Clique em <b>Salvar no painel</b>.</span></li>
+  </ol>
+  <p class="nota">Importar o mesmo arquivo de novo não duplica nada: eventos já salvos são ignorados.</p></div>
+</div></section>
+
+<section id="visao" style="padding-top:0"><div class="wrap">
+  <div class="sec-head"><h2>Ver quem passou da tolerância</h2><p>Aba Visão geral: totais no topo, situação de cada motorista abaixo</p></div>
+  <div class="card"><table>
+    <thead><tr><th style="width:24%">O que aparece</th><th>O que significa</th></tr></thead>
+    <tbody>
+      <tr><td><b>Situação</b></td><td>Advertência, Suspensão, Término de contrato ou Dentro da tolerância.</td></tr>
+      <tr><td><b>Barras</b></td><td>Picos do mês em cada faixa. O traço escuro é a tolerância; barra vermelha = estourou.</td></tr>
+      <tr><td><b>Acumulado</b></td><td>Advertências e suspensões somando todos os meses.</td></tr>
+      <tr><td><b>Enviar</b></td><td>Falta comunicado. O ícone verde diz qual: WhatsApp, e-mail ao RH ou os dois.</td></tr>
+      <tr><td><b>✓ Enviado</b></td><td>Comunicado já registrado.</td></tr>
+    </tbody></table>
+  <p class="confnote">Use os filtros (Com penalidade, Comunicado pendente etc.) ou busque por nome ou placa. Clique no nome ou em <b>Enviar</b> para abrir a aba <b>Motorista</b>.</p></div>
+</div></section>
+
+<section id="avisos" style="padding-top:0"><div class="wrap">
+  <div class="sec-head"><h2>Enviar os comunicados</h2><p>Aba Motorista; cada envio fica registrado</p></div>
+  <div class="grid2">
+    <div class="card"><h3>Motorista · WhatsApp</h3><p class="hint">Penalidade, alerta preventivo (a partir de 80% da tolerância) ou resumo do mês.</p>
+      <ol class="passos">
+        <li><span>Escolha o tipo. O pendente já vem marcado.</span></li>
+        <li><span>Clique em <b>Baixar imagem</b> ou <b>Copiar imagem</b>.</span></li>
+        <li><span>Clique em <b>Abrir conversa no WhatsApp</b>; o texto curto já vem escrito.</span></li>
+        <li><span>Anexe ou cole a imagem e envie.</span></li>
+      </ol>
+      <p class="nota">Abrir a conversa registra o envio. Se não enviou, use <b>Desfazer</b> em Comunicados enviados.</p></div>
+    <div class="card"><h3>RH · E-mail</h3><p class="hint">Aparece quando há advertência, suspensão ou término no mês.</p>
+      <ol class="passos acc">
+        <li><span>Copie <b>Para</b>, <b>Cópia</b> e <b>Assunto</b> e cole no seu e-mail.</span></li>
+        <li><span>Clique em <b>Copiar mensagem</b> e cole no corpo.</span></li>
+        <li><span>Envie e clique em <b>Marcar como enviado</b>.</span></li>
+      </ol>
+      <p class="nota alerta">Motorista com cadastro <b>Inativo</b> fica bloqueado: não aparecem WhatsApp nem e-mail ao RH.</p></div>
+  </div>
+</div></section>
+
+<section id="cad"><div class="wrap">
+  <div class="sec-head"><h2>Cadastro e backup</h2><p>Aba Cadastro de motoristas e aba Importar planilhas</p></div>
+  <div class="grid2">
+    <div class="card"><h3>Atualizar o cadastro</h3><p class="hint">PDF "Cadastro de Motoristas - Detalhado", sempre que houver motorista novo ou celular alterado.</p>
+      <ol class="passos">
+        <li><span>Aba <b>Cadastro de motoristas</b> › <b>Importar cadastro (PDF)</b>.</span></li>
+        <li><span>Arraste o PDF e confira o resumo: novos, alterados, sem celular válido.</span></li>
+        <li><span>Clique em <b>Salvar no cadastro</b>.</span></li>
+      </ol>
+      <p class="nota">Para corrigir um motorista na hora, clique no nome, ajuste e clique em <b>Salvar cadastro</b>. O WhatsApp só funciona com celular com DDD e 9 dígitos. O <b>E-mail do RH</b> (Para e Cópia) é preenchido uma vez nesta aba.</p></div>
+    <div class="card"><h3>Backup</h3><p class="hint">Automático com a pasta conectada: um por dia em Dados do painel › backups, guardando os 30 mais recentes.</p>
+      <ol class="passos">
+        <li><span><b>Backup na hora</b> (antes de apagar um mês, por exemplo): aba <b>Importar planilhas</b> › <b>Fazer backup completo (.json)</b>.</span></li>
+        <li><span><b>Restaurar</b>: mesma aba › <b>Restaurar backup (.json)</b> › escolha o arquivo em backups › <b>Restaurar tudo</b>.</span></li>
+      </ol>
+      <p class="nota ok">Restaurar não apaga nada que já está no painel.</p></div>
+  </div>
+</div></section>
+
+<section id="regras" style="padding-top:0"><div class="wrap">
+  <div class="sec-head"><h2>Regras</h2><p>Picos de cada motorista no mês; acima da tolerância da faixa, penalidade</p></div>
+  <div class="card"><div class="tblbox"><table>
+    <thead><tr><th>Condição</th><th>Faixa</th><th>Tolerância/mês</th><th>Acima da tolerância</th></tr></thead>
+    <tbody>
+      <tr><td>Seco</td><td>87 a 89 km/h</td><td>pré-infração</td><td><span class="pill warn">só informativo</span></td></tr>
+      <tr><td>Seco</td><td>90 a 95 km/h</td><td>35 picos</td><td>perda de pontuação + <span class="pill">1 advertência</span></td></tr>
+      <tr><td>Seco</td><td>96 a 99 km/h</td><td>5 picos</td><td>perda de pontuação + <span class="pill">1 advertência</span></td></tr>
+      <tr><td>Seco</td><td>100 km/h ou mais</td><td>nenhuma</td><td><span class="pill">1 suspensão por pico</span></td></tr>
+      <tr><td>Chuva</td><td>acima de 70 km/h por mais de 1 min</td><td>20 picos</td><td>perda de pontuação + <span class="pill">1 advertência</span></td></tr>
+    </tbody></table></div>
+  <p class="confnote"><b>3 advertências</b> acumuladas = 1 suspensão. <b>3 suspensões</b> acumuladas = término do contrato. Na chuva, eventos de até 1 minuto aparecem, mas não contam.</p></div>
+</div></section>
+
+<section id="problemas" style="padding-top:0"><div class="wrap">
+  <div class="sec-head"><h2>Problemas comuns</h2></div>
+  <div class="card"><div class="tblbox"><table>
+    <thead><tr><th style="width:36%">Problema</th><th>O que fazer</th></tr></thead>
+    <tbody>
+      <tr><td><b>Painel vazio ou pedindo para conectar</b></td><td>Clique em <b>Reconectar pasta</b> (ou <b>Conectar pasta</b> e escolha a pasta do arquivo). Confira se abriu no Chrome ou Edge, não no Teams.</td></tr>
+      <tr><td><b>Aviso vermelho "Não foi possível gravar na pasta"</b></td><td>Confira o OneDrive e o acesso ao canal. O painel tenta de novo sozinho.</td></tr>
+      <tr><td><b>O que um colega fez não apareceu</b></td><td>Aguarde o OneDrive sincronizar e deixe a pasta em <b>Sempre manter neste dispositivo</b>.</td></tr>
+      <tr><td><b>Botão do WhatsApp não aparece</b></td><td>Motorista sem celular válido ou inativo: corrija no cadastro.</td></tr>
+      <tr><td><b>Motorista como "Falta cadastrar"</b></td><td>O nome da telemetria não foi achado no PDF: cadastre com o código do sistema.</td></tr>
+      <tr><td><b>Leitor de planilha ou PDF não carregou</b></td><td>Verifique a internet e recarregue a página.</td></tr>
+    </tbody></table></div></div>
+</div></section>
+
+<footer><div class="wrap foot">
+  <img src="logo-light.png" alt="Grupo Dínamo · Tóliman Transportes">
+  <p>Manual rápido do painel Infrações de Velocidade, versão de novembro de 2026.
+    <span class="src">Dúvidas · Equipe GR</span>
+    <span class="rel">Guia completo com prints: <b>Manual de uso - Infrações de velocidade.pdf</b></span></p>
+</div></footer>
+</body></html>
