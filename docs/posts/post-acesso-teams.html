@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1C2543;--ink2:#363E58;--ink3:#5C6486;--coral:#DD4663;--mauve:#AE82B1;--sand:#F4D38D;--paper:#EFF0F5;--card:#fff;--line:#DCDEE8;--muted:#767B8D;--ok:#1E8E5A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1080px;height:1920px;background:var(--paper);font-family:'Archivo',sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;overflow:hidden}
+.top{background:var(--ink);color:#fff;padding:50px 64px 46px;position:relative;overflow:hidden}
+.top::after{content:"";position:absolute;right:-140px;top:-140px;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle,rgba(221,70,99,.55),rgba(174,130,177,.15) 60%,transparent 70%)}
+.tag{display:inline-block;background:var(--coral);color:#fff;font-weight:800;font-size:24px;letter-spacing:.08em;text-transform:uppercase;padding:10px 20px;border-radius:999px}
+h1{font-size:68px;line-height:1.02;font-weight:900;margin:22px 0 14px;letter-spacing:-.01em;position:relative;z-index:1}
+h1 span{color:var(--sand)}
+.sub{font-size:28px;line-height:1.35;color:#C9CDE0;max-width:880px;position:relative;z-index:1}
+.sub b{color:#fff}
+.body{padding:30px 48px 0}
+.pre{display:flex;gap:14px;margin-bottom:22px}
+.pre div{flex:1;background:#fff;border:2px solid var(--line);border-radius:18px;padding:12px 16px;font-size:22px;line-height:1.25;color:var(--ink2);font-weight:600}
+.pre div i{display:block;font-style:normal;font-size:30px;margin-bottom:4px}
+.step{background:var(--card);border-radius:24px;padding:24px 30px;margin-bottom:18px;display:flex;gap:26px;box-shadow:0 2px 0 var(--line)}
+.n{flex:0 0 76px;height:76px;border-radius:20px;background:var(--ink);color:#fff;font-weight:900;font-size:44px;display:flex;align-items:center;justify-content:center}
+.s2 .n{background:var(--mauve)} .s3 .n{background:var(--coral)}
+.step h2{font-size:36px;font-weight:800;line-height:1.1;margin:2px 0 10px}
+.step h2 small{display:block;font-size:22px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+ol{list-style:none;counter-reset:i}
+ol li{counter-increment:i;font-size:26px;line-height:1.28;color:var(--ink2);padding-left:40px;position:relative;margin-bottom:6px}
+ol li::before{content:counter(i);position:absolute;left:0;top:3px;width:28px;height:28px;border-radius:50%;background:var(--paper);color:var(--ink);font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center}
+b{color:var(--ink);font-weight:700}
+.k{display:inline-block;background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:0 9px;font-weight:700;color:var(--ink);font-size:24px}
+.warn{margin-top:12px;background:rgba(221,70,99,.10);border-left:6px solid var(--coral);border-radius:10px;padding:12px 16px;font-size:22px;line-height:1.3;color:#7A1030;font-weight:600}
+.okline{margin-top:12px;background:rgba(30,142,90,.10);border-left:6px solid var(--ok);border-radius:10px;padding:12px 16px;font-size:22px;line-height:1.3;color:#0F5A37;font-weight:600}
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--ok);margin:0 4px 1px 2px;vertical-align:middle}
+.foot{position:absolute;left:0;right:0;bottom:0;height:130px;background:#fff;border-top:2px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 64px}
+.foot .help{font-size:22px;color:var(--muted);line-height:1.35;max-width:500px}
+.foot .help b{color:var(--ink)}
+.logos{display:flex;gap:22px;align-items:center}
+.logos img{height:58px}
+</style></head><body>
+<div class="top">
+  <span class="tag">Passo a passo · primeiro acesso</span>
+  <h1>Como acessar o painel<br><span>Infrações de Velocidade</span></h1>
+  <p class="sub">O painel fica no Teams, na <b>Equipe GR</b>, canal <b>Infrações de velocidade</b>. Faça isto <b>uma vez em cada computador</b>; depois é só abrir o arquivo.</p>
+</div>
+<div class="body">
+  <div class="pre">
+    <div><i>👥</i>Ter acesso ao canal Infrações de velocidade</div>
+    <div><i>☁️</i>OneDrive da empresa ligado</div>
+    <div><i>🌐</i>Usar Chrome ou Edge</div>
+  </div>
+
+  <div class="step s1"><div class="n">1</div><div>
+    <h2><small>No Teams</small>Abra os arquivos do canal</h2>
+    <ol>
+      <li>Vá em <b>Equipes</b> › <b>Equipe GR</b> › canal <b>Infrações de velocidade</b> 🔒.</li>
+      <li>Clique na aba <b>Arquivos</b>.</li>
+      <li>Confira o arquivo <b>Infrações de velocidade.html</b>.</li>
+    </ol>
+    <div class="warn"><b style="color:inherit">🔒 Canal privado:</b> se ele não aparecer, peça para ser adicionado.<br>Não abra o painel dentro do Teams: por lá ele não grava os dados.</div>
+  </div></div>
+
+  <div class="step s2"><div class="n">2</div><div>
+    <h2><small>OneDrive pessoal</small>Vincule a pasta ao seu OneDrive</h2>
+    <ol>
+      <li>Na aba Arquivos, clique em <span class="k">⋯</span> › <b>Adicionar atalho ao OneDrive</b>.</li>
+      <li>Abra o Explorador (<span class="k">⊞ Win</span> + <span class="k">E</span>) › <b>OneDrive - empresa</b> › pasta do atalho.</li>
+      <li>Botão direito na pasta › <b>Sempre manter neste dispositivo</b>.</li>
+    </ol>
+    <div class="okline">Sem a opção de atalho? Use <b>Sincronizar</b>. Só uma das duas, nunca as duas.</div>
+  </div></div>
+
+  <div class="step s3"><div class="n">3</div><div>
+    <h2><small>Primeiro uso</small>Informe seu nome e conecte a pasta</h2>
+    <ol>
+      <li>Botão direito em <b>Infrações de velocidade.html</b> › <b>Abrir com</b> › Chrome ou Edge.</li>
+      <li>No aviso do topo, digite <b>seu nome</b> e clique em <b>Conectar pasta</b>.</li>
+      <li>Escolha a <b>mesma pasta</b> do arquivo › <b>Selecionar pasta</b>.</li>
+      <li>Clique em <b>Editar arquivos</b> e, se aparecer, <b>Permitir em todas as visitas</b>.</li>
+    </ol>
+    <div class="okline">Pronto quando o topo mostrar <b>pasta da equipe · sincronizado</b> e seu nome com <span class="dot"></span>.</div>
+  </div></div>
+</div>
+<div class="foot">
+  <div class="help">Ao reabrir, se pedir, clique em <b>Reconectar pasta</b>. Não apague nada em <b>Dados do painel</b>.</div>
+  <div class="logos"><img src="../../assets/logo-grupo-dinamo.png"><img src="../../assets/logo-toliman-transportes.png"></div>
+</div>
+</body></html>

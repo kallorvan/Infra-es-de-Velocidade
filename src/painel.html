@@ -214,6 +214,39 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 .fld input[aria-invalid="true"]{border-color:var(--sus)}
 .fld .err{font-size:11px;color:var(--sus);min-height:0}
 .fld textarea{font-family:var(--f-ui);line-height:1.5;resize:vertical;min-height:260px}
+/* anulação de picos */
+#m-ev .sel{width:30px;padding-right:0}
+#m-ev input[data-anul],#anul-all{width:15px;height:15px;accent-color:var(--coral);cursor:pointer}
+#m-ev tr.anulada td{color:var(--muted)}
+#m-ev tr.anulada td.risca{text-decoration:line-through}
+.st.anul{background:var(--track);color:var(--ink2)}
+#mot-body.sem-mes .so-mes{display:none}
+.pontos{display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle}
+.ponto{display:inline-grid;place-items:center;min-width:22px;height:18px;padding:0 4px;border-radius:5px;font-size:9.5px;font-weight:800;letter-spacing:.02em;cursor:default}
+.ponto.ok{background:var(--ok-bg);color:var(--ok)}
+.ponto.pend{background:var(--sus);color:#fff}
+.ponto.ret{background:#C98A1B;color:#fff}
+.ponto.bloq{background:var(--track);color:var(--muted)}
+#hist-tbl{min-width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+#hist-tbl th,#hist-tbl td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:middle;background:var(--card)}
+#hist-tbl thead th{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+#hist-tbl .nm{position:sticky;left:0;z-index:1;box-shadow:1px 0 0 var(--line);min-width:190px}
+#hist-tbl .nm-btn{font-size:12.5px;color:var(--ink);text-decoration:none;font-weight:700;text-align:left}
+#hist-tbl .nm-btn:hover{color:var(--coral);text-decoration:underline}
+#hist-tbl .cod-h{font-size:10.5px;color:var(--muted);margin-top:2px}
+#hist-tbl td.cel{cursor:pointer}
+#hist-tbl td.cel:hover{background:var(--hover)}
+#hist-tbl td.vazio{color:var(--track-ink)}
+.anul-n{display:inline-block;margin-left:5px;font-size:10.5px;font-weight:700;color:var(--ink3)}
+.hist-leg{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:11.5px;color:var(--muted)}
+.anul-quem{font-size:11px;color:var(--muted);margin-top:3px}
+.anul-bar{position:sticky;bottom:10px;z-index:5;margin-top:12px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--coral);border-radius:10px;padding:14px 16px;box-shadow:0 -6px 18px rgba(28,37,67,.08)}
+.anul-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;font-size:13px}
+.anul-campos{display:grid;grid-template-columns:minmax(200px,1fr) 2fr;gap:10px 12px;margin-top:10px}
+.anul-campos select{width:100%}
+.anul-prev{font-size:12.5px;margin-top:10px;line-height:1.65;color:var(--ink2)}
+.anul-prev b{color:var(--ink)}
+@media(max-width:640px){.anul-campos{grid-template-columns:1fr}}
 .com-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px}
 .com-tipos{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .com-img-wrap{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;place-items:center;min-height:200px}
@@ -247,6 +280,11 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 .ei{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;background:rgba(255,255,255,.12)}
 .ei svg{width:12px;height:12px;fill:currentColor;opacity:.45}
 .ei.pend{background:var(--wa);color:#fff} .ei.pend svg{opacity:1}
+.ei.ret{background:#C98A1B;color:#fff} .ei.ret svg{opacity:1}
+.pend-alerta{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;margin-top:18px;background:var(--sus-bg);border:1px solid rgba(221,70,99,.35);border-radius:var(--r);padding:11px 14px;font-size:12.5px}
+.pend-alerta b{color:var(--sus)}
+.pend-alerta .det{color:var(--ink2)}
+.pend-alerta .btn{padding:6px 12px;margin-left:auto}
 .env-sub{font-size:10.5px;color:var(--adv);margin-top:3px}
 .bloq{font-size:11px;font-weight:600;color:var(--muted);background:var(--track);border-radius:6px;padding:4px 8px;white-space:nowrap}
 .bkpc{display:grid;grid-template-columns:1fr auto;gap:12px 16px;align-items:center}
@@ -294,6 +332,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
   <nav class="tabs" role="tablist">
     <button class="tab" role="tab" id="tab-geral" aria-selected="true" aria-controls="v-geral">Visão geral</button>
     <button class="tab" role="tab" id="tab-mot" aria-selected="false" aria-controls="v-mot">Motorista</button>
+    <button class="tab" role="tab" id="tab-hist" aria-selected="false" aria-controls="v-hist">Histórico</button>
     <button class="tab" role="tab" id="tab-cad" aria-selected="false" aria-controls="v-cad">Cadastro de motoristas</button>
     <button class="tab" role="tab" id="tab-imp" aria-selected="false" aria-controls="v-imp">Importar planilhas</button>
     <button class="tab" role="tab" id="tab-reg" aria-selected="false" aria-controls="v-reg">Regras</button>
@@ -302,6 +341,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 
 <main class="wrap">
   <div id="modo-aviso"></div>
+  <div class="pend-alerta" id="pend-alerta" role="status" hidden></div>
   <div id="bkpc-aviso"></div>
   <!-- VISÃO GERAL -->
   <section id="v-geral" role="tabpanel" aria-labelledby="tab-geral">
@@ -361,7 +401,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       </div>
       <div class="hero" id="m-hero"></div>
 
-      <div class="sec" id="com-sec">
+      <div class="sec so-mes" id="com-sec">
         <div class="sec-h"><h2>Comunicado por WhatsApp</h2><span class="sec-note" id="com-note"></span></div>
         <div class="msg info" id="com-bloq" hidden></div>
         <div class="com-grid" id="com-grid">
@@ -376,6 +416,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
             <div class="actions" style="align-items:center">
               <button class="btn" type="button" id="com-dl">Baixar imagem (JPEG)</button>
               <button class="btn ghost" type="button" id="com-copy">Copiar imagem</button>
+              <button class="btn ghost" type="button" id="com-fora" hidden title="Use quando o comunicado já foi entregue sem passar pelo painel">Marcar como enviado (fora do painel)</button>
               <a class="wa" id="com-wa" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3z"/></svg>Abrir conversa no WhatsApp</a>
             </div>
             <div class="actions" style="margin-top:8px">
@@ -407,7 +448,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
         </div>
       </div>
 
-      <div class="sec">
+      <div class="sec so-mes">
         <div class="sec-h"><h2>Picos do mês contra a tolerância</h2><span class="sec-note" id="m-mes-note"></span></div>
         <div class="rules-grid" id="m-rules"></div>
       </div>
@@ -422,19 +463,47 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
         <div class="card timeline" id="m-tl"></div>
       </div>
 
-      <div class="sec">
+      <div class="sec so-mes">
         <div class="sec-h"><h2>Eventos do mês</h2><span class="sec-note" id="m-ev-note"></span></div>
         <div class="tbl-scroll">
           <table id="m-ev" style="min-width:640px">
-            <thead><tr><th>Data e hora</th><th>Condição</th><th>Placa</th><th class="r">Velocidade</th><th>Faixa</th><th class="r">Duração</th></tr></thead>
+            <thead><tr><th class="sel"><input type="checkbox" id="anul-all" aria-label="Selecionar todos os picos para anular"></th><th>Data e hora</th><th>Condição</th><th>Placa</th><th class="r">Velocidade</th><th>Faixa</th><th class="r">Duração</th><th>Anulação</th></tr></thead>
             <tbody></tbody>
           </table>
+        </div>
+        <div class="anul-bar" id="anul-bar" hidden>
+          <div class="anul-h"><b id="anul-n"></b><span class="sec-note">Use quando o pico foi causado por falha no caminhão ou erro de leitura.</span><button class="linkbtn" type="button" id="anul-limpar">Limpar seleção</button></div>
+          <div class="anul-campos">
+            <div class="fld"><label for="anul-motivo">Motivo</label><select class="inp" id="anul-motivo"><option value="">Escolha o motivo</option><option value="caminhao">Falha no caminhão (sensor/velocidade)</option><option value="sascar">Erro de leitura SASCAR</option><option value="outro">Outro</option></select></div>
+            <div class="fld"><label for="anul-obs" id="anul-obs-lab">Observação (opcional)</label><input id="anul-obs" type="text" autocomplete="off" placeholder="Ex.: sensor trocado em 05/09, chamado SASCAR 1234"></div>
+          </div>
+          <div class="anul-prev" id="anul-prev"></div>
+          <div class="actions"><button class="btn" type="button" id="anul-ok" disabled>Confirmar anulação</button></div>
+          <div id="anul-msg"></div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- CADASTRO -->
+  <section id="v-hist" role="tabpanel" aria-labelledby="tab-hist" hidden>
+    <div class="sec">
+      <div class="sec-h"><h2>Histórico dos motoristas</h2><span class="sec-note" id="hist-note"></span></div>
+      <div class="tools">
+        <input type="search" id="hist-q" placeholder="Buscar nome, placa ou código" aria-label="Buscar nome, placa ou código">
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="hist-chips">
+          <button class="chip" type="button" data-f="todos" aria-pressed="true">Todos</button>
+          <button class="chip" type="button" data-f="pend" aria-pressed="false">Com pendência</button>
+          <button class="chip" type="button" data-f="pen" aria-pressed="false">Com penalidade</button>
+          <button class="chip" type="button" data-f="anul" aria-pressed="false">Com anulação</button>
+          <button class="chip" type="button" data-f="ter" aria-pressed="false">Término</button>
+        </div>
+      </div>
+      <div class="tbl-scroll" style="margin-top:12px"><table id="hist-tbl"></table></div>
+      <div class="hist-leg"><span>Envio da penalidade: <b>M</b> = motorista (WhatsApp), <b>RH</b> = e-mail ao RH ·</span><span><span class="ponto ok">M</span> enviado</span><span><span class="ponto pend">M</span> pendente</span><span><span class="ponto ret">M</span> retificar</span><span><span class="ponto bloq">M</span> bloqueado</span><span><span class="anul-n">⊘ 3</span> picos anulados</span><span>Clique no nome ou no mês para abrir a ficha.</span></div>
+    </div>
+  </section>
+
   <section id="v-cad" role="tabpanel" aria-labelledby="tab-cad" hidden>
     <div class="sec">
       <div class="sec-h"><h2 id="cad-title">Cadastrar motorista</h2><span class="sec-note">Para corrigir um motorista sem esperar o próximo PDF</span></div>
@@ -569,6 +638,10 @@ const REGRAS = [
   {id:'ch', cond:'chuva', nome:'Chuva · acima de 70 km/h por mais de 1 min', faixa:'> 70 km/h e > 1 min', min:71, max:Infinity, tol:20, pena:'adv', cor:'var(--mauve)'}
 ];
 const PRE = {min:87, max:89};
+// anulação de picos: motivo obrigatório; observação obrigatória em "Outro"
+const MOTIVOS = {caminhao:'Falha no caminhão (sensor/velocidade)', sascar:'Erro de leitura SASCAR', outro:'Outro'};
+const chaveAnul = (cond, nome, ts, placa, vel) => cond+'|'+ts+'|'+nome+'|'+placa+'|'+vel;
+const idAnul = chave => slug(chave);
 const ADV_P_SUS = 3, SUS_P_TER = 3;
 
 const CHUVA_MIN_S = 60; // na chuva, só conta pico que fica acima de 70 km/h por mais de 1 min
@@ -600,7 +673,8 @@ const dataBR = iso => { const [d,t]=iso.split(' '); const [y,m,dd]=d.split('-');
 /* ================= ARMAZENAMENTO ================= */
 // No claude.ai: banco compartilhado do artefato (db). Fora dele (arquivo aberto localmente): localStorage.
 // meses: eventos por mês e condição · motoristas: cadastro · comunicados: registro de envios por WhatsApp
-const COLECOES = ['meses','motoristas','comunicados','config'];
+// anulacoes: picos anulados por falha no caminhão ou erro de leitura (a planilha importada nunca é alterada)
+const COLECOES = ['meses','motoristas','comunicados','config','anulacoes'];
 const LS_KEY = c => c==='meses' ? 'infra-vel-meses-v1' : 'infra-vel-'+c+'-v1';
 
 /* Pasta da equipe (SharePoint/OneDrive sincronizado).
@@ -662,7 +736,7 @@ const pasta = {
 
 const store = {
   mode:'loading', db:null, user:null, uid:null, canWrite:true, isEditor:false,
-  data:{meses:{}, motoristas:{}, comunicados:{}, config:{}},
+  data:{meses:{}, motoristas:{}, comunicados:{}, config:{}, anulacoes:{}},
   get docs(){ return this.data.meses; },
   async init(onChange){
     this.onChange = onChange;
@@ -903,8 +977,9 @@ function setSync(cls, t){ const s=$('#sync'); s.className='sync '+cls; $('#sync-
 
 /* ================= MOTOR DE PENALIDADES ================= */
 let A = null; // análise atual
-function analisar(docs){
+function analisar(docs, anul){
   const meses = new Set(); const mot = new Map(); const ate = {};
+  const anIdx = new Map(); Object.entries(anul || {}).forEach(([id, a]) => { if(a && a.chave) anIdx.set(a.chave, Object.assign({id}, a)); });
   Object.values(docs).forEach(doc => {
     if(!doc || !Array.isArray(doc.ev)) return;
     meses.add(doc.mes);
@@ -912,10 +987,12 @@ function analisar(docs){
       const nome = doc.motoristas[e[0]]; if(!nome) return;
       if(!mot.has(nome)) mot.set(nome, {nome, meses:{}, semId:/^(SEM MOTORISTA|NAO IDENTIFICADO|N\/I)/.test(norm(nome).toUpperCase())});
       const M = mot.get(nome);
-      const mm = M.meses[doc.mes] || (M.meses[doc.mes] = {pre:0,b1:0,b2:0,b3:0,ch:0,chc:0,ev:[],placas:new Set(),vmax:{seco:0,chuva:0}});
+      const mm = M.meses[doc.mes] || (M.meses[doc.mes] = {pre:0,b1:0,b2:0,b3:0,ch:0,chc:0,ev:[],placas:new Set(),vmax:{seco:0,chuva:0},anulados:0});
       const ev = {ts:e[1], placa:e[2], vel:+e[3], dur:+e[4], cond:doc.tipo, fx:faixa(doc.tipo, +e[3], +e[4])};
+      ev.chave = chaveAnul(doc.tipo, nome, ev.ts, ev.placa, e[3]); ev.anulado = anIdx.get(ev.chave) || null;
       mm.ev.push(ev); mm.placas.add(ev.placa);
       if(!ate[doc.mes] || ev.ts > ate[doc.mes]) ate[doc.mes] = ev.ts;
+      if(ev.anulado){ mm.anulados++; return; } // pico anulado: fica na lista, mas não conta
       if(ev.fx) mm[ev.fx]++;
       if(ev.vel > mm.vmax[doc.tipo]) mm.vmax[doc.tipo] = ev.vel;
     });
@@ -963,7 +1040,8 @@ const ui = { tab:'geral', mes:null, filtro:'todos', q:'', sort:{k:'sit', dir:1},
 try{ const t = localStorage.getItem('infra-vel-tab'); if(t) ui.tab=t; }catch(e){}
 
 function render(){
-  A = analisar(store.docs);
+  A = analisar(store.docs, store.data.anulacoes);
+  A.semAnul = Object.keys(store.data.anulacoes||{}).length ? analisar(store.docs, {}).mot : A.mot;
   cadVinc = null;
   const sel = $('#mes');
   const meses = A.meses;
@@ -982,7 +1060,8 @@ function render(){
   if(!foco) $('#modo-aviso').innerHTML = avPasta || (store.mode==='semdb' ? '<div class="aviso-topo" role="alert" style="background:var(--sus-bg);border-color:rgba(221,70,99,.4)"><span><b style="color:var(--sus)">O painel não conseguiu acessar os dados compartilhados da equipe.</b> Nada pode ser importado ou salvo agora. Recarregue a página; se continuar, confira se você entrou com a sua conta do claude.ai e se o painel foi compartilhado com você.</span></div>' : '');
   renderOnline();
   indexarComunicados();
-  renderGeral(); renderMot(); renderCad(); renderRhCfg(); renderImp(); renderRegras();
+  renderPendAlerta();
+  renderGeral(); renderMot(); renderHist(); renderCad(); renderRhCfg(); renderImp(); renderRegras();
 }
 
 /* ---------- visão geral ---------- */
@@ -1040,7 +1119,7 @@ function renderGeral(){
     if(f==='sus') return x.s.k==='sus';
     if(f==='adv') return x.s.k==='adv';
     if(f==='tol') return x.s.k==='tol';
-    if(f==='com') return !!(x.com && (x.com.pendente || x.com.rhPendente));
+    if(f==='com') return !!(x.com && (x.com.pendente || x.com.rhPendente || x.com.est.wa.st==='retificar' || x.com.est.rh.st==='retificar'));
     return true;
   });
   const val = (x,k) => k==='nome'?x.M.nome : k==='sit'?ST_ORD[x.s.k] : k==='vmax'?x.vmax : k==='advAc'?x.r.advAc : k==='susAc'?x.r.susAc : k==='env'?((x.com&&x.com.pendente?2:0)+(x.com&&x.com.rhPendente?1:0)) : k==='acum'?(x.r.susAc*10+x.r.advAc) : x.c[k];
@@ -1070,7 +1149,7 @@ function renderGeral(){
   // gráficos
   ['seco','chuva'].forEach(cond => {
     const cont = {}; let tot=0, curtos=0;
-    L.forEach(x => x.c.ev.forEach(e => { if(e.cond!==cond) return; const k=e.fx||'_'; (cont[e.vel]||(cont[e.vel]={}))[k]=((cont[e.vel]||{})[k]||0)+1; tot++; if(e.fx==='chc') curtos++; }));
+    L.forEach(x => x.c.ev.forEach(e => { if(e.cond!==cond || e.anulado) return; const k=e.fx||'_'; (cont[e.vel]||(cont[e.vel]={}))[k]=((cont[e.vel]||{})[k]||0)+1; tot++; if(e.fx==='chc') curtos++; }));
     $('#cs-'+cond).textContent = tot ? fmt(tot)+' eventos em '+mesNome(ui.mes)+(cond==='chuva'?' · '+fmt(tot-curtos)+' acima de 1 min':'') : 'Sem eventos importados para '+mesNome(ui.mes);
     histograma('#ch-'+cond, '#lg-'+cond, cond, cont);
   });
@@ -1084,13 +1163,14 @@ const feito = d => '<span class="env-ok">✓ Enviado '+new Date(d).toLocaleDateS
 function celEnvio(x){
   if(!x.com) return '<span class="zero">—</span>';
   if(x.com.inativo) return '<span class="bloq" title="Cadastro inativo: envio bloqueado">Inativo · bloqueado</span>';
-  const waP = !!x.com.pendente, rhP = !!x.com.rhPendente, temRh = !!x.com.chaves.rh;
-  const waFeito = !waP && enviados(x.M.nome).some(e => e.mes===ui.mes && e.tipo!=='rh');
+  const est = x.com.est, waR = est.wa.st==='retificar', rhR = est.rh.st==='retificar';
+  const waP = !!x.com.pendente || waR, rhP = !!x.com.rhPendente || rhR, temRh = !!x.com.chaves.rh;
+  const waFeito = !waP && enviados(x.M.nome).some(e => e.mes===ui.mes && e.tipo!=='rh' && e.tipo!=='rhret');
   const rhFeito = temRh && !rhP;
-  const ico = (svg, pend, feito, nome) => '<span class="ei'+(pend?' pend':feito?' feito':'')+'" title="'+nome+(pend?': pendente':feito?': enviado':': nada a enviar')+'">'+svg+'</span>';
-  const icones = ico(ICO_WA, waP, waFeito, 'WhatsApp') + ico(ICO_MAIL, rhP, rhFeito, 'E-mail ao RH');
+  const ico = (svg, pend, ret, feito, nome) => '<span class="ei'+(ret?' ret':pend?' pend':feito?' feito':'')+'" title="'+nome+(ret?': retificar':pend?': pendente':feito?': enviado':': nada a enviar')+'">'+svg+'</span>';
+  const icones = ico(ICO_WA, waP, waR, waFeito, 'WhatsApp') + ico(ICO_MAIL, rhP, rhR, rhFeito, 'E-mail ao RH');
   const semCel = waP && !(x.cad && x.cad.celular);
-  const tipo = waP ? x.com.pendente : rhP ? 'rh' : 'resumo';
+  const tipo = waP ? (x.com.pendente || 'pen') : rhP ? 'rh' : 'resumo';
   if(waP || rhP) return '<button class="send" type="button" data-com-ir="'+esc(x.M.nome)+'" data-tipo="'+tipo+'"'+(semCel?' title="Motorista sem celular cadastrado"':'')+'>'+icones+'<span>Enviar</span></button>'+(semCel?'<div class="env-sub">sem celular</div>':'');
   return (waFeito||rhFeito) ? '<span class="env-ok" title="'+[waFeito?'WhatsApp enviado':'',rhFeito?'e-mail ao RH enviado':''].filter(Boolean).join(' e ')+'">✓ Enviado</span>' : '<span class="zero">—</span>';
 }
@@ -1148,14 +1228,24 @@ function hideTip(){ $('#tip').hidden=true; }
 /* ---------- motorista ---------- */
 function renderMot(){
   const L = linhasMes();
-  const has = L.length>0;
+  L.sort((a,b)=> ST_ORD[a.s.k]-ST_ORD[b.s.k] || a.M.nome.localeCompare(b.M.nome,'pt-BR'));
+  // motorista aberto pelo Histórico continua na ficha mesmo sem eventos no mês escolhido
+  const fora = ui.motorista && A.mot.has(ui.motorista) && !L.some(x=>x.M.nome===ui.motorista) ? A.mot.get(ui.motorista) : null;
+  const has = L.length>0 || !!fora;
   $('#mot-empty').hidden = has; $('#mot-body').hidden = !has;
   if(!has) return;
-  L.sort((a,b)=> ST_ORD[a.s.k]-ST_ORD[b.s.k] || a.M.nome.localeCompare(b.M.nome,'pt-BR'));
-  if(!ui.motorista || !L.some(x=>x.M.nome===ui.motorista)) ui.motorista = L[0].M.nome;
+  if(!fora && (!ui.motorista || !L.some(x=>x.M.nome===ui.motorista))) ui.motorista = L[0].M.nome;
   const idx = L.findIndex(x=>x.M.nome===ui.motorista);
-  $('#m-sel').innerHTML = L.map(x => '<option value="'+esc(x.M.nome)+'"'+(x.M.nome===ui.motorista?' selected':'')+'>'+esc(x.M.nome)+' — '+esc(x.s.t)+'</option>').join('');
-  $('#m-prev').disabled = idx<=0; $('#m-next').disabled = idx>=L.length-1;
+  $('#m-sel').innerHTML = (fora ? '<option value="'+esc(fora.nome)+'" selected>'+esc(fora.nome)+' — sem eventos no mês</option>' : '') + L.map(x => '<option value="'+esc(x.M.nome)+'"'+(x.M.nome===ui.motorista?' selected':'')+'>'+esc(x.M.nome)+' — '+esc(x.s.t)+'</option>').join('');
+  $('#m-prev').disabled = !!fora || idx<=0; $('#m-next').disabled = !fora && idx>=L.length-1;
+  $('#mot-body').classList.toggle('sem-mes', !!fora);
+  if(fora){
+    const nMeses = Object.keys(fora.meses).length;
+    $('#m-hero').innerHTML = '<div class="cod">'+mesNome(ui.mes)+'</div><h3>'+esc(fora.nome)+'</h3><div class="meta"><span class="pill">Sem eventos em '+mesNome(ui.mes)+'</span><span class="pill">'+nMeses+' '+(nMeses===1?'mês':'meses')+' com eventos no histórico</span></div>';
+    anulUi.M = null; anulUi.sel.clear(); renderAnulBar();
+    renderMotHist(fora, fora.hist[ui.mes]);
+    return;
+  }
   const x = L[idx], M=x.M, c=x.c, r=x.r;
   const susMes = r.susDir + r.susAdv;
   const pills = [];
@@ -1179,6 +1269,26 @@ function renderMot(){
       '<div class="outcome">'+(over?'<span class="st '+(g.pena==='sus'?'sus':'adv')+'">'+esc(res)+'</span>':esc(res))+'</div></div>';
   }).join('') + '<div class="rule-box"><div class="rh"><span class="rt"><span class="band-tag"><i style="background:var(--pre)"></i>Pré-infração · 87 a 89 km/h</span></span><span class="rr">informativo</span></div><div class="mini-n" style="font-size:20px;font-weight:600">'+c.pre+'</div><div class="outcome">Não gera penalidade</div></div>' + '<div class="rule-box"><div class="rh"><span class="rt"><span class="band-tag"><i style="background:var(--track-ink)"></i>Chuva · acima de 70 km/h por até 1 min</span></span><span class="rr">informativo</span></div><div class="mini-n" style="font-size:20px;font-weight:600">'+c.chc+'</div><div class="outcome">Não conta para a tolerância</div></div>';
 
+  renderMotHist(M, r);
+
+  $('#m-ev-note').textContent = c.ev.length+' '+(c.ev.length===1?'evento':'eventos');
+  const ctxAnul = M.nome+'|'+ui.mes;
+  if(anulUi.ctx!==ctxAnul){ anulUi.ctx = ctxAnul; anulUi.sel.clear(); anulUi.motivo = ''; anulUi.obs = ''; }
+  const livres = new Set(c.ev.filter(e => !e.anulado).map(e => e.chave));
+  [...anulUi.sel].forEach(k => { if(!livres.has(k)) anulUi.sel.delete(k); }); // seleção de pico que não existe mais
+  anulUi.M = M; anulUi.mes = ui.mes;
+  const pode = store.canWrite;
+  $('#anul-all').hidden = !pode || !livres.size;
+  $('#m-ev tbody').innerHTML = c.ev.map(e => {
+    const a = e.anulado;
+    const sel = a || !pode ? '' : '<input type="checkbox" data-anul="'+esc(e.chave)+'"'+(anulUi.sel.has(e.chave)?' checked':'')+' aria-label="Anular o pico de '+dataBR(e.ts)+'">';
+    const anulTd = a ? '<span class="st anul">'+esc(MOTIVOS[a.motivo]||'Anulado')+'</span><div class="anul-quem">'+(a.obs?esc(a.obs)+' · ':'')+(a.anuladoPor?'por '+esc(a.anuladoPor)+' · ':'')+(a.anuladoEm?new Date(a.anuladoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'')+(pode?' · <button class="linkbtn" type="button" data-anul-desfazer="'+esc(a.id)+'">Desfazer</button>':'')+'</div>' : '';
+    return '<tr'+(a?' class="anulada"':'')+'><td class="sel">'+sel+'</td><td class="mini-n risca">'+dataBR(e.ts)+'</td><td class="risca">'+(e.cond==='chuva'?'Chuva':'Seco')+'</td><td class="mini-n risca">'+esc(e.placa)+'</td><td class="r mini-n risca" style="font-weight:600">'+e.vel+' km/h</td><td class="risca">'+(e.fx?'<span class="band-tag"><i style="background:'+FAIXA_INFO[e.fx].cor+'"></i>'+FAIXA_INFO[e.fx].nome+'</span>':'<span class="zero">—</span>')+'</td><td class="r mini-n risca">'+dur(e.dur)+'</td><td>'+anulTd+'</td></tr>';
+  }).join('');
+  renderAnulBar();
+}
+
+function renderMotHist(M, r){
   const dots = (n, tot, cls) => '<div class="dots '+cls+'">'+Array.from({length:tot},(_,i)=>'<i class="'+(i<n?'on':'')+'"></i>').join('')+'</div>';
   const advCiclo = r.advAc % ADV_P_SUS;
   $('#m-ladder').innerHTML =
@@ -1186,8 +1296,7 @@ function renderMot(){
     '<div class="step"><div class="lab">Suspensões acumuladas</div><div class="val">'+r.susAc+'<small> / '+SUS_P_TER+'</small></div>'+dots(Math.min(r.susAc,SUS_P_TER), SUS_P_TER, 's')+'<div class="sec-note" style="margin-top:7px">'+(r.termino?'Limite atingido':(SUS_P_TER-r.susAc)+' para o término do contrato')+'</div></div>'+
     '<div class="step"><div class="lab">Contrato</div><div style="margin-top:4px">'+(r.termino?'<span class="st ter">Término indicado em '+esc(mesNome(M.terminoEm))+'</span>':'<span class="st ok">Ativo</span>')+'</div><div class="sec-note" style="margin-top:10px">'+Object.keys(M.meses).length+' '+(Object.keys(M.meses).length===1?'mês':'meses')+' com eventos no histórico</div></div>';
 
-  const ate = A.meses.filter(m => m<=ui.mes).reverse();
-  $('#m-tl').innerHTML = ate.map(m => {
+  $('#m-tl').innerHTML = A.meses.slice().reverse().map(m => {
     const h = M.hist[m], cm = M.meses[m];
     let what = [];
     if(!cm) what.push('<span style="color:var(--muted)">Sem eventos</span>');
@@ -1198,14 +1307,113 @@ function renderMot(){
       if(h.terminoNoMes) what.push('<span class="st ter">Término de contrato</span>');
       if(!h.advs.length && !h.susDir && !h.susAdv) what.push('<span class="st ok">Dentro da tolerância</span>');
       what.push('<span style="color:var(--muted)">'+(cm.b1+cm.b2+cm.b3)+' picos seco · '+cm.ch+' chuva > 1 min'+(cm.chc?' (+'+cm.chc+' curtos)':'')+'</span>');
+      if(cm.anulados) what.push('<span class="st anul">'+cm.anulados+(cm.anulados===1?' pico anulado':' picos anulados')+'</span>');
+      what.push(pontosEnvio(M, m));
     }
     return '<div class="tl'+(m===ui.mes?' sel':'')+'"><div class="mo">'+mesNome(m)+'</div><div class="what">'+what.join('')+'</div><div class="acc mini-n">adv. '+h.advAc+' · susp. '+h.susAc+'</div></div>';
   }).join('');
-
-  $('#m-ev-note').textContent = c.ev.length+' '+(c.ev.length===1?'evento':'eventos');
-  $('#m-ev tbody').innerHTML = c.ev.map(e => '<tr><td class="mini-n">'+dataBR(e.ts)+'</td><td>'+(e.cond==='chuva'?'Chuva':'Seco')+'</td><td class="mini-n">'+esc(e.placa)+'</td><td class="r mini-n" style="font-weight:600">'+e.vel+' km/h</td><td>'+(e.fx?'<span class="band-tag"><i style="background:'+FAIXA_INFO[e.fx].cor+'"></i>'+FAIXA_INFO[e.fx].nome+'</span>':'<span class="zero">—</span>')+'</td><td class="r mini-n">'+dur(e.dur)+'</td></tr>').join('');
 }
 
+/* ---------- aba Histórico ---------- */
+const PONTO_TXT = {enviado:'enviado', pendente:'pendente', retificar:'retificar', bloqueado:'bloqueado (cadastro inativo)'};
+const PONTO_CLS = {enviado:'ok', pendente:'pend', retificar:'ret', bloqueado:'bloq'};
+function pontosEnvio(M, mes){
+  const e = estadoEnvio(M, mes);
+  if(e.wa.st==='nada' && e.rh.st==='nada') return '';
+  const um = (canal, rot, nome) => { const x = e[canal]; if(x.st==='nada') return ''; const u = x.st==='enviado' && x.ult;
+    return '<span class="ponto '+canal.replace('wa','m')+' '+PONTO_CLS[x.st]+'" title="'+nome+': '+PONTO_TXT[x.st]+(u?' em '+new Date(u.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+(u.enviadoPor?' por '+esc(u.enviadoPor):'')+(u.via==='manual'?' (fora do painel)':''):'')+'">'+rot+'</span>'; };
+  return '<span class="pontos">'+um('wa','M','Motorista')+um('rh','RH','RH')+'</span>';
+}
+const histUi = {q:'', f:'todos'};
+function renderHist(){
+  const tbl = $('#hist-tbl'); if(!tbl) return;
+  document.querySelectorAll('#hist-chips .chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f===histUi.f)));
+  const meses = A.meses;
+  const q = norm(histUi.q);
+  const linhas = [];
+  A.mot.forEach(M => {
+    if(M.semId) return;
+    const ms = Object.keys(M.meses);
+    const cadM = cadDe(M.nome);
+    const est = ms.map(m => estadoEnvio(M, m));
+    const pend = est.some(e => ['pendente','retificar'].includes(e.wa.st) || ['pendente','retificar'].includes(e.rh.st));
+    const f = histUi.f;
+    if(f==='pend' && !pend) return;
+    if(f==='pen' && !ms.some(m => sigPen(M, m))) return;
+    if(f==='anul' && !ms.some(m => M.meses[m].anulados)) return;
+    if(f==='ter' && !M.terminoEm) return;
+    if(q){ const placas = ms.flatMap(m => [...M.meses[m].placas]); if(!(norm(M.nome).includes(q) || placas.some(pl => norm(pl).includes(q)) || (cadM && norm(cadM.codigo).includes(q)))) return; }
+    const ult = M.hist[meses[meses.length-1]];
+    linhas.push({M, pend, ult, cadM});
+  });
+  linhas.sort((a,b) => (b.pend-a.pend) || (b.ult.susAc-a.ult.susAc) || (b.ult.advAc-a.ult.advAc) || a.M.nome.localeCompare(b.M.nome,'pt-BR'));
+  $('#hist-note').textContent = linhas.length+(linhas.length===1?' motorista':' motoristas')+' · '+meses.length+(meses.length===1?' mês':' meses');
+  const SEL = {adv:'adv', sus:'sus', ter:'ter', tol:'ok', ok:'ok'};
+  tbl.innerHTML = '<thead><tr><th class="nm">Motorista</th>'+meses.map(m => '<th data-mes="'+m+'">'+mesCurto(m)+'</th>').join('')+'<th>Acumulado</th><th>Contrato</th></tr></thead><tbody>'+
+    (linhas.length ? linhas.map(({M, ult, cadM}) => '<tr data-nome="'+esc(M.nome)+'"><td class="nm"><button class="linkbtn nm-btn" type="button" data-hist-mot="'+esc(M.nome)+'">'+esc(M.nome)+'</button>'+(cadM&&cadM.codigo?'<div class="cod-h">cód. '+esc(cadM.codigo)+(ativo(cadM)?'':' · inativo')+'</div>':'')+'</td>'+
+      meses.map(m => { const c = M.meses[m]; if(!c) return '<td data-mes="'+m+'" class="vazio">—</td>';
+        const h = M.hist[m], st = situacao(h, M), sus = h.susDir + h.susAdv;
+        const rot = st.k==='ter' ? (h.terminoNoMes ? 'Término' : 'Término (anterior)') : st.k==='sus' ? 'Susp. ×'+sus : st.k==='adv' ? 'Adv. ×'+h.advs.length : 'OK';
+        return '<td data-mes="'+m+'" data-nome="'+esc(M.nome)+'" class="cel"><span class="st '+SEL[st.k]+'">'+rot+'</span>'+(c.anulados?'<span class="anul-n" title="'+c.anulados+(c.anulados===1?' pico anulado':' picos anulados')+'">⊘ '+c.anulados+'</span>':'')+pontosEnvio(M, m)+'</td>'; }).join('')+
+      '<td class="mini-n">adv. '+ult.advAc+' · susp. '+ult.susAc+'</td><td>'+(M.terminoEm?'<span class="st ter">Término em '+mesCurto(M.terminoEm)+'</span>':'<span class="st ok">Ativo</span>')+'</td></tr>').join('')
+    : '<tr><td colspan="'+(meses.length+3)+'" class="vazio" style="text-align:center;padding:22px">Nenhum motorista com esse filtro.</td></tr>')+'</tbody>';
+}
+function abrirMotMes(nome, mes){
+  const M = A.mot.get(nome); if(!M) return;
+  ui.motorista = nome;
+  ui.mes = mes || Object.keys(M.meses).sort().pop() || ui.mes;
+  $('#mes').value = ui.mes;
+  renderGeral(); renderMot(); setTab('mot'); window.scrollTo({top:0});
+}
+
+/* ---------- anulação de picos ---------- */
+const anulUi = {sel:new Set(), motivo:'', obs:'', ctx:null, M:null, mes:null};
+// roda o cálculo como se os picos escolhidos já estivessem anulados e compara com o atual
+function preverAnulacao(M, mes, chaves){
+  const sim = Object.assign({}, store.data.anulacoes);
+  chaves.forEach((k, i) => { sim['__prev'+i] = {chave:k}; });
+  const B = analisar(store.docs, sim), M2 = B.mot.get(M.nome);
+  const c1 = M.meses[mes], c2 = M2.meses[mes];
+  const faixas = REGRAS.filter(g => c1[g.id]!==c2[g.id]).map(g => ({nome:g.nome, antes:c1[g.id], depois:c2[g.id]}));
+  const sit = m => [situacao(M.hist[m], M).t, situacao(M2.hist[m], M2).t];
+  const afetados = A.meses.filter(m => m>mes).map(m => { const [a, d] = sit(m); return {mes:m, antes:a, depois:d}; }).filter(x => x.antes!==x.depois);
+  const [sa, sd] = sit(mes);
+  return {faixas, antes:sa, depois:sd, afetados};
+}
+function renderAnulBar(){
+  const bar = $('#anul-bar'), n = anulUi.sel.size, M = anulUi.M, mes = anulUi.mes;
+  const tot = $('#anul-all'); if(tot){ const livres = $('#m-ev tbody').querySelectorAll('input[data-anul]').length; tot.checked = n>0 && n===livres; tot.indeterminate = n>0 && n<livres; }
+  bar.hidden = !n || !store.canWrite || !M;
+  if(bar.hidden) return;
+  $('#anul-n').textContent = n===1 ? 'Anular 1 pico' : 'Anular '+n+' picos';
+  const mot = $('#anul-motivo'), obs = $('#anul-obs');
+  if(document.activeElement!==mot) mot.value = anulUi.motivo;
+  if(document.activeElement!==obs) obs.value = anulUi.obs;
+  const exigeObs = anulUi.motivo==='outro';
+  $('#anul-obs-lab').textContent = exigeObs ? 'Observação (obrigatória)' : 'Observação (opcional)';
+  $('#anul-ok').disabled = !anulUi.motivo || (exigeObs && !anulUi.obs.trim());
+  const pv = preverAnulacao(M, mes, [...anulUi.sel]);
+  const L = pv.faixas.map(f => esc(f.nome)+': <b>'+f.antes+' → '+f.depois+'</b> picos');
+  L.push('Situação em '+mesNome(mes)+': '+(pv.antes===pv.depois ? 'não muda ('+esc(pv.antes)+')' : '<b>'+esc(pv.antes)+' → '+esc(pv.depois)+'</b>'));
+  if(pv.afetados.length) L.push('Também muda: '+pv.afetados.map(x => '<b>'+mesNome(x.mes)+'</b> ('+esc(x.antes)+' → '+esc(x.depois)+')').join(', '));
+  $('#anul-prev').innerHTML = L.join('<br>');
+}
+async function anularSelecionados(){
+  const M = anulUi.M, mes = anulUi.mes; if(!M || !anulUi.sel.size || $('#anul-ok').disabled) return;
+  const evs = M.meses[mes].ev.filter(e => anulUi.sel.has(e.chave) && !e.anulado);
+  const quando = new Date().toISOString();
+  $('#anul-ok').disabled = true;
+  try{
+    for(const e of evs) await comRetentativa(() => store.put('anulacoes', idAnul(e.chave), {chave:e.chave, mes, cond:e.cond, motorista:M.nome, ts:e.ts, placa:e.placa, vel:e.vel, dur:e.dur, motivo:anulUi.motivo, obs:anulUi.obs.trim(), anuladoEm:quando, anuladoPor:store.uid||null}));
+    anulUi.sel.clear(); anulUi.motivo = ''; anulUi.obs = '';
+    $('#anul-msg').innerHTML = '';
+    render();
+  }catch(err){ $('#anul-msg').innerHTML = '<div class="msg err">Não foi possível anular ('+esc((err&&(err.code||err.message))||err)+'). Tente de novo.</div>'; renderAnulBar(); }
+}
+async function desfazerAnulacao(id){
+  try{ await store.del('anulacoes', id); render(); }
+  catch(err){ $('#anul-msg').innerHTML = '<div class="msg err">Não foi possível desfazer a anulação.</div>'; }
+}
 /* ---------- importar ---------- */
 let pendente = null; // {grupos:[...]} aguardando confirmação
 let armado = null;
@@ -1627,7 +1835,7 @@ function montarEmailRH(M, mes){
   const partes = [];
   if(r.advs.length) partes.push(r.advs.length+' '+(r.advs.length===1?'advertência':'advertências'));
   if(r.susDir) partes.push(r.susDir+' '+(r.susDir===1?'suspensão':'suspensões')+' por velocidade igual ou acima de 100 km/h');
-  const zap = enviados(M.nome).find(e => e.chave===info.chaves.pen);
+  const zap = info.est.wa.st==='enviado' ? info.est.wa.ult : null;
   const L = [
     'Prezados,', '',
     'Informamos penalidade por excesso de velocidade registrada pela telemetria.', '',
@@ -1645,37 +1853,77 @@ function montarEmailRH(M, mes){
   if(r.susAdv) L.push('Com '+r.advAc+' advertências acumuladas, foi gerada '+(r.susAdv===1?'1 suspensão':r.susAdv+' suspensões')+' por reincidência.');
   if(r.terminoNoMes) L.push('Com '+r.susAc+' suspensões acumuladas, o motorista atingiu o critério de término do contrato de trabalho.');
   L.push('Situação acumulada: '+r.advAc+' '+(r.advAc===1?'advertência':'advertências')+' e '+r.susAc+' '+(r.susAc===1?'suspensão':'suspensões')+'.', '');
-  L.push('Comunicado ao motorista: '+(zap ? 'enviado por WhatsApp em '+new Date(zap.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+'.' : 'ainda não enviado.'), '');
+  L.push('Comunicado ao motorista: '+(zap ? (zap.via==='manual' ? 'registrado como enviado fora do painel em ' : 'enviado por WhatsApp em ')+new Date(zap.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})+'.' : 'ainda não enviado.'), '');
   L.push('Atenciosamente,', 'Gestão de Frota · Grupo Dínamo / Tóliman Transportes');
   const linhas = L.map(x => typeof x==='string' ? {t:x, adv:false} : x);
   const corpo = linhas.map(x => (x.adv?'► ':'')+x.t).join('\n');
   const html = linhas.map(x => x.t==='' ? '<div><br></div>' : x.adv ? '<div class="adv-linha"><b style="font-size:12pt">'+esc(x.t)+'</b></div>' : '<div>'+esc(x.t)+'</div>').join('');
   return {assunto, corpo, html, rotulo};
 }
+// "pen:2026-09:b1+b2:s1:t" → "2 advertências (…) + 1 suspensão + término do contrato"
+function descreverSig(sig){
+  if(!sig || sig==='nenhuma') return 'nenhuma penalidade';
+  const [, , advs, sus, ter] = sig.split(':');
+  const ids = advs ? advs.split('+') : [], n = +String(sus||'s0').slice(1) || 0, P = [];
+  if(ids.length) P.push(ids.length+' '+(ids.length===1?'advertência':'advertências')+' ('+ids.map(id => (REGRAS.find(g => g.id===id)||{nome:id}).nome).join('; ')+')');
+  if(n) P.push(n+' '+(n===1?'suspensão':'suspensões'));
+  if(ter==='t') P.push('término do contrato');
+  return P.join(' + ') || 'nenhuma penalidade';
+}
+function montarEmailRet(M, mes, est){
+  const r = M.hist[mes], cad = cadDe(M.nome), c = M.meses[mes];
+  const s0 = situacao(r, M);
+  const rotulo = !est.sig ? 'Penalidade cancelada' : s0.k==='ter' ? 'Término de contrato' : s0.k==='sus' ? 'Suspensão' : 'Advertência';
+  const assunto = 'Retificação · Infração de velocidade · '+rotulo+' · '+M.nome+(cad&&cad.codigo?' · Código '+cad.codigo:'')+' · '+mesNome(mes);
+  const quando = x => x ? new Date(x.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : '';
+  const anul = c.ev.filter(e => e.anulado).sort((a,b) => a.ts<b.ts?-1:1);
+  const L = [
+    'Prezados,', '',
+    'Após revisão dos registros da telemetria, retificamos a penalidade por excesso de velocidade comunicada anteriormente.', '',
+    'Motorista: '+M.nome,
+    'Código: '+(cad && cad.codigo ? cad.codigo : 'não cadastrado'),
+    'Período: '+mesNome(mes).toLowerCase(), '',
+    'Penalidade comunicada'+(est.rh.ult?' em '+quando(est.rh.ult):'')+': '+descreverSig(sigDe(est.rh.ult)),
+    {t:'Penalidade correta após revisão: '+descreverSig(est.sig), adv:true}, ''
+  ];
+  if(anul.length){
+    L.push('Picos anulados ('+anul.length+'):');
+    anul.forEach(e => { const a = e.anulado; L.push('- '+dataBR(e.ts)+' · '+e.placa+' · '+e.vel+' km/h · '+(e.cond==='chuva'?'chuva':'seco')+' · '+(MOTIVOS[a.motivo]||'anulado')+(a.obs?' ('+a.obs+')':'')+(a.anuladoPor?' · por '+a.anuladoPor:'')); });
+    L.push('');
+  }
+  L.push('Situação acumulada: '+r.advAc+' '+(r.advAc===1?'advertência':'advertências')+' e '+r.susAc+' '+(r.susAc===1?'suspensão':'suspensões')+'.', '');
+  L.push('Atenciosamente,', 'Gestão de Frota · Grupo Dínamo / Tóliman Transportes');
+  const linhas = L.map(x => typeof x==='string' ? {t:x, adv:false} : x);
+  return {assunto, corpo:linhas.map(x => (x.adv?'► ':'')+x.t).join('\n'),
+    html:linhas.map(x => x.t==='' ? '<div><br></div>' : x.adv ? '<div class="adv-linha"><b style="font-size:12pt">'+esc(x.t)+'</b></div>' : '<div>'+esc(x.t)+'</div>').join('')};
+}
 const rhUi = {chave:null};
 function renderRH(M, mes, info){
   const card = $('#rh-card');
-  card.hidden = !info.chaves.rh;
-  if(!info.chaves.rh) return;
+  const ret = info.est.rh.st==='retificar';
+  card.hidden = !info.chaves.rh && !ret;
+  if(card.hidden) return;
   const cfg = rhCfg();
-  const chave = info.chaves.rh+'|'+(cadDe(M.nome)||{}).codigo+'|'+A.ate[mes]+'|'+enviados(M.nome).length;
+  const chave = (ret?info.chaves.rhret:info.chaves.rh)+'|'+(cadDe(M.nome)||{}).codigo+'|'+A.ate[mes]+'|'+enviados(M.nome).length+'|'+(M.meses[mes].anulados||0);
   if(rhUi.chave!==chave){
-    rhUi.chave = chave; const e = montarEmailRH(M, mes);
+    rhUi.chave = chave; const e = ret ? montarEmailRet(M, mes, info.est) : montarEmailRH(M, mes);
     $('#rh-assunto').value = e.assunto; $('#rh-corpo').innerHTML = e.html;
   }
   $('#rh-para').value = cfg.para || ''; $('#rh-cc').value = cfg.cc || '';
-  const ult = enviados(M.nome).find(e => e.chave===info.chaves.rh);
-  $('#rh-note').innerHTML = ult ? 'Enviado em '+new Date(ult.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : '<span class="st sus">Pendente</span>';
+  const ult = info.est.rh.st==='enviado' ? info.est.rh.ult : null;
+  $('#rh-note').innerHTML = ult ? 'Enviado em '+new Date(ult.enviadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) : ret ? '<span class="st adv">Retificar</span>' : '<span class="st sus">Pendente</span>';
   $('#rh-hint').innerHTML = !cfg.para ? 'Defina o e-mail do RH. <button class="linkbtn" type="button" data-rhcfg-ir="1">Configurar</button>' : 'Copie e cole no seu e-mail. Depois marque como enviado.';
   $('#rh-ok').disabled = !store.canWrite || !!ult;
   $('#rh-ok').textContent = ult ? 'Já marcado como enviado' : 'Marcar como enviado';
 }
 async function marcarRH(){
   const M = A.mot.get(comUi.motorista); if(!M) return;
-  const info = comInfo(M, ui.mes); if(!info || !info.chaves.rh || info.inativo) return;
+  const info = comInfo(M, ui.mes); if(!info || info.inativo) return;
+  const ret = info.est.rh.st==='retificar';
+  if(!ret && !info.chaves.rh) return;
   const cfg = rhCfg();
   try{
-    await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'rh', chave:info.chaves.rh, assunto:$('#rh-assunto').value, texto:textoDe($('#rh-corpo')), email:cfg.para||'', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
+    await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:ret?'rhret':'rh', chave:ret?info.chaves.rhret:info.chaves.rh, sig:ret?(info.est.sig||'nenhuma'):info.est.sig, assunto:$('#rh-assunto').value, texto:textoDe($('#rh-corpo')), email:cfg.para||'', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
     render();
   }catch(e){ $('#rh-hint').textContent = 'Não foi possível registrar ('+((e&&(e.code||e.message))||e)+').'; }
 }
@@ -1702,7 +1950,7 @@ async function copiarCampo(id, btn){
 
 /* ---------- comunicados por WhatsApp ---------- */
 const ALERTA_PCT = 0.8; // alerta preventivo a partir de 80% da tolerância
-const TIPO_COM = {pen:'Penalidade', alerta:'Alerta preventivo', resumo:'Resumo do mês', rh:'E-mail ao RH'};
+const TIPO_COM = {pen:'Penalidade', alerta:'Alerta preventivo', resumo:'Resumo do mês', rh:'E-mail ao RH', ret:'Retificação', rhret:'Retificação ao RH'};
 const REGRA_MSG = {b1:'Pista seca, de 90 a 95 km/h', b2:'Pista seca, de 96 a 99 km/h', b3:'Igual ou acima de 100 km/h', ch:'Chuva, acima de 70 km/h por mais de 1 minuto'};
 let comIdx = new Map();
 function indexarComunicados(){
@@ -1720,16 +1968,89 @@ function comInfo(M, mes){
   const perto = REGRAS.filter(g => g.pena==='adv' && c[g.id]<=g.tol && c[g.id]>=Math.ceil(g.tol*ALERTA_PCT));
   const alerta = perto.length ? 'alerta:'+mes+':'+perto.map(g=>g.id).join('+') : null;
   const info = {chaves:{pen, alerta, resumo:'resumo:'+mes}, perto, pendente:null};
-  if(pen && !foiEnviado(M.nome, pen)) info.pendente = 'pen';
-  else if(alerta && !foiEnviado(M.nome, alerta)) info.pendente = 'alerta';
+  const est = info.est = estadoEnvio(M, mes);
+  if(est.wa.st==='retificar') info.pendente = 'ret';
+  else if(est.wa.st==='pendente') info.pendente = 'pen';
+  else if(alerta && (est.wa.st==='nada' || est.wa.st==='enviado') && !foiEnviado(M.nome, alerta)) info.pendente = 'alerta';
   info.chaves.rh = pen ? 'rh:'+pen : null;
-  info.rhPendente = !!(pen && !foiEnviado(M.nome, info.chaves.rh));
+  info.chaves.ret = est.wa.st==='retificar' ? 'ret:'+mes+':'+(est.sig||'nenhuma') : null;
+  info.chaves.rhret = est.rh.st==='retificar' ? 'rhret:'+mes+':'+(est.sig||'nenhuma') : null;
+  info.rhPendente = est.rh.st==='pendente';
   const cadM = cadDe(M.nome);
   info.inativo = !!(cadM && !ativo(cadM));
   if(info.inativo){ info.pendente = null; info.rhPendente = false; } // envio bloqueado para cadastro inativo
   return info;
 }
+// assinatura da penalidade do mês: muda quando a penalidade muda (por exemplo, depois de uma anulação)
+function sigPen(M, mes){
+  const c = M.meses[mes], r = M.hist[mes];
+  if(!c || M.semId) return null;
+  const susMes = r.susDir + r.susAdv;
+  return (r.advs.length || susMes || r.terminoNoMes) ? 'pen:'+mes+':'+r.advs.join('+')+':s'+susMes+(r.terminoNoMes?':t':'') : null;
+}
+// assinatura gravada no envio; registros antigos (sem sig) usam a chave
+function sigDe(x){
+  if(!x) return null;
+  if(x.sig) return x.sig;
+  if(x.tipo==='pen' && /^pen:/.test(x.chave||'')) return x.chave;
+  if(x.tipo==='rh' && /^rh:pen:/.test(x.chave||'')) return x.chave.slice(3);
+  return null;
+}
+const CANAIS = {wa:['pen','ret'], rh:['rh','rhret']};
+// estado de cada canal (motorista por WhatsApp e RH) para a penalidade do mês
+function estadoEnvio(M, mes){
+  const sig = sigPen(M, mes);
+  const lst = enviados(M.nome).filter(e => e.mes===mes);
+  const cadM = cadDe(M.nome), inativo = !!(cadM && !ativo(cadM));
+  // assinatura que a penalidade teria sem nenhuma anulação
+  const M0 = A && A.semAnul && A.semAnul.get(M.nome), sig0 = M0 ? sigPen(M0, mes) : sig;
+  const canal = tipos => {
+    const ult = lst.find(e => tipos.includes(e.tipo) && sigDe(e)) || null; // lista já vem do mais recente para o mais antigo
+    let st;
+    if(!ult) st = sig ? 'pendente' : 'nada';
+    else if(sigDe(ult)===(sig||'nenhuma')) st = 'enviado';
+    // retifica só o que mudou por anulação (ou o que já tinha sido retificado);
+    // penalidade que cresceu com dados novos do mês é uma pendência normal
+    else st = (['ret','rhret'].includes(ult.tipo) || sigDe(ult)===(sig0||'nenhuma') || !sig) ? 'retificar' : 'pendente';
+    if(inativo && st!=='nada' && st!=='enviado') st = 'bloqueado';
+    return {st, ult};
+  };
+  return {sig, wa:canal(CANAIS.wa), rh:canal(CANAIS.rh)};
+}
+function pendencias(){
+  const out = [];
+  if(!A) return out;
+  A.mot.forEach(M => {
+    if(M.semId) return;
+    Object.keys(M.meses).sort().forEach(mes => {
+      const e = estadoEnvio(M, mes);
+      ['wa','rh'].forEach(canal => { const st = e[canal].st; if(st==='pendente' || st==='retificar') out.push({M, mes, canal, st}); });
+    });
+  });
+  return out;
+}
+function renderPendAlerta(){
+  const el = $('#pend-alerta'), P = pendencias();
+  el.hidden = !P.length;
+  if(!P.length){ el.innerHTML = ''; return; }
+  const wa = P.filter(x => x.canal==='wa' && x.st==='pendente').length, rh = P.filter(x => x.canal==='rh' && x.st==='pendente').length, ret = P.filter(x => x.st==='retificar').length;
+  const det = [wa ? wa+' ao motorista' : '', rh ? rh+' ao RH' : '', ret ? ret+(ret===1?' retificação':' retificações') : ''].filter(Boolean).join(' · ');
+  el.innerHTML = '<span><b>'+P.length+(P.length===1?' pendência de envio':' pendências de envio')+'</b> <span class="det">· '+det+'</span></span><button class="btn" type="button" data-pend-ver>Ver</button>';
+}
+async function marcarFora(){
+  const M = A.mot.get(comUi.motorista); if(!M) return;
+  const info = comInfo(M, ui.mes); if(!info) return;
+  const ret = info.est.wa.st==='retificar';
+  if(!ret && info.est.wa.st!=='pendente') return;
+  try{
+    await store.put('comunicados', store.newId(), ret
+      ? {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'ret', via:'manual', chave:info.chaves.ret, sig:info.est.sig||'nenhuma', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null}
+      : {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'pen', via:'manual', chave:info.chaves.pen, sig:info.est.sig, enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
+    render();
+  }catch(e){ $('#com-hint').textContent = 'Não foi possível registrar ('+((e&&(e.code||e.message))||e)+').'; }
+}
 function montarLegenda(M, mes, tipo){
+  if(tipo==='ret') return 'Olá, '+nomeProprio(M.nome)+'. Após revisão, a sua penalidade de excesso de velocidade de '+mesNome(mes).toLowerCase()+(sigPen(M, mes) ? ' foi ajustada. Segue o comunicado atualizado.' : ' foi cancelada.')+' Gestão de Frota · Grupo Dínamo / Tóliman Transportes.';
   const nomeT = tipo==='pen' ? 'comunicado de excesso de velocidade' : tipo==='alerta' ? 'alerta preventivo de velocidade' : 'resumo de velocidade';
   return 'Olá, '+nomeProprio(M.nome)+'. Segue seu '+nomeT+' de '+mesNome(mes).toLowerCase()+'. Gestão de Frota · Grupo Dínamo / Tóliman Transportes.';
 }
@@ -1868,16 +2189,21 @@ function renderCom(x){
     $('#rh-card').hidden = true;
     return;
   }
-  const disp = {pen:!!info.chaves.pen, alerta:!!info.chaves.alerta, resumo:true};
+  const disp = {ret:!!info.chaves.ret, pen:!!info.chaves.pen, alerta:!!info.chaves.alerta, resumo:true};
   if(!comUi.tipo || !disp[comUi.tipo] || comUi.motorista!==M.nome) comUi.tipo = comUi.pedido && disp[comUi.pedido] ? comUi.pedido : (info.pendente || (disp.pen?'pen':'resumo'));
   comUi.pedido = null; comUi.motorista = M.nome;
-  $('#com-tipos').innerHTML = ['pen','alerta','resumo'].map(t => '<button class="chip" type="button" data-tipo="'+t+'" aria-pressed="'+(comUi.tipo===t)+'"'+(disp[t]?'':' disabled title="Não se aplica neste mês"')+'>'+TIPO_COM[t]+(info.pendente===t?' · pendente':'')+'</button>').join('');
+  $('#com-tipos').innerHTML = (disp.ret?['ret','pen','alerta','resumo']:['pen','alerta','resumo']).map(t => '<button class="chip" type="button" data-tipo="'+t+'" aria-pressed="'+(comUi.tipo===t)+'"'+(disp[t]?'':' disabled title="Não se aplica neste mês"')+'>'+TIPO_COM[t]+(info.pendente===t?' · pendente':'')+'</button>').join('');
   const chave = M.nome+'|'+mes+'|'+comUi.tipo;
   if(comUi.chave!==chave){ comUi.chave = chave; comUi.texto = montarLegenda(M, mes, comUi.tipo); }
   const leg = $('#com-leg'); if(document.activeElement!==leg) leg.value = comUi.texto;
   const c = x.c, r = x.r;
+  // retificação de penalidade cancelada vai só com texto; ajustada leva a imagem atual da penalidade
+  const semImg = comUi.tipo==='ret' && !info.est.sig;
+  $('#com-img').closest('.com-img-wrap').hidden = semImg; $('#com-dl').hidden = semImg; $('#com-copy').hidden = semImg;
+  const tipoImg = comUi.tipo==='ret' ? 'pen' : comUi.tipo;
   const imgKey = chave+'|'+(cad?cad.codigo:'')+'|'+A.ate[mes]+'|'+[c.b1,c.b2,c.b3,c.ch,r.advAc,r.susAc].join(',');
-  if(comUi.imgKey!==imgKey){ comUi.imgKey = imgKey; gerarImagem(M, mes, comUi.tipo, imgKey); }
+  if(!semImg && comUi.imgKey!==imgKey){ comUi.imgKey = imgKey; gerarImagem(M, mes, tipoImg, imgKey); }
+  $('#com-fora').hidden = !(store.canWrite && ((comUi.tipo==='pen' && info.est.wa.st==='pendente') || (comUi.tipo==='ret' && info.est.wa.st==='retificar')));
   const cel = cad && cad.celular;
   atualizarLinkWa();
   const ult = enviados(M.nome).find(e => e.chave===info.chaves[comUi.tipo]);
@@ -1948,6 +2274,8 @@ async function registrarEnvio(){
   const cad = cadDe(M.nome); if(!cad || !cad.celular || !ativo(cad)) return;
   const info = comInfo(M, ui.mes);
   const body = {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:comUi.tipo, chave:info.chaves[comUi.tipo], texto:comUi.texto, celular:cad.celular, enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null};
+  if(comUi.tipo==='pen') body.sig = info.est.sig;
+  if(comUi.tipo==='ret') body.sig = info.est.sig || 'nenhuma';
   try{ await store.put('comunicados', store.newId(), body); render(); }
   catch(e){ $('#com-hint').textContent = 'O WhatsApp abriu, mas não foi possível registrar o envio ('+((e&&(e.code||e.message))||e)+').'; }
 }
@@ -1998,7 +2326,7 @@ function renderBkpCompleto(){
 }
 function dadosCompletos(){
   return {formato:'infracoes-velocidade-completo', versao:1, geradoEm:new Date().toISOString(),
-    meses:store.data.meses, motoristas:store.data.motoristas, comunicados:store.data.comunicados,
+    meses:store.data.meses, motoristas:store.data.motoristas, comunicados:store.data.comunicados, anulacoes:store.data.anulacoes,
     config:Object.fromEntries(Object.entries(store.data.config).filter(([k]) => k!=='backupCompleto'))};
 }
 function nomeBackup(d){ return 'backup-completo-infracoes-velocidade-'+d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())+'_'+p2(d.getHours())+'h'+p2(d.getMinutes())+'.json'; }
@@ -2046,13 +2374,13 @@ function prevCompleto(d, nome){
   const lista = [...new Set(meses.map(x=>x.mes))].sort();
   restPend = {completo:true, d};
   $('#rest-prev').innerHTML = '<div class="card pad" style="margin-top:12px"><div class="sec-h"><h2>Restaurar backup completo</h2><span class="sec-note">'+esc(nome)+' · gerado em '+(d.geradoEm?new Date(d.geradoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—')+'</span></div>'+
-    '<p style="margin:0 0 10px;font-size:13px">'+(lista.length?lista.map(mesNome).join(', '):'Nenhum mês')+' · '+fmt(meses.reduce((a,x)=>a+(x.ev||[]).length,0))+' eventos · '+mot+' motoristas no cadastro · '+com+' envios registrados'+(d.config&&d.config.rh&&d.config.rh.para?' · e-mail do RH':'')+'.</p>'+
+    '<p style="margin:0 0 10px;font-size:13px">'+(lista.length?lista.map(mesNome).join(', '):'Nenhum mês')+' · '+fmt(meses.reduce((a,x)=>a+(x.ev||[]).length,0))+' eventos · '+mot+' motoristas no cadastro · '+com+' envios registrados'+(Object.keys(d.anulacoes||{}).length?' · '+Object.keys(d.anulacoes).length+' picos anulados':'')+(d.config&&d.config.rh&&d.config.rh.para?' · e-mail do RH':'')+'.</p>'+
     '<div class="msg info" style="margin:0 0 10px">Nada que já está no painel é apagado: os eventos são somados sem duplicar, envios e cadastros que faltam são incluídos e, no cadastro, vale a versão mais recente de cada motorista.</div>'+
     '<div class="actions"><button class="btn" type="button" id="rest-ok">Restaurar tudo</button><button class="btn ghost" type="button" id="rest-cancel">Cancelar</button></div></div>';
 }
 async function restaurarCompleto(d, progresso){
   let n = {ev:0, mot:0, com:0};
-  const total = Object.keys(d.meses||{}).length + Object.keys(d.motoristas||{}).length + Object.keys(d.comunicados||{}).length;
+  const total = Object.keys(d.meses||{}).length + Object.keys(d.motoristas||{}).length + Object.keys(d.comunicados||{}).length + Object.keys(d.anulacoes||{}).length;
   let feitos = 0; const passo = () => { feitos++; if(progresso && (feitos%10===0 || feitos===total)) progresso(feitos, total); };
   for(const [id, x] of Object.entries(d.meses||{})){
     const m = mesclar(store.docs[id], {id, mes:x.mes, tipo:x.tipo, arquivo:x.arquivo||'backup', motoristas:x.motoristas, ev:x.ev});
@@ -2065,6 +2393,7 @@ async function restaurarCompleto(d, progresso){
     passo();
   }
   for(const [id, x] of Object.entries(d.comunicados||{})){ if(!store.data.comunicados[id]){ await comRetentativa(() => store.put('comunicados', id, x)); n.com++; } passo(); }
+  for(const [id, x] of Object.entries(d.anulacoes||{})){ if(!store.data.anulacoes[id]){ await comRetentativa(() => store.put('anulacoes', id, x)); n.anul = (n.anul||0)+1; } passo(); }
   const cfg = d.config || {};
   if(cfg.rh && cfg.rh.para && !rhCfg().para) await comRetentativa(() => store.put('config', 'rh', cfg.rh));
   if(cfg.backups) await comRetentativa(() => store.put('config', 'backups', Object.assign({}, cfg.backups, backups())));
@@ -2105,7 +2434,7 @@ function renderRegras(){
 /* ================= EVENTOS ================= */
 function setTab(t){
   ui.tab = t;
-  ['geral','mot','cad','imp','reg'].forEach(k => { $('#tab-'+k).setAttribute('aria-selected', String(k===t)); $('#v-'+k).hidden = k!==t; });
+  ['geral','mot','hist','cad','imp','reg'].forEach(k => { $('#tab-'+k).setAttribute('aria-selected', String(k===t)); $('#v-'+k).hidden = k!==t; });
   try{ localStorage.setItem('infra-vel-tab', t); }catch(e){}
 }
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.id.slice(4))));
@@ -2118,6 +2447,21 @@ function abrirMot(nome){ ui.motorista = nome; renderMot(); setTab('mot'); window
 $('#tbody').addEventListener('click', e => { const tr=e.target.closest('tr[data-m]'); if(tr) abrirMot(tr.dataset.m); });
 $('#tbody').addEventListener('keydown', e => { if(e.key!=='Enter') return; const tr=e.target.closest('tr[data-m]'); if(tr) abrirMot(tr.dataset.m); });
 $('#m-sel').addEventListener('change', e => { ui.motorista = e.target.value; renderMot(); });
+$('#m-ev').addEventListener('change', e => {
+  const cb = e.target.closest('input[data-anul]');
+  if(cb){ if(cb.checked) anulUi.sel.add(cb.dataset.anul); else anulUi.sel.delete(cb.dataset.anul); renderAnulBar(); return; }
+  if(e.target.id==='anul-all'){ const marcar = e.target.checked; $('#m-ev tbody').querySelectorAll('input[data-anul]').forEach(x => { x.checked = marcar; if(marcar) anulUi.sel.add(x.dataset.anul); else anulUi.sel.delete(x.dataset.anul); }); renderAnulBar(); }
+});
+$('#m-ev').addEventListener('click', e => { const b = e.target.closest('[data-anul-desfazer]'); if(b) desfazerAnulacao(b.dataset.anulDesfazer); });
+$('#anul-motivo').addEventListener('change', e => { anulUi.motivo = e.target.value; renderAnulBar(); });
+$('#anul-obs').addEventListener('input', e => { anulUi.obs = e.target.value; renderAnulBar(); });
+$('#anul-ok').addEventListener('click', anularSelecionados);
+$('#com-fora').addEventListener('click', marcarFora);
+$('#pend-alerta').addEventListener('click', e => { if(!e.target.closest('[data-pend-ver]')) return; histUi.f = 'pend'; renderHist(); setTab('hist'); window.scrollTo({top:0}); });
+$('#hist-q').addEventListener('input', e => { histUi.q = e.target.value; renderHist(); });
+$('#hist-chips').addEventListener('click', e => { const b = e.target.closest('.chip'); if(!b) return; histUi.f = b.dataset.f; renderHist(); });
+$('#hist-tbl').addEventListener('click', e => { const b = e.target.closest('[data-hist-mot]'); if(b){ abrirMotMes(b.dataset.histMot); return; } const td = e.target.closest('td.cel'); if(td) abrirMotMes(td.dataset.nome, td.dataset.mes); });
+$('#anul-limpar').addEventListener('click', () => { anulUi.sel.clear(); $('#m-ev tbody').querySelectorAll('input[data-anul]').forEach(x => { x.checked = false; }); renderAnulBar(); });
 $('#m-prev').addEventListener('click', () => { const s=$('#m-sel'); if(s.selectedIndex>0){ ui.motorista=s.options[s.selectedIndex-1].value; renderMot(); } });
 $('#m-next').addEventListener('click', () => { const s=$('#m-sel'); if(s.selectedIndex<s.options.length-1){ ui.motorista=s.options[s.selectedIndex+1].value; renderMot(); } });
 $('#file').addEventListener('change', e => { const f=[...e.target.files]; e.target.value=''; if(f.length) arquivos(f); });
@@ -2198,5 +2542,7 @@ addEventListener('scroll', () => top.classList.toggle('stuck', scrollY>4), {pass
 setTab(ui.tab);
 render();
 store.init(render);
+// gancho só para os testes automáticos (tools/test): não existe no uso normal
+if(window.__teste) window.__painel = {A:() => A, store, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias, emailRH:(n, m) => montarEmailRH(A.mot.get(n), m).corpo};
 })();
 </script>

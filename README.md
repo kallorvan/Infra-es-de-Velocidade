@@ -4,9 +4,9 @@ Painel HTML que lê as planilhas "Infrações de Velocidade" da telemetria (seco
 
 ## Manual
 
-Passo a passo com os prints das telas: [`docs/Manual de uso - Infrações de velocidade.pdf`](<docs/Manual de uso - Infrações de velocidade.pdf>). Os prints usam dados fictícios.
-
-- Primeiro acesso pela equipe do Teams (atalho no OneDrive, abrir no navegador, conectar a pasta): [`docs/Guia de acesso à pasta da equipe no Teams.pdf`](<docs/Guia de acesso à pasta da equipe no Teams.pdf>).
+- Guia completo no layout Tóliman, com prints (dados fictícios) e o primeiro acesso pelo Teams: [`docs/Guia completo - Infrações de velocidade.pdf`](<docs/Guia completo - Infrações de velocidade.pdf>) (fonte em `tools/manual/completo/`, `python3 tools/manual/completo/build.py`).
+- Versão curta, sem prints: [`docs/Manual rápido - Infrações de velocidade.pdf`](<docs/Manual rápido - Infrações de velocidade.pdf>). Fonte no layout Tóliman em `tools/manual/rapido/` (`python3 tools/manual/rapido/build.py`).
+- Post de primeiro acesso (imagem para o Teams): [`docs/posts/Post - Acesso ao painel pelo Teams.jpg`](<docs/posts/Post - Acesso ao painel pelo Teams.jpg>).
 - Contexto técnico e pendências para quem continuar o projeto: [`docs/HANDOFF.md`](docs/HANDOFF.md).
 
 ## Uso diário
@@ -21,11 +21,16 @@ Passo a passo com os prints das telas: [`docs/Manual de uso - Infrações de vel
   - `online/<computador>.json`: sinal de presença, renovado a cada 30 segundos. O topo do painel mostra quem está usando agora (online nos últimos 2,5 minutos); "trocar" muda o seu nome.
   - `backups/`: um backup completo automático por dia, guardando os 30 mais recentes.
   - O que estava só no navegador antes de conectar é levado para a pasta na primeira conexão, sem passar por cima do que já está lá. Ao reabrir, o navegador pode pedir para "Reconectar pasta" (um clique). Firefox e Safari não gravam em pasta: nesses o painel avisa e guarda só no navegador.
+- **Anular picos** (aba Motorista › Eventos do mês): marque os picos causados por falha no caminhão ou erro de leitura da SASCAR, escolha o motivo (Falha no caminhão, Erro de leitura SASCAR ou Outro, este com observação obrigatória) e confirme. A planilha não muda: o pico fica riscado, com motivo, quem anulou e quando, e deixa de contar nas faixas, gráficos e penalidades; o acumulado dos meses seguintes é refeito. A prévia mostra o efeito antes de salvar. "Desfazer" volta atrás.
+- **Histórico** (aba própria): uma linha por motorista e uma coluna por mês, com a situação do mês, picos anulados (⊘) e o envio da penalidade: **M** (motorista) e **RH**, em verde (enviado), vermelho (pendente), âmbar (retificar) ou cinza (bloqueado). Busca por nome, placa ou código; filtros Com pendência, Com penalidade, Com anulação e Término. Clicar no nome ou no mês abre a ficha.
+- **Pendências de envio**: faixa no topo com as penalidades de qualquer mês ainda não enviadas ao motorista ou ao RH, e as retificações. "Ver" abre o Histórico filtrado. Cadastro inativo não conta. Comunicado já entregue por fora do painel: "Marcar como enviado (fora do painel)" no quadro de WhatsApp.
+- **Retificação**: se uma anulação muda uma penalidade já enviada (dados novos do mesmo mês que aumentam a penalidade geram uma pendência normal, não retificação), o canal que a recebeu fica como "Retificar". O quadro do RH monta o e-mail de retificação (antes, depois e picos anulados) e o WhatsApp oferece o tipo "Retificação" (só texto se a penalidade foi cancelada; com a imagem nova se foi ajustada).
 - **Backup completo** (aba Importar planilhas): um .json com todos os meses, cadastro, envios e e-mail do RH. Com a pasta conectada, é feito sozinho todo dia em `Dados do painel/backups` (o botão grava outro na mesma pasta). Sem a pasta, o arquivo é baixado e o painel avisa quando um mês fecha sem backup ou o último tem 7 dias ou mais. "Restaurar backup" traz tudo de volta sem apagar o que já está no painel.
 - No artefato do claude.ai, cadastro, e-mail do RH e registro de comunicados só podem ser lidos por quem tem acesso de Contribuidor ou acima.
 
 - `src/painel.html` — código-fonte do painel (logos entram no build).
 - `assets/` — logos Grupo Dínamo / Tóliman e ícone.
+- `tools/test/painel.test.js` — testes automáticos (Playwright, dados fictícios): `python3 tools/build.py && node tools/test/painel.test.js`. O teste de importação precisa de `tools/test/.cache/xlsx.full.min.js` (`npm pack xlsx@0.18.5` e extraia `package/dist/xlsx.full.min.js`).
 - `tools/build.py` — gera `Infrações de velocidade.html` (abre direto no navegador; dados ficam salvos no próprio navegador) e `dist/artefato.html` (versão publicada no claude.ai; dados ficam no banco compartilhado do artefato).
 
 ## Regras aplicadas
