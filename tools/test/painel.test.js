@@ -135,6 +135,59 @@ teste('RF3: seleção com chave que deixou de existir é descartada', async p =>
   ok(!(await p.isVisible('#anul-bar')), 'barra some sem seleção válida');
 });
 
+/* ---------- pendências de envio ---------- */
+const slug = n => n.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const cad = (nome, codigo, situacao = 'Ativo', celular = '13991234567') => ['c'+codigo, {codigo:String(codigo), nome, celular, situacao, atualizadoEm:'2026-11-01T10:00:00.000Z'}];
+let nCom = 0;
+const env = (nome, mes, tipo, chave, extra = {}) => ['t'+(++nCom), Object.assign({motorista:slug(nome), nome, mes, tipo, chave, enviadoEm:'2026-10-05T12:00:00.000Z', enviadoPor:'Teste'}, extra)];
+const PEN = 'pen:2026-09:b1:s0';
+const base36 = () => ({'2026-09-seco': mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 36, 92))});
+const estado = p => p.evaluate(() => { const M = __painel.A().mot.get('ANA TESTE'); const e = __painel.estadoEnvio(M, '2026-09'); return {wa:e.wa.st, rh:e.rh.st, sig:e.sig, n:__painel.pendencias().length}; });
+
+teste('pendências: penalidade sem envio conta nos dois canais', async p => {
+  await semear(p, {meses:base36(), motoristas:Object.fromEntries([cad('ANA TESTE', 101)])});
+  const e = await estado(p); igual([e.wa, e.rh, e.n], ['pendente', 'pendente', 2]); igual(e.sig, PEN);
+  ok((await p.innerText('#pend-alerta')).includes('2 pendências de envio'), 'faixa do topo');
+});
+
+teste('pendências: WhatsApp enviado e RH não → 1', async p => {
+  await semear(p, {meses:base36(), motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), comunicados:Object.fromEntries([env('ANA TESTE', '2026-09', 'pen', PEN, {sig:PEN})])});
+  const e = await estado(p); igual([e.wa, e.rh, e.n], ['enviado', 'pendente', 1]);
+});
+
+teste('pendências: cadastro inativo não conta', async p => {
+  await semear(p, {meses:base36(), motoristas:Object.fromEntries([cad('ANA TESTE', 101, 'Inativo')])});
+  const e = await estado(p); igual([e.wa, e.rh, e.n], ['bloqueado', 'bloqueado', 0]);
+  ok(await p.isHidden('#pend-alerta'), 'sem faixa');
+});
+
+teste('pendências: fora do painel limpa o WhatsApp', async p => {
+  await semear(p, {meses:base36(), motoristas:Object.fromEntries([cad('ANA TESTE', 101, 'Ativo', '')])});
+  await abrirMotorista(p);
+  await p.click('#com-fora');
+  await p.waitForFunction(() => __painel.pendencias().length === 1);
+  const e = await estado(p); igual(e.wa, 'enviado');
+  ok((await p.innerText('#pend-alerta')).includes('1 pendência de envio'), 'faixa');
+  const r = await p.evaluate(() => Object.values(__painel.store.data.comunicados)[0]);
+  igual([r.tipo, r.via, r.sig], ['pen', 'manual', PEN]);
+});
+
+teste('RF4: registro antigo de alerta não vale como envio de penalidade', async p => {
+  await semear(p, {meses:base36(), motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), comunicados:Object.fromEntries([env('ANA TESTE', '2026-09', 'alerta', 'alerta:2026-09:b1')])});
+  const e = await estado(p); igual(e.wa, 'pendente');
+});
+
+teste('RF5: motorista sem cadastro conta como pendente', async p => {
+  await semear(p, {meses:base36()});
+  const e = await estado(p); igual([e.wa, e.rh, e.n], ['pendente', 'pendente', 2]);
+});
+
+teste('compatibilidade: envios antigos sem sig aparecem como enviados', async p => {
+  await semear(p, {meses:base36(), motoristas:Object.fromEntries([cad('ANA TESTE', 101)]), comunicados:Object.fromEntries([env('ANA TESTE', '2026-09', 'pen', PEN), env('ANA TESTE', '2026-09', 'rh', 'rh:'+PEN)])});
+  const e = await estado(p); igual([e.wa, e.rh, e.n], ['enviado', 'enviado', 0]);
+  ok(await p.isHidden('#pend-alerta'), 'alerta do topo some sem pendências');
+});
+
 /* ---------- runner ---------- */
 (async () => {
   const filtro = process.argv[2] || '';

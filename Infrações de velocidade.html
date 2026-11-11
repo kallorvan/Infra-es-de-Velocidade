@@ -268,6 +268,11 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 .ei{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:5px;background:rgba(255,255,255,.12)}
 .ei svg{width:12px;height:12px;fill:currentColor;opacity:.45}
 .ei.pend{background:var(--wa);color:#fff} .ei.pend svg{opacity:1}
+.ei.ret{background:#C98A1B;color:#fff} .ei.ret svg{opacity:1}
+.pend-alerta{display:flex;gap:10px 14px;align-items:center;flex-wrap:wrap;margin-top:18px;background:var(--sus-bg);border:1px solid rgba(221,70,99,.35);border-radius:var(--r);padding:11px 14px;font-size:12.5px}
+.pend-alerta b{color:var(--sus)}
+.pend-alerta .det{color:var(--ink2)}
+.pend-alerta .btn{padding:6px 12px;margin-left:auto}
 .env-sub{font-size:10.5px;color:var(--adv);margin-top:3px}
 .bloq{font-size:11px;font-weight:600;color:var(--muted);background:var(--track);border-radius:6px;padding:4px 8px;white-space:nowrap}
 .bkpc{display:grid;grid-template-columns:1fr auto;gap:12px 16px;align-items:center}
@@ -325,6 +330,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 
 <main class="wrap">
   <div id="modo-aviso"></div>
+  <div class="pend-alerta" id="pend-alerta" role="status" hidden></div>
   <div id="bkpc-aviso"></div>
   <!-- VISÃO GERAL -->
   <section id="v-geral" role="tabpanel" aria-labelledby="tab-geral">
@@ -399,6 +405,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
             <div class="actions" style="align-items:center">
               <button class="btn" type="button" id="com-dl">Baixar imagem (JPEG)</button>
               <button class="btn ghost" type="button" id="com-copy">Copiar imagem</button>
+              <button class="btn ghost" type="button" id="com-fora" hidden title="Use quando o comunicado já foi entregue sem passar pelo painel">Marcar como enviado (fora do painel)</button>
               <a class="wa" id="com-wa" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3z"/></svg>Abrir conversa no WhatsApp</a>
             </div>
             <div class="actions" style="margin-top:8px">
@@ -1023,6 +1030,7 @@ function render(){
   if(!foco) $('#modo-aviso').innerHTML = avPasta || (store.mode==='semdb' ? '<div class="aviso-topo" role="alert" style="background:var(--sus-bg);border-color:rgba(221,70,99,.4)"><span><b style="color:var(--sus)">O painel não conseguiu acessar os dados compartilhados da equipe.</b> Nada pode ser importado ou salvo agora. Recarregue a página; se continuar, confira se você entrou com a sua conta do claude.ai e se o painel foi compartilhado com você.</span></div>' : '');
   renderOnline();
   indexarComunicados();
+  renderPendAlerta();
   renderGeral(); renderMot(); renderCad(); renderRhCfg(); renderImp(); renderRegras();
 }
 
@@ -1081,7 +1089,7 @@ function renderGeral(){
     if(f==='sus') return x.s.k==='sus';
     if(f==='adv') return x.s.k==='adv';
     if(f==='tol') return x.s.k==='tol';
-    if(f==='com') return !!(x.com && (x.com.pendente || x.com.rhPendente));
+    if(f==='com') return !!(x.com && (x.com.pendente || x.com.rhPendente || x.com.est.wa.st==='retificar' || x.com.est.rh.st==='retificar'));
     return true;
   });
   const val = (x,k) => k==='nome'?x.M.nome : k==='sit'?ST_ORD[x.s.k] : k==='vmax'?x.vmax : k==='advAc'?x.r.advAc : k==='susAc'?x.r.susAc : k==='env'?((x.com&&x.com.pendente?2:0)+(x.com&&x.com.rhPendente?1:0)) : k==='acum'?(x.r.susAc*10+x.r.advAc) : x.c[k];
@@ -1125,13 +1133,14 @@ const feito = d => '<span class="env-ok">✓ Enviado '+new Date(d).toLocaleDateS
 function celEnvio(x){
   if(!x.com) return '<span class="zero">—</span>';
   if(x.com.inativo) return '<span class="bloq" title="Cadastro inativo: envio bloqueado">Inativo · bloqueado</span>';
-  const waP = !!x.com.pendente, rhP = !!x.com.rhPendente, temRh = !!x.com.chaves.rh;
-  const waFeito = !waP && enviados(x.M.nome).some(e => e.mes===ui.mes && e.tipo!=='rh');
+  const est = x.com.est, waR = est.wa.st==='retificar', rhR = est.rh.st==='retificar';
+  const waP = !!x.com.pendente || waR, rhP = !!x.com.rhPendente || rhR, temRh = !!x.com.chaves.rh;
+  const waFeito = !waP && enviados(x.M.nome).some(e => e.mes===ui.mes && e.tipo!=='rh' && e.tipo!=='rhret');
   const rhFeito = temRh && !rhP;
-  const ico = (svg, pend, feito, nome) => '<span class="ei'+(pend?' pend':feito?' feito':'')+'" title="'+nome+(pend?': pendente':feito?': enviado':': nada a enviar')+'">'+svg+'</span>';
-  const icones = ico(ICO_WA, waP, waFeito, 'WhatsApp') + ico(ICO_MAIL, rhP, rhFeito, 'E-mail ao RH');
+  const ico = (svg, pend, ret, feito, nome) => '<span class="ei'+(ret?' ret':pend?' pend':feito?' feito':'')+'" title="'+nome+(ret?': retificar':pend?': pendente':feito?': enviado':': nada a enviar')+'">'+svg+'</span>';
+  const icones = ico(ICO_WA, waP, waR, waFeito, 'WhatsApp') + ico(ICO_MAIL, rhP, rhR, rhFeito, 'E-mail ao RH');
   const semCel = waP && !(x.cad && x.cad.celular);
-  const tipo = waP ? x.com.pendente : rhP ? 'rh' : 'resumo';
+  const tipo = waP ? (x.com.pendente || 'pen') : rhP ? 'rh' : 'resumo';
   if(waP || rhP) return '<button class="send" type="button" data-com-ir="'+esc(x.M.nome)+'" data-tipo="'+tipo+'"'+(semCel?' title="Motorista sem celular cadastrado"':'')+'>'+icones+'<span>Enviar</span></button>'+(semCel?'<div class="env-sub">sem celular</div>':'');
   return (waFeito||rhFeito) ? '<span class="env-ok" title="'+[waFeito?'WhatsApp enviado':'',rhFeito?'e-mail ao RH enviado':''].filter(Boolean).join(' e ')+'">✓ Enviado</span>' : '<span class="zero">—</span>';
 }
@@ -1777,7 +1786,7 @@ async function marcarRH(){
   const info = comInfo(M, ui.mes); if(!info || !info.chaves.rh || info.inativo) return;
   const cfg = rhCfg();
   try{
-    await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'rh', chave:info.chaves.rh, assunto:$('#rh-assunto').value, texto:textoDe($('#rh-corpo')), email:cfg.para||'', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
+    await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'rh', chave:info.chaves.rh, sig:info.est.sig, assunto:$('#rh-assunto').value, texto:textoDe($('#rh-corpo')), email:cfg.para||'', enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
     render();
   }catch(e){ $('#rh-hint').textContent = 'Não foi possível registrar ('+((e&&(e.code||e.message))||e)+').'; }
 }
@@ -1822,14 +1831,72 @@ function comInfo(M, mes){
   const perto = REGRAS.filter(g => g.pena==='adv' && c[g.id]<=g.tol && c[g.id]>=Math.ceil(g.tol*ALERTA_PCT));
   const alerta = perto.length ? 'alerta:'+mes+':'+perto.map(g=>g.id).join('+') : null;
   const info = {chaves:{pen, alerta, resumo:'resumo:'+mes}, perto, pendente:null};
-  if(pen && !foiEnviado(M.nome, pen)) info.pendente = 'pen';
-  else if(alerta && !foiEnviado(M.nome, alerta)) info.pendente = 'alerta';
+  const est = info.est = estadoEnvio(M, mes);
+  if(est.wa.st==='pendente') info.pendente = 'pen';
+  else if(alerta && (est.wa.st==='nada' || est.wa.st==='enviado') && !foiEnviado(M.nome, alerta)) info.pendente = 'alerta';
   info.chaves.rh = pen ? 'rh:'+pen : null;
-  info.rhPendente = !!(pen && !foiEnviado(M.nome, info.chaves.rh));
+  info.rhPendente = est.rh.st==='pendente';
   const cadM = cadDe(M.nome);
   info.inativo = !!(cadM && !ativo(cadM));
   if(info.inativo){ info.pendente = null; info.rhPendente = false; } // envio bloqueado para cadastro inativo
   return info;
+}
+// assinatura da penalidade do mês: muda quando a penalidade muda (por exemplo, depois de uma anulação)
+function sigPen(M, mes){
+  const c = M.meses[mes], r = M.hist[mes];
+  if(!c || M.semId) return null;
+  const susMes = r.susDir + r.susAdv;
+  return (r.advs.length || susMes || r.terminoNoMes) ? 'pen:'+mes+':'+r.advs.join('+')+':s'+susMes+(r.terminoNoMes?':t':'') : null;
+}
+// assinatura gravada no envio; registros antigos (sem sig) usam a chave
+function sigDe(x){
+  if(!x) return null;
+  if(x.sig) return x.sig;
+  if(x.tipo==='pen' && /^pen:/.test(x.chave||'')) return x.chave;
+  if(x.tipo==='rh' && /^rh:pen:/.test(x.chave||'')) return x.chave.slice(3);
+  return null;
+}
+const CANAIS = {wa:['pen','ret'], rh:['rh','rhret']};
+// estado de cada canal (motorista por WhatsApp e RH) para a penalidade do mês
+function estadoEnvio(M, mes){
+  const sig = sigPen(M, mes);
+  const lst = enviados(M.nome).filter(e => e.mes===mes);
+  const cadM = cadDe(M.nome), inativo = !!(cadM && !ativo(cadM));
+  const canal = tipos => {
+    const ult = lst.find(e => tipos.includes(e.tipo) && sigDe(e)) || null; // lista já vem do mais recente para o mais antigo
+    let st = !ult ? (sig ? 'pendente' : 'nada') : sigDe(ult)===(sig||'nenhuma') ? 'enviado' : 'retificar';
+    if(inativo && st!=='nada' && st!=='enviado') st = 'bloqueado';
+    return {st, ult};
+  };
+  return {sig, wa:canal(CANAIS.wa), rh:canal(CANAIS.rh)};
+}
+function pendencias(){
+  const out = [];
+  if(!A) return out;
+  A.mot.forEach(M => {
+    if(M.semId) return;
+    Object.keys(M.meses).sort().forEach(mes => {
+      const e = estadoEnvio(M, mes);
+      ['wa','rh'].forEach(canal => { const st = e[canal].st; if(st==='pendente' || st==='retificar') out.push({M, mes, canal, st}); });
+    });
+  });
+  return out;
+}
+function renderPendAlerta(){
+  const el = $('#pend-alerta'), P = pendencias();
+  el.hidden = !P.length;
+  if(!P.length){ el.innerHTML = ''; return; }
+  const wa = P.filter(x => x.canal==='wa' && x.st==='pendente').length, rh = P.filter(x => x.canal==='rh' && x.st==='pendente').length, ret = P.filter(x => x.st==='retificar').length;
+  const det = [wa ? wa+' ao motorista' : '', rh ? rh+' ao RH' : '', ret ? ret+(ret===1?' retificação':' retificações') : ''].filter(Boolean).join(' · ');
+  el.innerHTML = '<span><b>'+P.length+(P.length===1?' pendência de envio':' pendências de envio')+'</b> <span class="det">· '+det+'</span></span><button class="btn" type="button" data-pend-ver>Ver</button>';
+}
+async function marcarFora(){
+  const M = A.mot.get(comUi.motorista); if(!M) return;
+  const info = comInfo(M, ui.mes); if(!info || info.est.wa.st!=='pendente') return;
+  try{
+    await store.put('comunicados', store.newId(), {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:'pen', via:'manual', chave:info.chaves.pen, sig:info.est.sig, enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null});
+    render();
+  }catch(e){ $('#com-hint').textContent = 'Não foi possível registrar ('+((e&&(e.code||e.message))||e)+').'; }
 }
 function montarLegenda(M, mes, tipo){
   const nomeT = tipo==='pen' ? 'comunicado de excesso de velocidade' : tipo==='alerta' ? 'alerta preventivo de velocidade' : 'resumo de velocidade';
@@ -1980,6 +2047,7 @@ function renderCom(x){
   const c = x.c, r = x.r;
   const imgKey = chave+'|'+(cad?cad.codigo:'')+'|'+A.ate[mes]+'|'+[c.b1,c.b2,c.b3,c.ch,r.advAc,r.susAc].join(',');
   if(comUi.imgKey!==imgKey){ comUi.imgKey = imgKey; gerarImagem(M, mes, comUi.tipo, imgKey); }
+  $('#com-fora').hidden = !(store.canWrite && comUi.tipo==='pen' && info.est.wa.st==='pendente');
   const cel = cad && cad.celular;
   atualizarLinkWa();
   const ult = enviados(M.nome).find(e => e.chave===info.chaves[comUi.tipo]);
@@ -2050,6 +2118,7 @@ async function registrarEnvio(){
   const cad = cadDe(M.nome); if(!cad || !cad.celular || !ativo(cad)) return;
   const info = comInfo(M, ui.mes);
   const body = {motorista:slug(M.nome), nome:M.nome, mes:ui.mes, tipo:comUi.tipo, chave:info.chaves[comUi.tipo], texto:comUi.texto, celular:cad.celular, enviadoEm:new Date().toISOString(), enviadoPor:store.uid||null};
+  if(comUi.tipo==='pen') body.sig = info.est.sig;
   try{ await store.put('comunicados', store.newId(), body); render(); }
   catch(e){ $('#com-hint').textContent = 'O WhatsApp abriu, mas não foi possível registrar o envio ('+((e&&(e.code||e.message))||e)+').'; }
 }
@@ -2230,6 +2299,8 @@ $('#m-ev').addEventListener('click', e => { const b = e.target.closest('[data-an
 $('#anul-motivo').addEventListener('change', e => { anulUi.motivo = e.target.value; renderAnulBar(); });
 $('#anul-obs').addEventListener('input', e => { anulUi.obs = e.target.value; renderAnulBar(); });
 $('#anul-ok').addEventListener('click', anularSelecionados);
+$('#com-fora').addEventListener('click', marcarFora);
+$('#pend-alerta').addEventListener('click', e => { if(!e.target.closest('[data-pend-ver]')) return; ui.filtro = 'com'; setTab('geral'); renderGeral(); });
 $('#anul-limpar').addEventListener('click', () => { anulUi.sel.clear(); $('#m-ev tbody').querySelectorAll('input[data-anul]').forEach(x => { x.checked = false; }); renderAnulBar(); });
 $('#m-prev').addEventListener('click', () => { const s=$('#m-sel'); if(s.selectedIndex>0){ ui.motorista=s.options[s.selectedIndex-1].value; renderMot(); } });
 $('#m-next').addEventListener('click', () => { const s=$('#m-sel'); if(s.selectedIndex<s.options.length-1){ ui.motorista=s.options[s.selectedIndex+1].value; renderMot(); } });
@@ -2312,7 +2383,7 @@ setTab(ui.tab);
 render();
 store.init(render);
 // gancho só para os testes automáticos (tools/test): não existe no uso normal
-if(window.__teste) window.__painel = {A:() => A, store, analisar, render, dadosCompletos, restaurarCompleto};
+if(window.__teste) window.__painel = {A:() => A, store, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias};
 })();
 </script>
 
