@@ -106,6 +106,7 @@ Spec: `docs/superpowers/specs/2026-11-11-anulacao-historico-pendencias-design.md
 - [ ] Pendências menores da revisão final: histórico de envios mostra "para" vazio em `rhret` e em registros manuais; KPI e ordenação da coluna Envio da Visão geral não contam RH em retificar; `renderAnulBar` refaz o cálculo a cada tecla da observação; `#m-next` habilitado sem efeito na ficha "sem eventos".
 - [ ] Conferir com o usuário, no uso real, a primeira rodada de pendências: meses antigos tratados por fora precisam do "Marcar como enviado (fora do painel)".
 - O post de divulgação (JPEG 1080×1920 "Infrações de Velocidade mudou de lugar!") foi entregue no chat e não está no repositório. O assunto e a descrição para o Teams também foram passados no chat.
+- Post "Novidades do painel" (JPEG 1080×1350, layout Tóliman: anulação, Histórico, pendências, retificação): `docs/posts/Post - Novidades do painel.jpg`, fonte `docs/posts/post-novidades-nov-2026.html`.
 - Post "Como acessar o painel" (JPEG 1080×1920, 3 passos: Teams › atalho no OneDrive › nome e Conectar pasta): `docs/posts/Post - Acesso ao painel pelo Teams.jpg`, fonte em `docs/posts/post-acesso-teams.html` (print com Playwright em 1080×1920). O passo 1 usa Equipe GR › canal privado Infrações de velocidade › Arquivos.
 
 ## Fluxo de trabalho combinado

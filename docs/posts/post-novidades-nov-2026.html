@@ -1,0 +1,63 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<!-- Post "Novidades do painel" (1080×1350, layout padrão Grupo Dínamo / Tóliman). Print com Playwright em 1080×1350. -->
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B1730;--navy:#112346;--navy2:#1D2644;--navy3:#2B3A5C;--accent:#E4536C;--plum:#8E5AA8;--steel:#6B7A94;--steel-l:#98A6BC;--line:#DCE3ED;--paper:#EFF2F7;
+--disp:"Barlow Condensed",sans-serif;--body:"IBM Plex Sans",sans-serif;--mono:"IBM Plex Mono",monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1080px;height:1350px;background:var(--paper);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;overflow:hidden;position:relative}
+.top{background:#fff;border-bottom:1px solid var(--line);height:104px;display:flex;align-items:center;gap:30px;padding:0 64px}
+.top img{height:48px}
+.top .rule{width:1px;height:50px;background:var(--line)}
+.top .who{font-family:var(--mono);font-size:16px;letter-spacing:.16em;text-transform:uppercase;color:var(--steel)}
+.top .who b{display:block;font-family:var(--body);font-size:22px;letter-spacing:0;text-transform:none;color:var(--navy);font-weight:600;margin-top:2px}
+.hero{background:var(--navy);color:#fff;padding:46px 64px 44px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-60px;top:-30px;width:420px;height:420px;
+  background:linear-gradient(135deg,transparent 0 30%,rgba(228,83,108,.22) 30% 44%,transparent 44% 52%,rgba(255,211,77,.14) 52% 62%,transparent 62% 70%,rgba(142,90,168,.28) 70% 100%);transform:skewX(-18deg)}
+.eyebrow{font-family:var(--mono);font-size:18px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:18px;position:relative;z-index:1}
+h1{font-family:var(--disp);font-weight:700;font-size:96px;line-height:.92;text-transform:uppercase;position:relative;z-index:1}
+h1 em{display:block;font-style:normal;font-weight:500;font-size:54px;color:var(--steel-l);margin-top:10px}
+h1 em b{color:#fff;font-weight:600}
+.sub{position:relative;z-index:1;margin-top:20px;color:#B9C4D6;font-size:23px;line-height:1.4;max-width:44ch}
+.body{padding:40px 64px 0}
+.list{background:var(--line);display:grid;gap:1px;border:1px solid var(--line)}
+.row{background:#fff;display:grid;grid-template-columns:62px 1fr;gap:20px;padding:30px 28px;align-items:start}
+.row .n{font-family:var(--disp);font-weight:700;font-size:40px;color:var(--accent);line-height:1}
+.row h2{font-family:var(--disp);font-weight:600;font-size:36px;text-transform:uppercase;color:var(--navy);line-height:1}
+.row p{font-size:21px;line-height:1.4;color:#3A4660;margin-top:8px}
+.row p b{color:var(--navy);font-weight:600}
+.tag{display:inline-block;font-family:var(--mono);font-size:14px;letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;border-radius:2px;margin-left:12px;vertical-align:6px;color:var(--plum);border:1.5px solid rgba(142,90,168,.45)}
+.ponto{display:inline-grid;place-items:center;min-width:34px;height:26px;padding:0 6px;border-radius:5px;font-size:15px;font-weight:700;vertical-align:2px;margin:0 2px}
+.ponto.ok{background:rgba(30,142,90,.14);color:#1E8E5A}.ponto.pend{background:#C22C4C;color:#fff}.ponto.ret{background:#C98A1B;color:#fff}
+.foot{position:absolute;left:0;right:0;bottom:0;height:118px;background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 64px}
+.foot img{height:38px;opacity:.95}
+.foot p{font-family:var(--mono);font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:#8FA0BA;text-align:right;line-height:1.6}
+.foot p b{color:#fff;font-weight:500}
+</style></head><body>
+<header class="top">
+  <img src="../../tools/manual/rapido/logo.png" alt="Grupo Dínamo · Tóliman Transportes">
+  <div class="rule"></div>
+  <div class="who">Comunicado · Equipe GR<b>Painel Infrações de Velocidade</b></div>
+</header>
+<div class="hero">
+  <div class="eyebrow">Novidades do painel · Novembro 2026</div>
+  <h1>Infrações de velocidade<em>agora com <b>histórico e correção manual</b></em></h1>
+  <p class="sub">Reabra o arquivo na pasta do canal Infrações de velocidade para usar a versão nova.</p>
+</div>
+<div class="body">
+  <div class="list">
+    <div class="row"><div class="n">01</div><div><h2>Anular picos<span class="tag">Aba Motorista</span></h2>
+      <p>Pico gerado por <b>falha no caminhão</b> ou <b>erro de leitura da SASCAR</b>? Marque, escolha o motivo e o painel refaz a penalidade e o acumulado. Dá para desfazer.</p></div></div>
+    <div class="row"><div class="n">02</div><div><h2>Histórico<span class="tag">Aba nova</span></h2>
+      <p>Cada motorista <b>mês a mês</b>: advertências, suspensões, picos anulados e o envio de cada penalidade.</p></div></div>
+    <div class="row"><div class="n">03</div><div><h2>Pendências de envio<span class="tag">Topo do painel</span></h2>
+      <p>Um aviso mostra o que falta enviar, de qualquer mês, ao motorista e ao RH: <span class="ponto ok">M</span> enviado <span class="ponto pend">M</span> pendente <span class="ponto ret">RH</span> retificar.</p></div></div>
+    <div class="row"><div class="n">04</div><div><h2>Retificação<span class="tag">Motorista e RH</span></h2>
+      <p>Se uma anulação muda uma penalidade <b>já enviada</b>, o painel monta o e-mail ao RH e a mensagem ao motorista.</p></div></div>
+  </div>
+</div>
+<div class="foot">
+  <img src="../../tools/manual/rapido/logo-light.png" alt="Grupo Dínamo · Tóliman Transportes">
+  <p>Passo a passo no<br><b>Guia completo atualizado</b></p>
+</div>
+</body></html>
