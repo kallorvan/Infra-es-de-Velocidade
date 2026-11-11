@@ -578,6 +578,10 @@ const REGRAS = [
   {id:'ch', cond:'chuva', nome:'Chuva · acima de 70 km/h por mais de 1 min', faixa:'> 70 km/h e > 1 min', min:71, max:Infinity, tol:20, pena:'adv', cor:'var(--mauve)'}
 ];
 const PRE = {min:87, max:89};
+// anulação de picos: motivo obrigatório; observação obrigatória em "Outro"
+const MOTIVOS = {caminhao:'Falha no caminhão (sensor/velocidade)', sascar:'Erro de leitura SASCAR', outro:'Outro'};
+const chaveAnul = (cond, nome, ts, placa, vel) => cond+'|'+ts+'|'+nome+'|'+placa+'|'+vel;
+const idAnul = chave => slug(chave);
 const ADV_P_SUS = 3, SUS_P_TER = 3;
 
 const CHUVA_MIN_S = 60; // na chuva, só conta pico que fica acima de 70 km/h por mais de 1 min
@@ -609,7 +613,8 @@ const dataBR = iso => { const [d,t]=iso.split(' '); const [y,m,dd]=d.split('-');
 /* ================= ARMAZENAMENTO ================= */
 // No claude.ai: banco compartilhado do artefato (db). Fora dele (arquivo aberto localmente): localStorage.
 // meses: eventos por mês e condição · motoristas: cadastro · comunicados: registro de envios por WhatsApp
-const COLECOES = ['meses','motoristas','comunicados','config'];
+// anulacoes: picos anulados por falha no caminhão ou erro de leitura (a planilha importada nunca é alterada)
+const COLECOES = ['meses','motoristas','comunicados','config','anulacoes'];
 const LS_KEY = c => c==='meses' ? 'infra-vel-meses-v1' : 'infra-vel-'+c+'-v1';
 
 /* Pasta da equipe (SharePoint/OneDrive sincronizado).
@@ -671,7 +676,7 @@ const pasta = {
 
 const store = {
   mode:'loading', db:null, user:null, uid:null, canWrite:true, isEditor:false,
-  data:{meses:{}, motoristas:{}, comunicados:{}, config:{}},
+  data:{meses:{}, motoristas:{}, comunicados:{}, config:{}, anulacoes:{}},
   get docs(){ return this.data.meses; },
   async init(onChange){
     this.onChange = onChange;
@@ -912,8 +917,9 @@ function setSync(cls, t){ const s=$('#sync'); s.className='sync '+cls; $('#sync-
 
 /* ================= MOTOR DE PENALIDADES ================= */
 let A = null; // análise atual
-function analisar(docs){
+function analisar(docs, anul){
   const meses = new Set(); const mot = new Map(); const ate = {};
+  const anIdx = new Map(); Object.values(anul || {}).forEach(a => { if(a && a.chave) anIdx.set(a.chave, a); });
   Object.values(docs).forEach(doc => {
     if(!doc || !Array.isArray(doc.ev)) return;
     meses.add(doc.mes);
@@ -921,10 +927,12 @@ function analisar(docs){
       const nome = doc.motoristas[e[0]]; if(!nome) return;
       if(!mot.has(nome)) mot.set(nome, {nome, meses:{}, semId:/^(SEM MOTORISTA|NAO IDENTIFICADO|N\/I)/.test(norm(nome).toUpperCase())});
       const M = mot.get(nome);
-      const mm = M.meses[doc.mes] || (M.meses[doc.mes] = {pre:0,b1:0,b2:0,b3:0,ch:0,chc:0,ev:[],placas:new Set(),vmax:{seco:0,chuva:0}});
+      const mm = M.meses[doc.mes] || (M.meses[doc.mes] = {pre:0,b1:0,b2:0,b3:0,ch:0,chc:0,ev:[],placas:new Set(),vmax:{seco:0,chuva:0},anulados:0});
       const ev = {ts:e[1], placa:e[2], vel:+e[3], dur:+e[4], cond:doc.tipo, fx:faixa(doc.tipo, +e[3], +e[4])};
+      ev.chave = chaveAnul(doc.tipo, nome, ev.ts, ev.placa, e[3]); ev.anulado = anIdx.get(ev.chave) || null;
       mm.ev.push(ev); mm.placas.add(ev.placa);
       if(!ate[doc.mes] || ev.ts > ate[doc.mes]) ate[doc.mes] = ev.ts;
+      if(ev.anulado){ mm.anulados++; return; } // pico anulado: fica na lista, mas não conta
       if(ev.fx) mm[ev.fx]++;
       if(ev.vel > mm.vmax[doc.tipo]) mm.vmax[doc.tipo] = ev.vel;
     });
@@ -972,7 +980,7 @@ const ui = { tab:'geral', mes:null, filtro:'todos', q:'', sort:{k:'sit', dir:1},
 try{ const t = localStorage.getItem('infra-vel-tab'); if(t) ui.tab=t; }catch(e){}
 
 function render(){
-  A = analisar(store.docs);
+  A = analisar(store.docs, store.data.anulacoes);
   cadVinc = null;
   const sel = $('#mes');
   const meses = A.meses;
@@ -2007,7 +2015,7 @@ function renderBkpCompleto(){
 }
 function dadosCompletos(){
   return {formato:'infracoes-velocidade-completo', versao:1, geradoEm:new Date().toISOString(),
-    meses:store.data.meses, motoristas:store.data.motoristas, comunicados:store.data.comunicados,
+    meses:store.data.meses, motoristas:store.data.motoristas, comunicados:store.data.comunicados, anulacoes:store.data.anulacoes,
     config:Object.fromEntries(Object.entries(store.data.config).filter(([k]) => k!=='backupCompleto'))};
 }
 function nomeBackup(d){ return 'backup-completo-infracoes-velocidade-'+d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())+'_'+p2(d.getHours())+'h'+p2(d.getMinutes())+'.json'; }
@@ -2055,13 +2063,13 @@ function prevCompleto(d, nome){
   const lista = [...new Set(meses.map(x=>x.mes))].sort();
   restPend = {completo:true, d};
   $('#rest-prev').innerHTML = '<div class="card pad" style="margin-top:12px"><div class="sec-h"><h2>Restaurar backup completo</h2><span class="sec-note">'+esc(nome)+' · gerado em '+(d.geradoEm?new Date(d.geradoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—')+'</span></div>'+
-    '<p style="margin:0 0 10px;font-size:13px">'+(lista.length?lista.map(mesNome).join(', '):'Nenhum mês')+' · '+fmt(meses.reduce((a,x)=>a+(x.ev||[]).length,0))+' eventos · '+mot+' motoristas no cadastro · '+com+' envios registrados'+(d.config&&d.config.rh&&d.config.rh.para?' · e-mail do RH':'')+'.</p>'+
+    '<p style="margin:0 0 10px;font-size:13px">'+(lista.length?lista.map(mesNome).join(', '):'Nenhum mês')+' · '+fmt(meses.reduce((a,x)=>a+(x.ev||[]).length,0))+' eventos · '+mot+' motoristas no cadastro · '+com+' envios registrados'+(Object.keys(d.anulacoes||{}).length?' · '+Object.keys(d.anulacoes).length+' picos anulados':'')+(d.config&&d.config.rh&&d.config.rh.para?' · e-mail do RH':'')+'.</p>'+
     '<div class="msg info" style="margin:0 0 10px">Nada que já está no painel é apagado: os eventos são somados sem duplicar, envios e cadastros que faltam são incluídos e, no cadastro, vale a versão mais recente de cada motorista.</div>'+
     '<div class="actions"><button class="btn" type="button" id="rest-ok">Restaurar tudo</button><button class="btn ghost" type="button" id="rest-cancel">Cancelar</button></div></div>';
 }
 async function restaurarCompleto(d, progresso){
   let n = {ev:0, mot:0, com:0};
-  const total = Object.keys(d.meses||{}).length + Object.keys(d.motoristas||{}).length + Object.keys(d.comunicados||{}).length;
+  const total = Object.keys(d.meses||{}).length + Object.keys(d.motoristas||{}).length + Object.keys(d.comunicados||{}).length + Object.keys(d.anulacoes||{}).length;
   let feitos = 0; const passo = () => { feitos++; if(progresso && (feitos%10===0 || feitos===total)) progresso(feitos, total); };
   for(const [id, x] of Object.entries(d.meses||{})){
     const m = mesclar(store.docs[id], {id, mes:x.mes, tipo:x.tipo, arquivo:x.arquivo||'backup', motoristas:x.motoristas, ev:x.ev});
@@ -2074,6 +2082,7 @@ async function restaurarCompleto(d, progresso){
     passo();
   }
   for(const [id, x] of Object.entries(d.comunicados||{})){ if(!store.data.comunicados[id]){ await comRetentativa(() => store.put('comunicados', id, x)); n.com++; } passo(); }
+  for(const [id, x] of Object.entries(d.anulacoes||{})){ if(!store.data.anulacoes[id]){ await comRetentativa(() => store.put('anulacoes', id, x)); n.anul = (n.anul||0)+1; } passo(); }
   const cfg = d.config || {};
   if(cfg.rh && cfg.rh.para && !rhCfg().para) await comRetentativa(() => store.put('config', 'rh', cfg.rh));
   if(cfg.backups) await comRetentativa(() => store.put('config', 'backups', Object.assign({}, cfg.backups, backups())));
@@ -2208,7 +2217,7 @@ setTab(ui.tab);
 render();
 store.init(render);
 // gancho só para os testes automáticos (tools/test): não existe no uso normal
-if(window.__teste) window.__painel = {A:() => A, store, analisar, render};
+if(window.__teste) window.__painel = {A:() => A, store, analisar, render, dadosCompletos, restaurarCompleto};
 })();
 </script>
 
