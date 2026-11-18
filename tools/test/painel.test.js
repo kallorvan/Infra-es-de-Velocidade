@@ -492,6 +492,35 @@ teste('pasta: pasta do canal com "Dados do painel" pede a renomeação', async p
   ok(!(await p.isVisible('[data-pasta="usar"]')), 'sem Usar esta pasta');
 });
 
+const hojeISO = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2, '0')+'-'+String(d.getDate()).padStart(2, '0'); };
+teste('backup: cópia do dia com o nome do usuário', async p => {
+  await viaHttp(p); await limparOpfs(p);
+  await conectarPasta(p, 'pcana', 'Ana Souza', '');
+  await p.evaluate(d => __painel.store.put('meses', '2026-09-seco', d), mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 3, 92)));
+  const nome = 'Infracoes-de-Velocidade_dados_'+hojeISO()+'_ana-souza.json';
+  for(let i = 0; i < 40 && !(await opfs.lista(p, 'Sistema/backups')).includes(nome); i++) await p.waitForTimeout(150);
+  const j = JSON.parse(await opfs.ler(p, 'Sistema/backups/'+nome));
+  ok(j.versao && j.meses && j.meses['2026-09-seco'], 'conteúdo do backup completo');
+});
+
+teste('backup: limpeza mantém 60 dias e a primeira de cada mês, só do próprio usuário', async p => {
+  await viaHttp(p); await limparOpfs(p);
+  const pre = 'Sistema/backups/Infracoes-de-Velocidade_dados_';
+  const arqs = ['2026-07-03_ana-souza', '2026-07-20_ana-souza', '2026-08-01_ana-souza', '2026-10-01_ana-souza', '2026-07-20_bruno-lima'];
+  for(const a of arqs) await opfs.escrever(p, pre+a+'.json', '{}');
+  await opfs.escrever(p, 'Sistema/dados/leia.txt', '');
+  await opfs.escrever(p, 'Sistema/backups/backup-completo-infracoes-velocidade-2026-07-21_10h00.json', '{}');
+  await conectarPasta(p, 'pcana', 'Ana Souza', '');
+  await p.evaluate(() => { localStorage.removeItem('infra-vel-limpeza'); return __painel.limparBackups('2026-11-18'); });
+  const l = await opfs.lista(p, 'Sistema/backups');
+  ok(!l.includes('Infracoes-de-Velocidade_dados_2026-07-20_ana-souza.json'), 'segunda cópia de julho saiu');
+  for(const a of ['2026-07-03_ana-souza', '2026-08-01_ana-souza', '2026-10-01_ana-souza', '2026-07-20_bruno-lima']) ok(l.includes('Infracoes-de-Velocidade_dados_'+a+'.json'), 'fica '+a);
+  ok(l.includes('backup-completo-infracoes-velocidade-2026-07-21_10h00.json'), 'antigo fica');
+  await opfs.escrever(p, pre+'2026-07-25_ana-souza.json', '{}');
+  await p.evaluate(() => __painel.limparBackups('2026-11-18'));
+  ok((await opfs.lista(p, 'Sistema/backups')).includes('Infracoes-de-Velocidade_dados_2026-07-25_ana-souza.json'), 'uma limpeza por dia');
+});
+
 teste('regressão: importar planilha, salvar cadastro, comunicado e RH continuam funcionando', async p => {
   if(!temXlsx) throw new Error('falta tools/test/.cache/xlsx.full.min.js (cd tools/test/.cache && npm pack xlsx@0.18.5 e extraia package/dist/xlsx.full.min.js)');
   await semear(p, {config:{rh:{para:'rh@exemplo.com.br', cc:''}}});

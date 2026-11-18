@@ -697,7 +697,26 @@ const PASTA_NOME = 'Sistema', PASTA_SUBS = ['usuarios', 'dados', 'historico'], P
 const NOME_SISTEMA = 'Infracoes-de-Velocidade';
 // tempos do padrão; nos testes, window.__tempos pode encurtar qualquer um
 const T = Object.assign({PARADO_MS:20*60000, PULSO_MS:20000, GRAVAR_MS:2000, ONLINE_MS:3*60000, CHECA_MS:30000}, (window.__teste && window.__tempos) || {});
-const BKP_GUARDAR = 30;
+const BACKUP_DIAS = 60;
+const hojeISO = (d = new Date()) => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+// login = nome sem acento, em minúsculas e com hífen
+const loginDe = nome => norm(nome).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'sem-nome';
+const nomeBackupDia = (dia, login) => NOME_SISTEMA+'_dados_'+dia+'_'+login+'.json';
+// Limpeza dos backups: uma vez por dia, só os do próprio usuário.
+// Fica tudo dos últimos 60 dias; antes disso, só a primeira cópia de cada mês.
+async function limparBackups(hoje){
+  if(lsGet('infra-vel-limpeza')===hoje || !pasta.backups) return;
+  const meu = '_'+loginDe(pasta.usuario)+'.json', pre = NOME_SISTEMA+'_dados_';
+  const limite = hojeISO(new Date(new Date(hoje+'T12:00:00').getTime() - BACKUP_DIAS*864e5));
+  const porMes = {};
+  for await (const [nome, h] of pasta.backups.entries()){
+    if(h.kind!=='file' || !nome.startsWith(pre) || !nome.endsWith(meu)) continue;
+    const dia = nome.slice(pre.length, pre.length+10);
+    if(/^\d{4}-\d{2}-\d{2}$/.test(dia) && dia < limite) (porMes[dia.slice(0,7)] = porMes[dia.slice(0,7)] || []).push(nome);
+  }
+  for(const lista of Object.values(porMes)) for(const nome of lista.sort().slice(1)) try{ await pasta.backups.removeEntry(nome); }catch(e){}
+  lsSet('infra-vel-limpeza', hoje);
+}
 // Pasta errada: confere ao conectar, antes de gravar qualquer coisa ('' = pasta certa)
 async function avisoPasta(h){
   const nomes = [];
@@ -923,23 +942,20 @@ const store = {
       await w.write(JSON.stringify({origem:pasta.disp, usuario:pasta.usuario, visto:new Date().toISOString(), saiu:!!sair, registro:sair ? '' : (pasta.registro||''), desde:pasta.desde||'', versoes:pasta.versoes||{}})); await w.close();
     }catch(e){}
   },
-  // um backup completo por dia na pasta "backups", guardando os mais recentes
+  // uma cópia por dia de cada pessoa em backups/, mais a limpeza do padrão
   async _backupDiario(){
     if(this.mode!=='pasta' || !temDados()) return;
     try{
-      const hoje = new Date(), dia = hoje.getFullYear()+'-'+p2(hoje.getMonth()+1)+'-'+p2(hoje.getDate());
+      const hoje = new Date(), dia = hojeISO(hoje);
       if(pasta.bkpDia===dia) return;
       pasta.bkpDia = dia;
-      const nomes = [];
-      for await (const [nome, h] of pasta.backups.entries()) if(h.kind==='file' && /^backup-completo-infracoes-velocidade-.*\.json$/.test(nome)) nomes.push(nome);
-      if(!nomes.some(n => n.includes('-'+dia+'_'))){
-        const nome = nomeBackup(hoje);
+      const nome = nomeBackupDia(dia, loginDe(pasta.usuario));
+      let existe = false; try{ await pasta.backups.getFileHandle(nome); existe = true; }catch(e){}
+      if(!existe){
         await gravarNaPasta(pasta.backups, nome, JSON.stringify(dadosCompletos()));
-        nomes.push(nome);
         this.put('config', 'backupCompleto', {em:hoje.toISOString(), por:this.uid||null, arquivo:nome, automatico:true});
       }
-      nomes.sort();
-      for(const n of nomes.slice(0, Math.max(0, nomes.length-BKP_GUARDAR))) try{ await pasta.backups.removeEntry(n); }catch(e){}
+      await limparBackups(dia);
     }catch(e){ pasta.bkpDia = null; }
   },
   newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); },
@@ -2389,7 +2405,7 @@ function renderBkpCompleto(){
   const botao = '<button class="btn" type="button" data-bkpc="1" style="padding:6px 12px">Fazer backup agora</button>';
   let aviso = '';
   if(store.mode==='pasta'){
-    $('#bkpc-nota').textContent = 'Os dados ficam na pasta '+PASTA_NOME+', na pasta da equipe, e todos que conectam a pasta veem as mesmas informações. Todo dia o painel salva sozinho um backup completo em '+PASTA_NOME+' › backups (guarda os '+BKP_GUARDAR+' mais recentes). "Restaurar backup" traz tudo de volta sem apagar o que já está no painel.';
+    $('#bkpc-nota').textContent = 'Os dados ficam na pasta '+PASTA_NOME+', na pasta da equipe, e todos que conectam a pasta veem as mesmas informações. Todo dia o painel salva sozinho um backup completo em '+PASTA_NOME+' › backups (uma cópia por dia de cada pessoa; depois de '+BACKUP_DIAS+' dias, fica a primeira de cada mês). "Restaurar backup" traz tudo de volta sem apagar o que já está no painel.';
   } else if(store.mode==='local'){
     // arquivo aberto da pasta (SharePoint/OneDrive): os dados vivem só neste navegador, então o lembrete é semanal
     // além do fechamento do mês
@@ -2407,7 +2423,8 @@ function dadosCompletos(){
     meses:store.data.meses, motoristas:store.data.motoristas, comunicados:store.data.comunicados, anulacoes:store.data.anulacoes,
     config:Object.fromEntries(Object.entries(store.data.config).filter(([k]) => k!=='backupCompleto'))};
 }
-function nomeBackup(d){ return 'backup-completo-infracoes-velocidade-'+d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())+'_'+p2(d.getHours())+'h'+p2(d.getMinutes())+'.json'; }
+// na pasta: a cópia do dia da pessoa (atualizada); fora dela: arquivo para baixar
+function nomeBackup(d){ return store.mode==='pasta' ? nomeBackupDia(hojeISO(d), loginDe(pasta.usuario)) : 'infracoes-velocidade_backup_'+hojeISO(d)+'.json'; }
 async function fazerBackupCompleto(btn){
   const msg = $('#bkpc-msg'); const orig = btn.textContent; btn.disabled = true;
   const nome = nomeBackup(new Date());
@@ -2421,7 +2438,7 @@ async function fazerBackupCompleto(btn){
   }finally{ btn.disabled = false; btn.textContent = orig; }
 }
 async function salvarArquivo(nome, dados){
-  if(store.mode==='pasta' && /^backup-completo-/.test(nome)){ await gravarNaPasta(pasta.backups, nome, dados); return; }
+  if(store.mode==='pasta' && nome.startsWith(NOME_SISTEMA+'_dados_')){ await gravarNaPasta(pasta.backups, nome, dados); return; }
   if(store.mode==='db'){
     const dl = await claude.use('downloads');
     if(!dl) throw {code:'unavailable'};
@@ -2623,7 +2640,7 @@ setTab(ui.tab);
 render();
 store.init(render);
 // gancho só para os testes automáticos (tools/test): não existe no uso normal
-if(window.__teste) window.__painel = {A:() => A, store, pasta, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias, emailRH:(n, m) => montarEmailRH(A.mot.get(n), m).corpo, textosImg:async (n, m, t, c) => (await desenharComunicado(A.mot.get(n), m, t, c)).__textos, montarEml};
+if(window.__teste) window.__painel = {A:() => A, store, pasta, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias, limparBackups, emailRH:(n, m) => montarEmailRH(A.mot.get(n), m).corpo, textosImg:async (n, m, t, c) => (await desenharComunicado(A.mot.get(n), m, t, c)).__textos, montarEml};
 })();
 </script>
 
