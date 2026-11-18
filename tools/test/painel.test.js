@@ -828,6 +828,8 @@ teste('design: favicon do padrão (faixas da logo)', async p => {
   ok(svg && svg.startsWith('data:image/svg+xml;base64,'), 'svg embutido');
   ok(Buffer.from(svg.split(',')[1], 'base64').toString().includes('#D84864'), 'faixas da logo');
   ok(await p.$('link[rel="icon"][sizes="32x32"]'), 'png 32 px');
+  igual(await p.evaluate(() => [...document.querySelectorAll('link[rel="icon"]')].map(l => l.parentElement.tagName)), ['HEAD', 'HEAD'], 'o navegador só usa o ícone que está no <head>');
+  igual(await p.evaluate(() => document.querySelector('title').parentElement.tagName), 'HEAD');
 });
 
 teste('design: sem rolagem lateral em 390px', async p => {
