@@ -28,8 +28,11 @@ frag = (src.replace('%%LOGOS%%', logos).replace('%%LOGO%%', logo).replace('%%ICO
 out = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'dist/artefato.html'
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(frag, encoding='utf-8')
+# título, favicon, cor e fontes vão no <head>: o navegador ignora <link rel="icon"> dentro do <body>
+i = frag.index('<style>')
+cabeca, corpo = frag[:i], frag[i:]
 (ROOT / 'Infrações de velocidade.html').write_text(
     '<!doctype html>\n<html lang="pt-BR">\n<head>\n<meta charset="utf-8">\n'
     '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n'
-    '</head>\n<body>\n' + frag + '\n</body>\n</html>\n', encoding='utf-8')
+    + cabeca + '</head>\n<body>\n' + corpo + '\n</body>\n</html>\n', encoding='utf-8')
 print('ok', out, len(frag))
