@@ -318,17 +318,20 @@ teste('RH: .eml com destinatários, assunto, corpo e imagem anexada', async p =>
   await abrirMotorista(p);
   ok((await p.innerText('#rh-corpo')).includes('Segue em anexo o comunicado completo'), 'corpo cita o anexo');
   const [dl] = await Promise.all([p.waitForEvent('download'), p.click('#rh-eml')]);
-  ok(/^E-mail RH - ANA TESTE - Setembro 2026\.eml$/.test(dl.suggestedFilename()), dl.suggestedFilename());
+  igual(dl.suggestedFilename(), 'infracoes-velocidade_email-rh-ana-teste_2026-09-01_a_2026-09-30.eml');
   const eml = fs.readFileSync(await dl.path(), 'utf8');
   ok(eml.startsWith('X-Unsent: 1\r\n'), 'rascunho');
   ok(eml.includes('To: rh@exemplo.com, dp@exemplo.com\r\n') && eml.includes('Cc: gestor@exemplo.com\r\n'), 'destinatários');
-  ok(/Content-Type: image\/jpeg; name="comunicado-completo-ana-teste-2026-09\.jpg"/.test(eml), 'anexo');
-  const anexo = eml.split('filename="comunicado-completo-ana-teste-2026-09.jpg"')[1].split('\r\n\r\n')[1].split('\r\n--')[0].replace(/\r\n/g, '');
+  ok(eml.includes('Content-Type: image/jpeg; name="infracoes-velocidade_comunicado-completo-ana-teste_2026-09-01_a_2026-09-30.jpg"'), 'anexo');
+  const anexo = eml.split('filename="infracoes-velocidade_comunicado-completo-ana-teste_2026-09-01_a_2026-09-30.jpg"')[1].split('\r\n\r\n')[1].split('\r\n--')[0].replace(/\r\n/g, '');
   ok(Buffer.from(anexo, 'base64').slice(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])), 'JPEG válido');
   const assunto = await p.evaluate(eml => { const m = eml.match(/Subject: ((?:.*\r\n )*.*)\r\n/)[1]; return m.split('\r\n ').map(w => { const b = w.match(/=\?UTF-8\?B\?(.*)\?=/); return b ? decodeURIComponent(escape(atob(b[1]))) : w; }).join(''); }, eml);
   igual(assunto, await p.inputValue('#rh-assunto'));
   const [di] = await Promise.all([p.waitForEvent('download'), p.click('#rh-img')]);
-  igual(di.suggestedFilename(), 'comunicado-completo-ana-teste-2026-09.jpg');
+  igual(di.suggestedFilename(), 'infracoes-velocidade_comunicado-completo-ana-teste_2026-09-01_a_2026-09-30.jpg');
+  await p.waitForFunction(() => document.querySelector('#com-img').naturalWidth > 0);
+  const [dp] = await Promise.all([p.waitForEvent('download'), p.click('#com-dl')]);
+  igual(dp.suggestedFilename(), 'infracoes-velocidade_picos-ana-teste_2026-09-01_a_2026-09-30.jpg');
 });
 
 /* ---------- aba Histórico ---------- */

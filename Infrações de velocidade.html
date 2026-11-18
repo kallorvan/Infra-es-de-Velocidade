@@ -880,6 +880,10 @@ const BACKUP_DIAS = 60;
 const hojeISO = (d = new Date()) => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 // login = nome sem acento, em minúsculas e com hífen
 const loginDe = nome => norm(nome).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'sem-nome';
+// Nome das exportações: <sistema>_<conteúdo>_AAAA-MM-DD_a_AAAA-MM-DD.<ext>, sem acentos e sem espaços
+const NOME_EXPORT = 'infracoes-velocidade';
+const nomeExport = (conteudo, ini, fim, ext) => [NOME_EXPORT, loginDe(conteudo), ini===fim ? ini : ini+'_a_'+fim].join('_')+'.'+ext;
+const periodoMes = mes => { const [y, m] = mes.split('-').map(Number); return [mes+'-01', mes+'-'+String(new Date(y, m, 0).getDate()).padStart(2,'0')]; };
 const nomeBackupDia = (dia, login) => NOME_SISTEMA+'_dados_'+dia+'_'+login+'.json';
 // Limpeza dos backups: uma vez por dia, só os do próprio usuário.
 // Fica tudo dos últimos 60 dias; antes disso, só a primeira cópia de cada mês.
@@ -2526,7 +2530,7 @@ const blobB64 = b => new Promise((res, rej) => { const fr = new FileReader(); fr
 async function imagemRH(M, mes){
   const cv = await desenharComunicado(M, mes, 'pen', true);
   const blob = await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.92));
-  return {blob, nome:'comunicado-completo-'+slug(M.nome)+'-'+mes+'.jpg'};
+  return {blob, nome:nomeExport('comunicado-completo '+M.nome, ...periodoMes(mes), 'jpg')};
 }
 function baixarArquivo(blob, nome){
   const u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
@@ -2540,7 +2544,7 @@ async function abrirEmlRH(){
   try{
     const img = await imagemRH(M, ui.mes);
     const eml = montarEml({para:cfg.para, cc:cfg.cc, assunto:$('#rh-assunto').value, html:$('#rh-corpo').innerHTML, texto:textoDe($('#rh-corpo')), anexo:{nome:img.nome, b64:await blobB64(img.blob)}});
-    const nome = ('E-mail RH - '+M.nome+' - '+mesNome(ui.mes)).replace(/[\\/:*?"<>|]/g, '')+'.eml';
+    const nome = nomeExport('email-rh '+M.nome, ...periodoMes(ui.mes), 'eml');
     baixarArquivo(new Blob([eml], {type:'message/rfc822'}), nome);
     btn.textContent = 'E-mail gerado';
   }catch(e){ $('#rh-hint').textContent = 'Não foi possível gerar o e-mail ('+((e&&(e.code||e.message))||e)+').'; btn.textContent = orig; }
@@ -2866,7 +2870,7 @@ async function gerarImagem(M, mes, tipo, key){
     if(comUi.imgKey!==key || !b) return;
     if(comUi.imgUrl) URL.revokeObjectURL(comUi.imgUrl);
     comUi.blob = b; comUi.canvas = cv; comUi.imgUrl = URL.createObjectURL(b);
-    comUi.arquivo = 'comunicado-velocidade-'+slug(M.nome)+'-'+mes+'.jpg';
+    comUi.arquivo = nomeExport('picos '+M.nome, ...periodoMes(mes), 'jpg');
     $('#com-img').src = comUi.imgUrl;
   }, 'image/jpeg', 0.92);
 }
