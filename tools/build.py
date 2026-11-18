@@ -14,7 +14,8 @@ logos = ('<img src="data:image/png;base64,%s" alt="Grupo Dínamo">\n      <span 
          '      <img src="data:image/png;base64,%s" alt="Tóliman Transportes">') % (
     b64('assets/logo-grupo-dinamo.png'), b64('assets/logo-toliman-transportes.png'))
 icon = '<link rel="icon" type="image/png" href="data:image/png;base64,%s">' % b64('assets/favicon.png')
-frag = src.replace('%%LOGOS%%', logos).replace('%%ICON%%', icon)
+logo = '<img src="data:image/png;base64,%s" alt="Grupo Dínamo · Tóliman Transportes">' % b64('assets/logo.png')
+frag = src.replace('%%LOGOS%%', logos).replace('%%LOGO%%', logo).replace('%%ICON%%', icon)
 
 out = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'dist/artefato.html'
 out.parent.mkdir(parents=True, exist_ok=True)

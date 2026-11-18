@@ -521,6 +521,137 @@ teste('backup: limpeza mantém 60 dias e a primeira de cada mês, só do própri
   ok((await opfs.lista(p, 'Sistema/backups')).includes('Infracoes-de-Velocidade_dados_2026-07-25_ana-souza.json'), 'uma limpeza por dia');
 });
 
+/* ---------- login (Padrão de Sistemas Tóliman) ---------- */
+const loginDe = n => n.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+// abre o painel com a janela de entrada (sem __semLogin) e a pasta simulada
+const abrirComLogin = async (p, disp, suf = '', o = {}) => {
+  await p.addInitScript(() => { window.__semLogin = false; });
+  await prepPasta(p, disp, suf, o);
+  if(p.url().startsWith('http')) await p.reload(); else await viaHttp(p);
+  await p.waitForSelector('#dlgEntrada[open]');
+};
+const enviarEntrada = p => p.click('#dlgEntrada button[type="submit"]');
+// chega à tela de entrada já com a pasta conectada
+const ateEntrada = async p => { if(await p.isVisible('#dlgEntrada [data-ac="conectar"]')) await p.click('#dlgEntrada [data-ac="conectar"]'); };
+const entrar = async (p, o) => {
+  await abrirComLogin(p, o.disp, o.suf || '', {tempos:o.tempos});
+  await ateEntrada(p);
+  if(o.primeiro){ await p.fill('#entNome', o.nome); await p.fill('#entSenha', o.senha); await p.fill('#entRepete', o.senha); }
+  else { await p.waitForSelector('#entUsuario'); await p.selectOption('#entUsuario', loginDe(o.nome)); await p.fill('#entSenha', o.senha); }
+  await enviarEntrada(p);
+  if(!o.erro) await p.waitForFunction(() => __painel.sessao() && !document.querySelector('#dlgEntrada').open);
+};
+const semearUsuario = (p, u) => p.evaluate(async u => {
+  const senha = await __painel.acesso.hashSenha(u.senha);
+  const corpo = {versao:1, login:u.login, nome:u.nome, admin:!!u.admin, ativo:u.ativo !== false, trocarSenha:!!u.trocarSenha, senha, criadoEm:'2026-11-01T10:00:00.000Z', criadoPor:'Teste', alteradoEm:'2026-11-01T10:00:00.000Z', alteradoPor:'Teste'};
+  let d = await (await navigator.storage.getDirectory()).getDirectoryHandle('Sistema', {create:true}); d = await d.getDirectoryHandle('usuarios', {create:true});
+  const w = await (await d.getFileHandle(u.login+'.json', {create:true})).createWritable(); await w.write(JSON.stringify(corpo)); await w.close();
+}, u);
+const historico = async p => { const l = []; for(const n of await opfs.lista(p, 'Sistema/historico')) l.push(...JSON.parse(await opfs.ler(p, 'Sistema/historico/'+n)).eventos); return l; };
+const msgEntrada = p => p.innerText('#entMsg');
+const ANA = {login:'ana-souza', nome:'Ana Souza', admin:true, senha:'telemetria1'};
+const novoComUsuarios = async (p, us) => { await viaHttp(p); await limparOpfs(p); for(const u of us) await semearUsuario(p, u); };
+
+teste('login: painel fechado até entrar; Esc não fecha', async p => {
+  await viaHttp(p); await limparOpfs(p);
+  await abrirComLogin(p, 'pcana');
+  igual(await p.innerText('#entTitulo'), 'Conectar a pasta do SharePoint');
+  await p.keyboard.press('Escape');
+  ok(await p.evaluate(() => document.querySelector('#dlgEntrada').open), 'continua aberta');
+  igual(await p.evaluate(() => document.querySelector('#dlgEntrada').matches(':modal')), true, 'modal');
+});
+
+teste('login: primeiro acesso cria administrador com senha só em hash', async p => {
+  await viaHttp(p); await limparOpfs(p);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'segredo1', primeiro:true});
+  const txt = await opfs.ler(p, 'Sistema/usuarios/ana-souza.json'), u = JSON.parse(txt);
+  igual([u.admin, u.ativo, u.trocarSenha, u.senha.alg, u.senha.iter], [true, true, false, 'PBKDF2-SHA256', 150000]);
+  ok(!txt.includes('segredo1'), 'sem a senha em texto');
+  ok((await p.innerText('header')).includes('Ana Souza'), 'nome no topo');
+  ok((await historico(p)).some(e => e.tipo === 'entrada' && e.login === 'ana-souza'), 'entrada no histórico');
+});
+
+teste('login: senhas curtas e diferentes mostram a mensagem padrão', async p => {
+  await viaHttp(p); await limparOpfs(p);
+  await abrirComLogin(p, 'pcana'); await ateEntrada(p);
+  await p.fill('#entNome', 'Ana Souza'); await p.fill('#entSenha', '123'); await p.fill('#entRepete', '123'); await enviarEntrada(p);
+  igual(await msgEntrada(p), 'A senha precisa ter pelo menos 6 caracteres.');
+  await p.fill('#entNome', 'Ana Souza'); await p.fill('#entSenha', 'segredo1'); await p.fill('#entRepete', 'segredo2'); await enviarEntrada(p);
+  igual(await msgEntrada(p), 'As duas senhas não são iguais.');
+});
+
+teste('login: senha errada mostra "Senha incorreta." e vai para o histórico', async p => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'errada99', erro:true});
+  await p.waitForFunction(() => document.querySelector('#entMsg').innerText.includes('Senha incorreta.'));
+  ok((await historico(p)).some(e => e.tipo === 'senha-errada' && e.login === 'ana-souza'), 'registrado');
+});
+
+teste('login: senha provisória obriga a troca e recusa a mesma', async p => {
+  await novoComUsuarios(p, [ANA, {login:'bruno-lima', nome:'Bruno Lima', senha:'provisoria1', trocarSenha:true}]);
+  await entrar(p, {disp:'pcbruno', nome:'Bruno Lima', senha:'provisoria1', erro:true});
+  await p.waitForFunction(() => document.querySelector('#entTitulo').innerText === 'Crie a sua senha');
+  ok((await p.innerText('#entCorpo')).includes('Olá, Bruno Lima. Você entrou com uma senha provisória. Escolha uma senha sua para continuar.'), 'texto padrão');
+  await p.fill('#entSenha', 'provisoria1'); await p.fill('#entRepete', 'provisoria1'); await enviarEntrada(p);
+  await p.waitForFunction(() => document.querySelector('#entMsg').innerText === 'Escolha uma senha diferente da provisória.');
+  await p.fill('#entSenha', 'minha-senha'); await p.fill('#entRepete', 'minha-senha'); await enviarEntrada(p);
+  await p.waitForFunction(() => __painel.sessao() && __painel.sessao().login === 'bruno-lima');
+  igual(JSON.parse(await opfs.ler(p, 'Sistema/usuarios/bruno-lima.json')).trocarSenha, false);
+});
+
+teste('login: 20 min parado bloqueia e pede só a senha', async p => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1', tempos:{PARADO_MS:1500, CHECA_MS:300}});
+  await p.evaluate(d => __painel.store.put('meses', '2026-09-seco', d).then(__painel.render), mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 36, 92)));
+  await p.waitForTimeout(800); // deixa a gravação e o backup do dia terminarem (eles redesenham a tela)
+  await abrirMotorista(p);
+  await marcar(p, null, 2);
+  ok(await p.isVisible('#anul-bar'), 'barra aberta');
+  await p.waitForFunction(() => document.querySelector('#dlgEntrada').open, null, {timeout:8000});
+  igual(await p.innerText('#entTitulo'), 'Sessão bloqueada');
+  ok((await p.innerText('#entCorpo')).includes('O sistema ficou mais de 20 minutos sem uso. Para continuar como Ana Souza, digite a sua senha.'), 'texto padrão');
+  const cod = await p.evaluate(() => __painel.store.put('config', 'x', {a:1}).then(() => 'gravou', e => e.code));
+  igual(cod, 'bloqueado');
+  await p.fill('#entSenha', 'telemetria1'); await enviarEntrada(p);
+  await p.waitForFunction(() => !document.querySelector('#dlgEntrada').open);
+  ok(await p.isVisible('#anul-bar'), 'a barra continua aberta');
+  ok((await historico(p)).some(e => e.tipo === 'bloqueio'), 'bloqueio no histórico');
+});
+
+teste('login: usuário desativado some da lista', async p => {
+  await novoComUsuarios(p, [ANA, {login:'bruno-lima', nome:'Bruno Lima', senha:'outra123', ativo:false}]);
+  await abrirComLogin(p, 'pcana'); await ateEntrada(p);
+  await p.waitForSelector('#entUsuario');
+  igual(await p.$$eval('#entUsuario option', os => os.map(o => o.value)), ['ana-souza']);
+});
+
+teste('login: arquivo pela metade em usuarios/ é ignorado', async p => {
+  await novoComUsuarios(p, [ANA]);
+  await opfs.escrever(p, 'Sistema/usuarios/x.json', '{"login":');
+  await abrirComLogin(p, 'pcana'); await ateEntrada(p);
+  await p.waitForSelector('#entUsuario');
+  igual(await p.innerText('#entTitulo'), 'Entrar');
+  igual(await p.$$eval('#entUsuario option', os => os.map(o => o.value)), ['ana-souza']);
+});
+
+teste('login: primeiro acesso com nome já existente é recusado', async p => {
+  await viaHttp(p); await limparOpfs(p);
+  await abrirComLogin(p, 'pcana'); await ateEntrada(p);
+  await p.waitForSelector('#entNome');
+  await semearUsuario(p, ANA); // outro computador criou antes
+  await p.fill('#entNome', 'Ana Souza'); await p.fill('#entSenha', 'segredo1'); await p.fill('#entRepete', 'segredo1'); await enviarEntrada(p);
+  await p.waitForFunction(() => document.querySelector('#entMsg').innerText === 'Já existe um usuário com este nome.');
+  ok((await opfs.ler(p, 'Sistema/usuarios/ana-souza.json')).includes('"criadoPor":"Teste"'), 'não sobrescreveu');
+});
+
+teste('login: navegador sem suporte', async p => {
+  await p.addInitScript(() => { window.__semLogin = false; delete window.showDirectoryPicker; });
+  await viaHttp(p);
+  await p.waitForSelector('#dlgEntrada[open]');
+  igual(await p.innerText('#entTitulo'), 'Navegador sem suporte');
+  ok((await p.innerText('#entCorpo')).includes('Abra o sistema no Google Chrome ou no Microsoft Edge. Este navegador não permite usar a pasta do SharePoint, onde ficam os usuários e as senhas.'), 'texto padrão');
+});
+
 teste('regressão: importar planilha, salvar cadastro, comunicado e RH continuam funcionando', async p => {
   if(!temXlsx) throw new Error('falta tools/test/.cache/xlsx.full.min.js (cd tools/test/.cache && npm pack xlsx@0.18.5 e extraia package/dist/xlsx.full.min.js)');
   await semear(p, {config:{rh:{para:'rh@exemplo.com.br', cc:''}}});

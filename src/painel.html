@@ -308,7 +308,62 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
   .brand img{height:32px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* Tela de entrada no Padrão de Sistemas Tóliman, com os efeitos de gradiente */
+:root{
+  --accent:#E4536C; --accent-d:#C63E56; --navy:#112346; --navy3:#2B3A5C; --plum:#8E5AA8; --steel:#6B7A94;
+  --ouro:#F5CE7A; --lilas:#A275B4;
+  --disp:'Barlow Condensed','Archivo',sans-serif; --body:'IBM Plex Sans','Archivo',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --g-logo:linear-gradient(90deg,var(--accent),var(--ouro) 50%,var(--lilas));
+  --g-borda:linear-gradient(135deg,rgba(228,83,108,.9),rgba(245,206,122,.9),rgba(162,117,180,.9));
+  --g-cta:linear-gradient(135deg,#EE6A80,var(--accent) 45%,var(--accent-d));
+  --g-foco:linear-gradient(135deg,var(--accent),var(--lilas));
+  --g-titulo:linear-gradient(90deg,#0B1730,var(--navy3) 60%,var(--plum));
+  --g-noite:radial-gradient(60% 70% at 12% 18%,rgba(228,83,108,.38),transparent 60%),radial-gradient(55% 65% at 90% 85%,rgba(162,117,180,.45),transparent 60%),radial-gradient(35% 40% at 72% 8%,rgba(245,206,122,.20),transparent 60%),linear-gradient(135deg,#08122A,var(--navy) 50%,var(--navy3));
+  --listras:repeating-linear-gradient(115deg,transparent 0 120px,rgba(255,255,255,.025) 120px 180px);
+}
+#dlgEntrada{width:min(440px,calc(100vw - 32px));padding:0;border-radius:18px;color:#0B1730;overflow:hidden;font-family:var(--body);
+  border:1.5px solid transparent;background:linear-gradient(#fff,#fff) padding-box,var(--g-borda) border-box;
+  box-shadow:0 30px 80px rgba(3,8,25,.55),0 0 0 8px rgba(255,255,255,.04)}
+#dlgEntrada::backdrop{background:var(--listras),var(--g-noite)}
+#dlgEntrada .faixa{height:6px;background:var(--g-logo)}
+#dlgEntrada .ent-head{padding:22px 24px 6px;background:linear-gradient(180deg,#F7F8FC,#fff)}
+#dlgEntrada .ent-head img{display:block;height:30px;width:auto;margin-bottom:16px}
+#dlgEntrada .ent-head p{margin:0;font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--steel)}
+#dlgEntrada .ent-head h2{margin:4px 0 0;font:700 28px/1.05 var(--disp);text-transform:uppercase;background:var(--g-titulo);-webkit-background-clip:text;background-clip:text;color:transparent}
+#dlgEntrada .ent-corpo{padding:8px 24px 24px;display:grid;gap:12px}
+#dlgEntrada h3{margin:6px 0 0;font:600 16px var(--body)}
+#dlgEntrada p{margin:0;font-size:14px;line-height:1.5}
+#dlgEntrada form{display:grid;gap:12px}
+#dlgEntrada label{display:block;font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin-bottom:4px}
+#dlgEntrada input,#dlgEntrada select{width:100%;font:inherit;font-size:14px;color:#0B1730;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:linear-gradient(180deg,#fff,#FAFBFD)}
+#dlgEntrada input:focus,#dlgEntrada select:focus{outline:none;border-color:transparent;background:linear-gradient(#fff,#fff) padding-box,var(--g-foco) border-box;box-shadow:0 0 0 4px rgba(162,117,180,.16)}
+#dlgEntrada button:focus-visible{outline:2px solid var(--plum);outline-offset:1px}
+#dlgEntrada .acoes{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#dlgEntrada button{font:600 13px var(--body);border:1px solid var(--line);background:#fff;color:#0B1730;border-radius:999px;padding:9px 16px;cursor:pointer}
+#dlgEntrada button:hover{border-color:var(--navy)}
+#dlgEntrada .cta{flex:1;background:var(--g-cta);border-color:transparent;color:#fff;font-weight:700;font-size:14px;padding:12px 18px;box-shadow:0 10px 24px rgba(228,83,108,.38),inset 0 1px 0 rgba(255,255,255,.35)}
+#dlgEntrada .cta:hover{filter:brightness(1.05);border-color:transparent}
+#dlgEntrada .dica{font-size:12.5px;color:var(--steel)}
+#dlgEntrada .msg{padding:10px 14px;border-radius:8px;font-size:13px;margin:0}
+#dlgEntrada .msg.err{background:#FBE9EC;color:var(--accent-d)}
+#dlgEntrada .msg.ok{background:#E5F5EC;color:#1e7a46}
+.sessao-u{display:inline-flex;align-items:center;gap:8px;font:600 12.5px var(--body);color:var(--ink)}
+.s-avatar{width:26px;height:26px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font:700 10.5px var(--body);background:var(--g-foco)}
 </style>
+
+<dialog id="dlgEntrada" aria-labelledby="entTitulo">
+  <div class="faixa"></div>
+  <div class="ent-head">
+    %%LOGO%%
+    <p>Tóliman Transportes · Infrações de velocidade</p>
+    <h2>Infrações de velocidade</h2>
+  </div>
+  <div class="ent-corpo">
+    <h3 id="entTitulo">Entrar</h3>
+    <div id="entMsg"></div>
+    <div id="entCorpo"></div>
+  </div>
+</dialog>
 
 <header class="top" id="top">
   <div class="top-in">
@@ -327,6 +382,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       </div>
       <div class="sync" id="sync"><span class="sd"></span><span id="sync-t">Conectando…</span></div>
       <div class="online" id="online"></div>
+      <div class="sessao-u" id="sessao" hidden><span class="s-avatar" id="sessao-ini"></span><span id="sessao-nome"></span><button class="linkbtn" type="button" id="btn-sair" title="Encerrar a sessão neste computador">Sair</button></div>
     </div>
   </div>
   <nav class="tabs" role="tablist">
@@ -803,7 +859,7 @@ const store = {
     } else {
       this.mode='local';
       COLECOES.forEach(col => { try{ this.data[col] = JSON.parse(localStorage.getItem(LS_KEY(col))||'{}')||{}; }catch(e){ this.data[col]={}; } });
-      pasta.usuario = lsGet('infra-vel-usuario') || '';
+      pasta.usuario = SEM_LOGIN ? (lsGet('infra-vel-usuario') || '') : '';
       if(!pasta.suportado()){ pasta.estado = 'sem-api'; onChange(); return; }
       onChange();
       let h = null; try{ h = await idbHandle('get'); }catch(e){}
@@ -811,7 +867,7 @@ const store = {
         pasta.nomePasta = h.name;
         let perm = 'granted';
         try{ if(typeof h.queryPermission==='function') perm = await h.queryPermission({mode:'readwrite'}); }catch(e){}
-        if(perm==='granted' && pasta.usuario) await this.conectarPasta(h);
+        if(perm==='granted' && (pasta.usuario || !SEM_LOGIN)) await this.conectarPasta(h);
         else { pasta.estado = 'reconectar'; pasta.dir = h; onChange(); }
       }
     }
@@ -842,6 +898,19 @@ const store = {
       await pasta.sub('usuarios'); await pasta.sub('historico');
       try{ await idbHandle('set', h); }catch(e){}
       pasta.disp = pasta.dispositivo();
+      // com login, os dados só são lidos e gravados depois de entrar (iniciarPasta)
+      if(!SEM_LOGIN && !sessao){ pasta.estado = 'conectada'; pasta.erro = ''; return true; }
+      return await this.iniciarPasta();
+    }catch(e){
+      if(e && (e.name==='AbortError')) return false;
+      pasta.estado = pasta.dir ? 'reconectar' : 'nenhuma';
+      pasta.erro = (e && (e.message||e.code)) || String(e);
+      this.onChange && this.onChange();
+      return false;
+    }
+  },
+  async iniciarPasta(){
+    try{
       pasta.proprio = {cols:{}}; pasta.outros = {};
       try{
         const f = await (await pasta.dados.getFileHandle(pasta.disp+'.json')).getFile();
@@ -854,19 +923,18 @@ const store = {
           const c = pasta.proprio.cols[col] || (pasta.proprio.cols[col] = {});
           for(const id in this.data[col]) if(!c[id]) c[id] = {t:1, b:this.data[col][id]};
         });
-        pasta.pend = true;
+        pasta.migrar = true; // não use pasta.pend: clearTimeout(true) apagaria o cronômetro de número 1
       }
       this.mode = 'pasta'; this.uid = pasta.usuario || null; this.canWrite = true;
       pasta.estado = 'ok'; pasta.erro = '';
       await this._ler(true);
-      if(pasta.pend){ await this._gravar(); lsSet('infra-vel-migrado-'+pasta.disp, '1'); }
+      if(pasta.migrar){ pasta.migrar = false; await this._gravar(); lsSet('infra-vel-migrado-'+pasta.disp, '1'); }
       await this._visto();
       clearInterval(pasta.timer);
       pasta.timer = setInterval(() => { this.ciclo(); }, T.PULSO_MS);
       this._backupDiario();
       return true;
     }catch(e){
-      if(e && (e.name==='AbortError')) return false;
       pasta.estado = pasta.dir ? 'reconectar' : 'nenhuma';
       pasta.erro = (e && (e.message||e.code)) || String(e);
       this.onChange && this.onChange();
@@ -874,7 +942,7 @@ const store = {
     }
   },
   // ciclo do padrão: lê os colegas, junta e avisa a presença
-  async ciclo(){ await this._ler(false); await this._visto(); },
+  async ciclo(){ await this._ler(false); await this._visto(); await conferirUsuario(); },
   async _ler(sempre){
     if(this.mode!=='pasta') return;
     let mudou = sempre;
@@ -951,12 +1019,14 @@ const store = {
   },
   newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); },
   async put(col, id, body){
+    if(sessaoBloqueada) throw {code:'bloqueado', message:'sessão bloqueada'};
     if(this.mode==='semdb') throw {code:'sem_banco', message:'sem acesso ao banco compartilhado'};
     if(this.mode==='db'){ await this.db.collection(col).doc(id).set(body); }
     else if(this.mode==='pasta'){ this._marcar(col, id, body); }
     else { this.data[col] = Object.assign({}, this.data[col], {[id]:body}); this._save(col); }
   },
   async del(col, id){
+    if(sessaoBloqueada) throw {code:'bloqueado', message:'sessão bloqueada'};
     if(this.mode==='semdb') throw {code:'sem_banco', message:'sem acesso ao banco compartilhado'};
     if(this.mode==='db'){ await this.db.collection(col).doc(id).delete(); }
     else if(this.mode==='pasta'){ this._marcar(col, id, null); }
@@ -964,6 +1034,203 @@ const store = {
   },
   _save(col){ try{ localStorage.setItem(LS_KEY(col), JSON.stringify(this.data[col])); }catch(e){ throw {code:'local_full', message:'Não foi possível salvar neste navegador (armazenamento cheio ou bloqueado).'}; } }
 };
+/* ================= ACESSO: usuários, senhas e histórico (Padrão de Sistemas Tóliman) ================= */
+const SEM_LOGIN = !!(window.__teste && window.__semLogin);
+// Senha: PBKDF2-SHA256 com sal. Só o hash vai para usuarios/<login>.json.
+const ITER_SENHA = 150000, MIN_SENHA = 6;
+const paraB64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const deB64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
+async function hashSenha(senha, sal, iter){
+  const sl = sal ? deB64(sal) : crypto.getRandomValues(new Uint8Array(16)), n = iter || ITER_SENHA;
+  const chave = await crypto.subtle.importKey('raw', new TextEncoder().encode(senha), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', hash:'SHA-256', salt:sl, iterations:n}, chave, 256);
+  return {alg:'PBKDF2-SHA256', iter:n, sal:paraB64(sl), hash:paraB64(bits)};
+}
+async function senhaConfere(u, senha){
+  if(!u || !u.senha || !u.senha.sal) return false;
+  return (await hashSenha(senha, u.senha.sal, u.senha.iter)).hash === u.senha.hash;
+}
+function problemaSenha(nova, repetida){
+  if(nova.length < MIN_SENHA) return 'A senha precisa ter pelo menos '+MIN_SENHA+' caracteres.';
+  if(repetida != null && nova !== repetida) return 'As duas senhas não são iguais.';
+  return '';
+}
+let sessao = null, sessaoBloqueada = false, atividade = Date.now(), pendenteTroca = null;
+const acesso = {
+  hashSenha,
+  fila: Promise.resolve(),
+  // lê usuarios/*.json; arquivo que não abre como JSON ainda está chegando pelo OneDrive
+  async usuarios(){
+    const dir = await pasta.sub('usuarios'), l = []; let arquivos = 0;
+    for await (const [nome, h] of dir.entries()){
+      if(h.kind!=='file' || !/\.json$/i.test(nome)) continue;
+      arquivos++;
+      try{ const u = JSON.parse(await (await h.getFile()).text()); if(u && u.login && u.senha) l.push(u); }catch(e){}
+    }
+    l.arquivos = arquivos;
+    return l.sort((a,b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
+  },
+  async usuario(login){ try{ const d = await pasta.sub('usuarios'); return JSON.parse(await (await (await d.getFileHandle(login+'.json')).getFile()).text()); }catch(e){ return null; } },
+  async gravarUsuario(u){ await gravarNaPasta(await pasta.sub('usuarios'), u.login+'.json', JSON.stringify(u)); },
+  // historico/AAAA-MM_<id do navegador>.json: entradas, senhas erradas, trocas, bloqueios
+  registrar(tipo, quem, detalhe){
+    const ev = {em:new Date().toISOString(), tipo, login:(quem||sessao||{}).login||'', nome:(quem||sessao||{}).nome||'', detalhe:detalhe||'', origem:pasta.disp||''};
+    this.fila = this.fila.then(async () => {
+      try{
+        const dir = await pasta.sub('historico'), nome = ev.em.slice(0,7)+'_'+(pasta.disp||pasta.dispositivo())+'.json';
+        let d = {versao:1, origem:pasta.disp, eventos:[]};
+        try{ const j = JSON.parse(await (await (await dir.getFileHandle(nome)).getFile()).text()); if(j && Array.isArray(j.eventos)) d = j; }catch(e){}
+        d.eventos.push(ev);
+        await gravarNaPasta(dir, nome, JSON.stringify(d));
+      }catch(e){}
+    });
+    return this.fila;
+  }
+};
+const iniciais = n => String(n||'').split(/\s+/).filter(Boolean).map(x => x[0]).slice(0,2).join('').toUpperCase();
+function renderSessao(){
+  const el = $('#sessao'); el.hidden = !sessao;
+  if(sessao){ $('#sessao-ini').textContent = iniciais(sessao.nome); $('#sessao-nome').textContent = sessao.nome+(sessao.admin?' · administrador':''); }
+}
+async function entrarComo(u){
+  sessao = {login:u.login, nome:u.nome, admin:!!u.admin}; sessaoBloqueada = false; atividade = Date.now();
+  pasta.usuario = u.nome; store.uid = u.nome;
+  lsSet('infra-vel-ultimo-usuario', u.login);
+  await acesso.registrar('entrada');
+  $('#dlgEntrada').close();
+  renderSessao();
+  if(store.mode!=='pasta') await store.iniciarPasta();
+  render();
+}
+// a sessão continua só enquanto o usuário existe e está ativo
+async function conferirUsuario(){
+  if(!sessao || sessaoBloqueada || SEM_LOGIN) return;
+  const u = await acesso.usuario(sessao.login);
+  if(u && !u.ativo) await sair();
+  else if(u) sessao.admin = !!u.admin;
+}
+function bloquearSessao(){
+  if(!sessao || sessaoBloqueada) return;
+  sessaoBloqueada = true;
+  acesso.registrar('bloqueio');
+  pasta.registro = ''; store._visto && store._visto();
+  mostrarEntrada('bloqueada');
+}
+async function sair(){
+  try{ await acesso.registrar('saida'); if(pasta.pend) await store._gravar(); await store._visto(true); }catch(e){}
+  location.reload();
+}
+const campoEnt = (id, rot, tipo, extra) => '<div><label for="'+id+'">'+rot+'</label><input type="'+tipo+'" id="'+id+'"'+(extra||'')+'></div>';
+const entUi = {modo:null, aviso:null};
+async function mostrarEntrada(modo, aviso){
+  const dlg = $('#dlgEntrada');
+  if(!modo){
+    if(!pasta.suportado()) modo = 'sem-suporte';
+    else if(pasta.estado==='aviso-pasta' && pasta.aviso) modo = 'aviso-pasta';
+    else if(!pasta.raiz) modo = pasta.dir ? 'reconectar' : 'pasta';
+    else { const us = await acesso.usuarios(); modo = us.arquivos ? 'login' : 'primeiro'; entUi.us = us; }
+    if(!aviso && pasta.erro && (modo==='pasta' || modo==='reconectar')) aviso = ['err', 'Não foi possível usar a pasta: '+pasta.erro+'. Confira se o OneDrive está sincronizando.'];
+  } else if(modo==='login') entUi.us = await acesso.usuarios();
+  entUi.modo = modo;
+  let t = 'Entrar', c = '';
+  if(modo==='sem-suporte'){
+    t = 'Navegador sem suporte';
+    c = '<p>Abra o sistema no <b>Google Chrome</b> ou no <b>Microsoft Edge</b>. Este navegador não permite usar a pasta do SharePoint, onde ficam os usuários e as senhas.</p>';
+  } else if(modo==='pasta'){
+    t = 'Conectar a pasta do SharePoint';
+    c = '<p class="dica">Os usuários e as senhas ficam na pasta <b>Sistema</b> do canal Infrações de velocidade. Conecte a pasta para entrar.</p><div class="acoes"><button type="button" class="cta" data-ac="conectar">Conectar a pasta</button></div>'+
+      '<p class="dica">Na janela que abrir, escolha a pasta <b>Sistema</b> (a mesma onde está este arquivo) e clique em <b>Permitir</b>.</p>';
+  } else if(modo==='reconectar'){
+    t = 'Autorizar a pasta';
+    c = '<p class="dica">O navegador precisa da sua autorização para usar a pasta <b>'+esc(pasta.nomePasta||PASTA_NOME)+'</b>.</p><div class="acoes"><button type="button" class="cta" data-ac="reconectar">Autorizar a pasta</button><button type="button" data-ac="conectar">Escolher outra pasta</button></div>';
+  } else if(modo==='aviso-pasta'){
+    t = 'Pasta diferente';
+    c = '<p class="dica">'+esc(pasta.aviso.t)+'</p><div class="acoes"><button type="button" class="cta" data-pasta="outra">Escolher outra pasta</button>'+(pasta.aviso.antiga?'':'<button type="button" data-pasta="usar">Usar esta pasta</button>')+'</div>';
+  } else if(modo==='primeiro'){
+    t = 'Primeiro acesso';
+    c = '<p class="dica">Ainda não há usuários nesta pasta. Crie o seu acesso: você será o <b>administrador</b> e poderá cadastrar os colegas em Configurações › Usuários e senhas.</p>'+
+      '<form data-modo="primeiro" autocomplete="off">'+campoEnt('entNome', 'Seu nome', 'text', ' maxlength="40" autocomplete="name"')+
+      campoEnt('entSenha', 'Senha (mínimo '+MIN_SENHA+' caracteres)', 'password', ' autocomplete="new-password"')+campoEnt('entRepete', 'Repita a senha', 'password', ' autocomplete="new-password"')+
+      '<div class="acoes"><button type="submit" class="cta">Criar acesso e entrar</button></div></form>';
+  } else if(modo==='login'){
+    const ativos = (entUi.us||[]).filter(u => u.ativo!==false), ult = lsGet('infra-vel-ultimo-usuario');
+    c = '<form data-modo="login" autocomplete="off"><div><label for="entUsuario">Usuário</label><select id="entUsuario">'+
+      ativos.map(u => '<option value="'+esc(u.login)+'"'+(u.login===ult?' selected':'')+'>'+esc(u.nome)+'</option>').join('')+'</select></div>'+
+      campoEnt('entSenha', 'Senha', 'password', ' autocomplete="current-password"')+
+      '<div class="acoes"><button type="submit" class="cta">Entrar</button></div></form>'+
+      '<p class="dica">Esqueceu a senha? Peça a um administrador para redefinir em Configurações › Usuários e senhas.</p>';
+  } else if(modo==='trocar'){
+    t = 'Crie a sua senha';
+    c = '<p class="dica">Olá, <b>'+esc(pendenteTroca.nome)+'</b>. Você entrou com uma senha provisória. Escolha uma senha sua para continuar.</p>'+
+      '<form data-modo="trocar" autocomplete="off">'+campoEnt('entSenha', 'Nova senha (mínimo '+MIN_SENHA+' caracteres)', 'password', ' autocomplete="new-password"')+
+      campoEnt('entRepete', 'Repita a nova senha', 'password', ' autocomplete="new-password"')+
+      '<div class="acoes"><button type="submit" class="cta">Salvar e entrar</button><button type="button" data-ac="voltar">Voltar</button></div></form>';
+  } else if(modo==='bloqueada'){
+    t = 'Sessão bloqueada';
+    c = '<p class="dica">O sistema ficou mais de 20 minutos sem uso. Para continuar como <b>'+esc(sessao.nome)+'</b>, digite a sua senha.</p>'+
+      '<form data-modo="bloqueada" autocomplete="off">'+campoEnt('entSenha', 'Senha', 'password', ' autocomplete="current-password"')+
+      '<div class="acoes"><button type="submit" class="cta">Continuar</button><button type="button" data-ac="sair">Entrar com outro usuário</button></div></form>';
+  }
+  $('#entTitulo').textContent = t;
+  $('#entCorpo').innerHTML = c;
+  $('#entMsg').innerHTML = aviso ? '<p class="msg '+aviso[0]+'">'+esc(aviso[1])+'</p>' : '';
+  if(!dlg.open) dlg.showModal();
+  const f = $('#entCorpo').querySelector('#entNome, #entSenha, .cta'); if(f) f.focus({preventScroll:true});
+}
+$('#dlgEntrada').addEventListener('cancel', e => e.preventDefault()); // Esc não fecha
+$('#entCorpo').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-ac]'); if(!b) return;
+  const a = b.dataset.ac;
+  if(a==='conectar'){ await store.conectarPasta(null); mostrarEntrada(); }
+  else if(a==='reconectar'){ await store.conectarPasta(pasta.dir); mostrarEntrada(); }
+  else if(a==='voltar'){ pendenteTroca = null; mostrarEntrada('login'); }
+  else if(a==='sair') sair();
+});
+$('#entCorpo').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, m = f.dataset.modo, v = id => (f.querySelector('#'+id) || {}).value || '';
+  const btn = f.querySelector('[type="submit"]'); btn.disabled = true;
+  const erro = t => mostrarEntrada(m, ['err', t]);
+  try{
+    if(m==='primeiro'){
+      const nome = v('entNome').trim().replace(/\s+/g, ' ');
+      if(nome.length < 2) return erro('Informe o seu nome.');
+      const pr = problemaSenha(v('entSenha'), v('entRepete')); if(pr) return erro(pr);
+      const login = loginDe(nome);
+      if(await acesso.usuario(login)) return erro('Já existe um usuário com este nome.');
+      const agora = new Date().toISOString();
+      const u = {versao:1, login, nome, admin:true, ativo:true, trocarSenha:false, senha:await hashSenha(v('entSenha')), criadoEm:agora, criadoPor:nome, alteradoEm:agora, alteradoPor:nome};
+      await acesso.gravarUsuario(u);
+      await entrarComo(u);
+    } else if(m==='login'){
+      const u = await acesso.usuario(v('entUsuario'));
+      if(!u || u.ativo===false) return erro('Usuário não encontrado ou desativado.');
+      if(!(await senhaConfere(u, v('entSenha')))){ await acesso.registrar('senha-errada', u); return erro('Senha incorreta.'); }
+      if(u.trocarSenha){ pendenteTroca = u; return mostrarEntrada('trocar'); }
+      await entrarComo(u);
+    } else if(m==='trocar'){
+      const pr = problemaSenha(v('entSenha'), v('entRepete')); if(pr) return erro(pr);
+      const u = pendenteTroca;
+      if(await senhaConfere(u, v('entSenha'))) return erro('Escolha uma senha diferente da provisória.');
+      Object.assign(u, {senha:await hashSenha(v('entSenha')), trocarSenha:false, alteradoEm:new Date().toISOString(), alteradoPor:u.nome});
+      await acesso.gravarUsuario(u);
+      await acesso.registrar('troca-senha', u);
+      pendenteTroca = null;
+      await entrarComo(u);
+    } else if(m==='bloqueada'){
+      const u = await acesso.usuario(sessao.login);
+      if(!u || u.ativo===false) return sair();
+      if(!(await senhaConfere(u, v('entSenha')))){ await acesso.registrar('senha-errada', u); return erro('Senha incorreta.'); }
+      sessaoBloqueada = false; atividade = Date.now(); sessao.admin = !!u.admin;
+      $('#dlgEntrada').close();
+      render();
+    }
+  }catch(x){ erro('Não foi possível usar a pasta: '+((x && (x.message||x.name)) || x)+'. Confira se o OneDrive está sincronizando.'); }
+  finally{ btn.disabled = false; }
+});
+['pointerdown','pointermove','keydown','wheel'].forEach(ev => document.addEventListener(ev, () => { if(!sessaoBloqueada) atividade = Date.now(); }, {passive:true}));
+setInterval(() => { if(sessao && !sessaoBloqueada && Date.now()-atividade > T.PARADO_MS) bloquearSessao(); }, T.CHECA_MS);
+
 async function gravarNaPasta(dir, nome, dados){
   const w = await (await dir.getFileHandle(nome, {create:true})).createWritable();
   await w.write(dados); await w.close();
@@ -975,7 +1242,7 @@ document.addEventListener('visibilitychange', () => { if(store.mode!=='pasta') r
 function renderOnline(){
   const el = $('#online');
   if(store.mode!=='pasta'){ el.innerHTML = ''; return; }
-  el.innerHTML = '<span class="on-u eu" title="Você">'+esc(pasta.usuario||'Sem nome')+' (você)</span>'+
+  el.innerHTML = (sessao ? '' : '<span class="on-u eu" title="Você">'+esc(pasta.usuario||'Sem nome')+' (você)</span>')+
     pasta.presenca.map(n => '<span class="on-u" title="Online agora">'+esc(n)+'</span>').join('');
 }
 function renderPasta(){
@@ -990,8 +1257,9 @@ function renderPasta(){
   return '';
 }
 async function acaoPasta(tipo){
-  if(tipo==='usar') return store.conectarPasta(pasta.dir, true);
-  return store.conectarPasta(tipo==='reconectar' ? pasta.dir : null);
+  if(tipo==='usar') await store.conectarPasta(pasta.dir, true);
+  else await store.conectarPasta(tipo==='reconectar' ? pasta.dir : null);
+  if(!SEM_LOGIN && !sessao && store.mode!=='db') mostrarEntrada();
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-pasta]'); if(b) acaoPasta(b.dataset.pasta); });
 function setSync(cls, t){ const s=$('#sync'); s.className='sync '+cls; $('#sync-t').textContent=t; }
@@ -2629,8 +2897,9 @@ addEventListener('scroll', () => top.classList.toggle('stuck', scrollY>4), {pass
 
 setTab(ui.tab);
 render();
-store.init(render);
+store.init(render).then(() => { if(!SEM_LOGIN && store.mode!=='db' && store.mode!=='semdb') mostrarEntrada(); });
+$('#btn-sair').addEventListener('click', sair);
 // gancho só para os testes automáticos (tools/test): não existe no uso normal
-if(window.__teste) window.__painel = {A:() => A, store, pasta, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias, limparBackups, emailRH:(n, m) => montarEmailRH(A.mot.get(n), m).corpo, textosImg:async (n, m, t, c) => (await desenharComunicado(A.mot.get(n), m, t, c)).__textos, montarEml};
+if(window.__teste) window.__painel = {A:() => A, store, pasta, acesso, sessao:() => sessao, bloquear:bloquearSessao, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias, limparBackups, emailRH:(n, m) => montarEmailRH(A.mot.get(n), m).corpo, textosImg:async (n, m, t, c) => (await desenharComunicado(A.mot.get(n), m, t, c)).__textos, montarEml};
 })();
 </script>
