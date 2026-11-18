@@ -35,7 +35,7 @@
 
 ---
 
-### Tarefa 1: Pasta Sistema, arquivo de dados v2, ciclo e aviso de pasta
+### Task 1: Pasta Sistema, arquivo de dados v2, ciclo e aviso de pasta
 
 **Files:**
 - Modify: `src/painel.html`: constantes da pasta (por volta da linha 687), `store.conectarPasta`, `_ler`, `_marcar`, `_gravar`, `_visto`, `renderPasta`, `acaoPasta`.
@@ -62,7 +62,7 @@
 - [ ] **Passo 4:** rodar `pasta:` e depois a suíte inteira. Esperado: PASS, com os 37 antigos passando.
 - [ ] **Passo 5:** commit "Pasta Sistema, arquivo de dados v2 e aviso de pasta errada".
 
-### Tarefa 2: Backups do padrão e limpeza
+### Task 2: Backups do padrão e limpeza
 
 **Files:**
 - Modify: `src/painel.html`: `_backupDiario`, `nomeBackup`, `baixarBackupCompleto` (por volta da linha 2400) e a nota `#bkpc-nota`.
@@ -86,7 +86,7 @@
 - [ ] **Passo 4:** rodar `backup` e a suíte inteira. Esperado: PASS.
 - [ ] **Passo 5:** commit.
 
-### Tarefa 3: Usuários, senhas, janela de entrada, histórico e bloqueio por inatividade
+### Task 3: Usuários, senhas, janela de entrada, histórico e bloqueio por inatividade
 
 **Files:**
 - Modify: `src/painel.html`: novo bloco "Acesso" depois do `store`, HTML `#dlgEntrada` antes do `<header>`, CSS da janela (do `txt-css` do artefato), init no fim (`store.init`).
@@ -128,7 +128,7 @@
 - [ ] **Passo 4:** rodar `login:` e a suíte inteira. Esperado: PASS.
 - [ ] **Passo 5:** commit.
 
-### Tarefa 4: Aba Configurações (minha senha, usuários e senhas, histórico de acessos)
+### Task 4: Aba Configurações (minha senha, usuários e senhas, histórico de acessos)
 
 **Files:**
 - Modify: `src/painel.html`: aba `#tab-cfg` e `#v-cfg` (a última), `setTab` com a lista nova, `renderCfg()`.
@@ -151,7 +151,7 @@
 - [ ] **Passo 4:** rodar `config:` e a suíte inteira. Esperado: PASS.
 - [ ] **Passo 5:** commit.
 
-### Tarefa 5: Presença com registro e bloqueio da ficha do motorista
+### Task 5: Presença com registro e bloqueio da ficha do motorista
 
 **Files:**
 - Modify: `src/painel.html`: `_visto` (presença), `renderMot`, `setTab`, as ações de gravar da ficha (`anularSelecionados`, `desfazerAnulacao`, `registrarEnvio`, `marcarFora`, `marcarRH`, `abrirEmlRH`) e `_marcar` (para gravar `versoes`).
@@ -179,7 +179,7 @@
 - [ ] **Passo 4:** rodar `ficha:` e a suíte inteira. Esperado: PASS.
 - [ ] **Passo 5:** commit.
 
-### Tarefa 6: Design do padrão, fontes, logo e versão
+### Task 6: Design do padrão, fontes, logo e versão
 
 **Files:**
 - Modify: `src/painel.html` (`<head>`, `<style>`, `<header>`, abas, faixas de título, rodapé); `tools/build.py`.
@@ -210,7 +210,7 @@
 - [ ] **Passo 4:** rodar `design:` e a suíte inteira. Esperado: PASS. Conferir com print em 1280 e 390 px (dados fictícios).
 - [ ] **Passo 5:** commit.
 
-### Tarefa 7: Nomes das exportações
+### Task 7: Nomes das exportações
 
 **Files:**
 - Modify: `src/painel.html` (`gerarImagem` → `comUi.arquivo`, `imagemRH`, `abrirEmlRH`, backup manual); os testes que conferem nomes (`RH: .eml…`).
@@ -221,7 +221,7 @@
 - [ ] **Passo 1: Testes.** O `.eml` baixa `infracoes-velocidade_email-rh-ana-teste_2026-09-01_a_2026-09-30.eml`, a imagem completa `infracoes-velocidade_comunicado-completo-ana-teste_2026-09-01_a_2026-09-30.jpg` e a imagem de picos `infracoes-velocidade_picos-ana-teste_2026-09-01_a_2026-09-30.jpg` (pelo `#com-dl`, `waitForEvent('download')`). O anexo dentro do `.eml` tem o mesmo nome da imagem completa.
 - [ ] **Passo 2:** FAIL. **Passo 3:** implementar. **Passo 4:** PASS na suíte inteira. **Passo 5:** commit.
 
-### Tarefa 8: Documentação, manuais e CLAUDE.md
+### Task 8: Documentação, manuais e CLAUDE.md
 
 **Files:**
 - Create: `CLAUDE.md`, com o texto "Instrução para os próximos projetos" do artefato e uma seção curta "Este projeto": `src/painel.html`, `tools/build.py`, testes, a regra de dados fictícios, merge só quando pedirem e nenhum identificador de modelo em commits.
