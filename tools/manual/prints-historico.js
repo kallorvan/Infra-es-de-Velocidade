@@ -17,7 +17,7 @@ const env = (nome, mes, tipo, sig, quando) => ['e'+Math.random().toString(36).sl
   const b = await chromium.launch();
   const p = await b.newPage({viewport:{width:1280, height:900}, deviceScaleFactor:2});
   await p.route('**/*', r => r.request().url().startsWith('file:') ? r.continue() : r.abort());
-  await p.addInitScript(() => { window.__teste = true; });
+  await p.addInitScript(() => { window.__teste = true; window.__semLogin = true; });
   await p.goto(URL0);
 
   const rafSet = picos(RAF, '2026-09', 37, 92, 'FMY1B78'), rafOut = picos(RAF, '2026-10', 36, 93, 'FMY1B78');

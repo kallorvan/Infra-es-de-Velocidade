@@ -20,7 +20,7 @@ Painel HTML de um arquivo só (Grupo Dínamo / Tóliman Transportes) que lê as 
 | `docs/Guia completo - Infrações de velocidade.pdf` / `.html` | Guia completo no layout Tóliman (11 páginas, prints fictícios, inclui o primeiro acesso pelo Teams). Fonte em `tools/manual/completo/`. |
 | `docs/Manual rápido - Infrações de velocidade.pdf` / `.html` | Versão curta (4 páginas). Fonte em `tools/manual/rapido/`. |
 | `tools/manual/gerar_ficticios.py` | Gera os dados fictícios dos prints (backup JSON, planilhas do dia, PDF do cadastro). |
-| `tools/manual/prints.js` | Playwright: tira os 12 prints do manual (ver "Prints do manual"). |
+| `tools/manual/prints-padrao.js`, `tools/manual/prints-historico.js` | Playwright: prints do guia com login e dados fictícios (ver "Prints do manual"). |
 | `README.md` | Resumo de uso e regras. |
 | `tools/test/painel.test.js`, `tools/test/fixtures.js` | Testes Playwright (31 cenários, dados fictícios). Rodar depois de toda mudança: `python3 tools/build.py && node tools/test/painel.test.js [filtro]`. O gancho `window.__painel` só existe com `window.__teste`. |
 | `tools/manual/prints-historico.js` | Prints 13 a 16 do guia completo (anulação, Histórico, pendências, retificação). |
@@ -68,16 +68,22 @@ Spec: `docs/superpowers/specs/2026-11-11-anulacao-historico-pendencias-design.md
 
 ## Armazenamento (objeto `store`, modos)
 
-- **`pasta`** (atual, uso normal). Usa a File System Access API (Chrome/Edge). No primeiro uso a pessoa informa o nome e clica em "Conectar pasta"; o painel cria `Dados do painel/` na pasta escolhida.
-  - `dados/<dispositivo>.json`: cada computador grava só o próprio arquivo, com `{cols:{col:{id:{t, b}}}}` (`b:null` marca exclusão).
-    - `fundir()` junta os arquivos de todos: vale o maior `t` por registro.
-    - Nos meses, une os eventos de todas as versões vivas (sem duplicar); a exclusão vence as versões mais antigas.
-    - Escrita com debounce de 300 ms. Leitura (poll) a cada 8 s e ao focar a janela.
-  - `online/<dispositivo>.json`: presença renovada a cada 30 s; conta como online por 150 s. O topo mostra os nomes, com "trocar" para mudar o próprio.
-  - `backups/`: backup completo automático 1×/dia, guardando os 30 mais recentes. O botão manual também grava aqui.
-  - O handle da pasta fica na IndexedDB (`infra-vel`/`kv`/`pasta`). Ao reabrir, se o navegador pedir permissão de novo, aparece "Reconectar pasta".
-  - Chaves no localStorage: `infra-vel-dispositivo`, `infra-vel-usuario`, `infra-vel-migrado-<disp>`.
-  - Na primeira conexão, os dados que estavam no localStorage vão para a pasta com `t=1` (o que já está na pasta prevalece).
+- **`pasta`** (atual, uso normal), no Padrão de Sistemas Tóliman (https://claude.ai/artifact/NiiyT3so8rej7pLiy84L5M). File System Access API (Chrome/Edge). A pessoa conecta a própria pasta **Sistema** (`PASTA_NOME`); `avisoPasta(h)` avisa se o nome ou a estrutura não batem, e se a pasta escolhida contém "Dados do painel" pede a renomeação.
+  - A conexão tem duas etapas: `store.conectarPasta(h, usar)` só abre a pasta e cria as subpastas; `store.iniciarPasta()` lê, grava e inicia o ciclo depois de entrar.
+  - `dados/<id do navegador>.json`: `{versao:2, geradoEm, origem, usuario, cols:{col:{id:{t, b}}}}` (`b:null` marca exclusão). `lerDados()` aceita também a versão 1 (`dispositivo`, `atualizadoEm`).
+    - `fundir()` junta os arquivos de todos: vale o maior `t` por registro. Nos meses, une os eventos das versões vivas (sem duplicar).
+    - Gravação `T.GRAVAR_MS` (2 s) depois da alteração e ao esconder a aba. `store.ciclo()` a cada `T.PULSO_MS` (20 s), ao focar e ao voltar para a aba: lê, junta, grava a presença, redesenha o aviso de ficha e confere se o usuário continua ativo.
+  - `presenca/<id>.json`: `{origem, usuario, visto, saiu, registro, desde, versoes}`. Online por `T.ONLINE_MS` (3 min).
+  - `usuarios/<login>.json` e `historico/AAAA-MM_<id>.json`: ver "Acesso" abaixo.
+  - `backups/Infracoes-de-Velocidade_dados_AAAA-MM-DD_<login>.json`: 1 por pessoa por dia (`_backupDiario`); `limparBackups(hoje)` 1×/dia, só do próprio login: 60 dias e, antes, a primeira de cada mês. Os `backup-completo-*` antigos ficam.
+  - `window.__tempos` (só com `__teste`) encurta `PARADO_MS`, `PULSO_MS`, `GRAVAR_MS`, `ONLINE_MS`, `CHECA_MS`.
+  - O handle da pasta fica na IndexedDB (`infra-vel`/`kv`/`pasta`). Chaves no localStorage: `infra-vel-dispositivo`, `infra-vel-ultimo-usuario`, `infra-vel-migrado-<disp>`, `infra-vel-limpeza`.
+  - Na primeira conexão, os dados que estavam no localStorage vão para a pasta com `t=1`. Cuidado: a migração usa `pasta.migrar`; não guarde booleano em `pasta.pend` (é id de timeout, e `clearTimeout(true)` apagava o cronômetro de inatividade).
+- **Acesso** (bloco "ACESSO" em `src/painel.html`): `hashSenha` (PBKDF2-SHA256, 150 mil iterações, sal de 16 bytes), `acesso.usuarios()/usuario()/gravarUsuario()/registrar()`, `sessao`, `mostrarEntrada(modo)` com os modos `sem-suporte | pasta | reconectar | aviso-pasta | primeiro | login | trocar | bloqueada` na `<dialog id="dlgEntrada">` (Esc não fecha). "Primeiro acesso" só quando `usuarios/` não tem nenhum `.json`. Inatividade: `T.PARADO_MS` (20 min) → `bloquearSessao()`; `store.put/del` recusam com `code:'bloqueado'`. Sair grava `saida` e recarrega.
+  - Aba **Configurações** (`renderCfg`): Minha senha; para administradores, Usuários e senhas (cadastrar com provisória, redefinir gera provisória aleatória, ativar/desativar, perfil; o único administrador ativo não perde o perfil) e Histórico de acessos (mês atual e anterior).
+- **Ficha em uso**: `registroAtual()` = `'mot:'+slug(motorista)` com a aba Motorista aberta; `donoDoRegistro` (quem abriu primeiro), `aguardandoColega` (versões em `presenca.versoes` mais novas que o arquivo de dados lido), `fichaLivre()` protege anular, desfazer, WhatsApp, fora do painel, RH e Outlook. `#ficha-uso` mostra o aviso; `.ficha-bloq` esconde as caixas de anulação.
+- **Visual**: camada "Padrão de Sistemas Tóliman" no CSS (tokens `--g-*`, `.s-cab`, `.s-abas`, `.s-faixa-titulo` por aba; `.btn/.msg/.st/.kpi/.card/thead` com o visual dos componentes `s-`). Fontes embutidas pelo build (`assets/fonts/*.woff2`, @fontsource 5.1.0). `.brand` com as duas logos fica escondida porque o canvas do comunicado desenha a partir dela. Rodapé `#versao` com `__VERSAO__` trocado pelo build.
+- **Modo sem login (só testes)**: `window.__teste && window.__semLogin` abre no modo local sem janela, como o painel antigo; o runner liga isso em todos os testes, e os testes `login:`, `config:` e `ficha:` desligam.
 - **`local`**: fallback sem pasta conectada, ou em Firefox/Safari. Grava no localStorage (`infra-vel-<col>-v1`, meses em `infra-vel-meses-v1`). Mostra o aviso para conectar a pasta e os lembretes de backup (fechamento do mês e 7 dias).
 - **`db` / `semdb`**: quando aberto como artefato do claude.ai (banco compartilhado do artefato). Não é mais usado.
   - O artefato antigo está em https://claude.ai/artifact/PYW71pQuu9gwHSEZKNkCvG, com os dados reais do usuário de set/out. Foi oferecido apagá-lo e o usuário não respondeu.
@@ -99,7 +105,7 @@ Spec: `docs/superpowers/specs/2026-11-11-anulacao-historico-pendencias-design.md
    - Baixe as bibliotecas: `npm pack xlsx@0.18.5` (copie `package/dist/xlsx.full.min.js` para `S/xlsx.js`) e `npm pack pdfjs-dist@3.11.174` (extraia em `S/pdfjs/`).
    - Crie `S/prints/`.
 2. Em `S`, rode `python3 <repo>/tools/manual/gerar_ficticios.py` (cria `S/fict/`).
-3. Rode `S=<pasta> node <repo>/tools/manual/prints.js` (Playwright em `/opt/node-tools/node_modules/playwright`).
+3. Rode `python3 tools/build.py`, depois `S=<pasta> node tools/manual/prints-padrao.js` (entrada, topo, importação, cadastro, visão geral, inativo, backup, usuários) e `node tools/manual/prints-historico.js` (WhatsApp, imagem, RH, anulação, Histórico, pendências, retificação). Playwright em `/opt/node-tools/node_modules/playwright`.
    - O HTML é servido por rota em `http://localhost:8765/painel.html`, e a pasta da equipe é simulada com OPFS através do gancho de teste `window.__escolherPasta`.
    - **Problema conhecido:** o Chromium do ambiente de testes cai ao ler da IndexedDB um handle OPFS salvo. Por isso a segunda aba ("Bruno Lima") troca o nome da base IndexedDB no script.
    - Não dá para testar aqui o fluxo real de reabrir com o handle salvo de uma pasta do OneDrive; ele precisa ser conferido no computador do usuário.
@@ -107,7 +113,8 @@ Spec: `docs/superpowers/specs/2026-11-11-anulacao-historico-pendencias-design.md
 
 ## Pendências e próximos passos
 
-- [ ] Confirmar com o usuário o primeiro uso real na pasta do OneDrive: conectar, reabrir (o pedido de "Reconectar pasta" funciona?), sincronização entre duas pessoas e presença online.
+- [ ] Migração para o padrão (18/11/2026): o usuário renomeia "Dados do painel" para "Sistema" e move o HTML para dentro. Conferir no uso real: conectar, primeiro acesso, cadastro do segundo administrador, reabrir ("Autorizar a pasta"), duas pessoas e a ficha em uso.
+- [ ] Atualizar o HTML em todos os computadores juntos: a versão antiga grava em `Dados do painel` e não tem login.
 - [ ] Decidir se o artefato antigo do claude.ai (modo `db`) deve ser apagado.
 - [ ] Atualizar o `Infrações de velocidade.html` em todos os computadores juntos: versão antiga ignora `anulacoes` e pode registrar envio com a assinatura antiga.
 - [ ] Pendências menores da revisão final: histórico de envios mostra "para" vazio em `rhret` e em registros manuais; KPI e ordenação da coluna Envio da Visão geral não contam RH em retificar; `renderAnulBar` refaz o cálculo a cada tecla da observação; `#m-next` habilitado sem efeito na ficha "sem eventos".
