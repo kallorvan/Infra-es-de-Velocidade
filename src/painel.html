@@ -347,6 +347,10 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 #dlgEntrada .msg{padding:10px 14px;border-radius:8px;font-size:13px;margin:0}
 #dlgEntrada .msg.err{background:#FBE9EC;color:var(--accent-d)}
 #dlgEntrada .msg.ok{background:#E5F5EC;color:#1e7a46}
+.cfg-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end}
+.cfg-form .actions{grid-column:1/-1;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.cfg-chk{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600}
+#cfg-usu td .linkbtn+.linkbtn{margin-left:10px}
 .sessao-u{display:inline-flex;align-items:center;gap:8px;font:600 12.5px var(--body);color:var(--ink)}
 .s-avatar{width:26px;height:26px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font:700 10.5px var(--body);background:var(--g-foco)}
 </style>
@@ -392,6 +396,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
     <button class="tab" role="tab" id="tab-cad" aria-selected="false" aria-controls="v-cad">Cadastro de motoristas</button>
     <button class="tab" role="tab" id="tab-imp" aria-selected="false" aria-controls="v-imp">Importar planilhas</button>
     <button class="tab" role="tab" id="tab-reg" aria-selected="false" aria-controls="v-reg">Regras</button>
+    <button class="tab" role="tab" id="tab-cfg" aria-selected="false" aria-controls="v-cfg" hidden>Configurações</button>
   </nav>
 </header>
 
@@ -663,6 +668,34 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
   </section>
 
   <!-- REGRAS -->
+  <section id="v-cfg" role="tabpanel" aria-labelledby="tab-cfg" hidden>
+    <div class="sec" id="cfg-minha-sec">
+      <div class="sec-h"><h2>Minha senha</h2><span class="sec-note" id="cfg-eu"></span></div>
+      <form class="card pad cfg-form" id="cfg-minha" autocomplete="off">
+        <div class="fld"><label for="cfg-atual">Senha atual</label><input type="password" id="cfg-atual" autocomplete="current-password"></div>
+        <div class="fld"><label for="cfg-nova">Nova senha (mínimo 6 caracteres)</label><input type="password" id="cfg-nova" autocomplete="new-password"></div>
+        <div class="fld"><label for="cfg-repete">Repita a nova senha</label><input type="password" id="cfg-repete" autocomplete="new-password"></div>
+        <div class="actions"><button class="btn" type="submit" id="cfg-minha-ok">Trocar minha senha</button><span class="sec-note" id="cfg-minha-msg" role="status"></span></div>
+      </form>
+    </div>
+    <div class="sec" id="cfg-usu-sec" hidden>
+      <div class="sec-h"><h2>Usuários e senhas</h2><span class="sec-note">Só administradores cadastram pessoas e redefinem senhas</span></div>
+      <div class="msg info" id="cfg-admin-aviso" hidden>Cadastre um segundo administrador para não perder o acesso em férias ou se alguém esquecer a senha.</div>
+      <form class="card pad cfg-form" id="cfg-novo" autocomplete="off">
+        <div class="fld"><label for="cfg-novo-nome">Nome</label><input id="cfg-novo-nome" maxlength="40" autocomplete="off"></div>
+        <div class="fld"><label for="cfg-novo-senha">Senha provisória (mínimo 6 caracteres)</label><input type="text" id="cfg-novo-senha" autocomplete="off"></div>
+        <label class="cfg-chk"><input type="checkbox" id="cfg-novo-admin"> Administrador</label>
+        <div class="actions"><button class="btn" type="submit" id="cfg-novo-ok">Cadastrar usuário</button></div>
+      </form>
+      <div class="sec-note" id="cfg-usu-msg" role="status" style="margin:10px 0"></div>
+      <div class="tbl-scroll"><table id="cfg-usu"><thead><tr><th>Nome</th><th>Login</th><th>Perfil</th><th>Situação</th><th>Última alteração</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="sec" id="cfg-hist-sec" hidden>
+      <div class="sec-h"><h2>Histórico de acessos</h2><span class="sec-note">Mês atual e anterior, de todos os computadores</span></div>
+      <div class="tbl-scroll"><table id="cfg-hist"><thead><tr><th>Quando</th><th>Pessoa</th><th>O que</th><th>Computador</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
   <section id="v-reg" role="tabpanel" aria-labelledby="tab-reg" hidden>
     <div class="sec">
       <div class="sec-h"><h2>Faixas de velocidade e tolerância mensal</h2><span class="sec-note">Contagem de picos por motorista, por mês</span></div>
@@ -1090,6 +1123,7 @@ const acesso = {
 const iniciais = n => String(n||'').split(/\s+/).filter(Boolean).map(x => x[0]).slice(0,2).join('').toUpperCase();
 function renderSessao(){
   const el = $('#sessao'); el.hidden = !sessao;
+  $('#tab-cfg').hidden = !sessao;
   if(sessao){ $('#sessao-ini').textContent = iniciais(sessao.nome); $('#sessao-nome').textContent = sessao.nome+(sessao.admin?' · administrador':''); }
 }
 async function entrarComo(u){
@@ -1230,6 +1264,92 @@ $('#entCorpo').addEventListener('submit', async e => {
 });
 ['pointerdown','pointermove','keydown','wheel'].forEach(ev => document.addEventListener(ev, () => { if(!sessaoBloqueada) atividade = Date.now(); }, {passive:true}));
 setInterval(() => { if(sessao && !sessaoBloqueada && Date.now()-atividade > T.PARADO_MS) bloquearSessao(); }, T.CHECA_MS);
+
+/* ---------- aba Configurações: minha senha, usuários e senhas, histórico de acessos ---------- */
+const TIPO_HIST = {entrada:'Entrou', saida:'Saiu', 'senha-errada':'Senha incorreta', 'troca-senha':'Trocou a senha', bloqueio:'Sessão bloqueada', 'usuario-criado':'Cadastrou usuário', 'senha-redefinida':'Redefiniu senha', 'usuario-alterado':'Alterou usuário'};
+const quandoBR = iso => iso ? new Date(iso).toLocaleString('pt-BR', {dateStyle:'short', timeStyle:'short'}) : '—';
+// senha provisória legível, sem letras que se confundem
+function senhaProvisoria(){
+  const al = 'abcdefghjkmnpqrstuvwxyz23456789', r = crypto.getRandomValues(new Uint8Array(8));
+  return [...r].map(x => al[x % al.length]).join('');
+}
+async function historicoAcessos(){
+  const dir = await pasta.sub('historico'), d = new Date();
+  const meses = [hojeISO(d).slice(0,7), hojeISO(new Date(d.getFullYear(), d.getMonth()-1, 15)).slice(0,7)];
+  const l = [];
+  for await (const [nome, h] of dir.entries()){
+    if(h.kind!=='file' || !meses.includes(nome.slice(0,7))) continue;
+    try{ const j = JSON.parse(await (await h.getFile()).text()); if(j && Array.isArray(j.eventos)) l.push(...j.eventos); }catch(e){}
+  }
+  return l.sort((a,b) => a.em<b.em ? 1 : -1);
+}
+async function renderCfg(){
+  if(!sessao || !pasta.raiz) return;
+  $('#cfg-eu').textContent = sessao.nome+' · '+(sessao.admin ? 'administrador' : 'usuário');
+  $('#cfg-usu-sec').hidden = !sessao.admin; $('#cfg-hist-sec').hidden = !sessao.admin;
+  if(!sessao.admin) return;
+  const us = await acesso.usuarios(), admins = us.filter(u => u.admin && u.ativo!==false);
+  $('#cfg-admin-aviso').hidden = admins.length >= 2;
+  const unico = u => u.admin && u.ativo!==false && admins.length < 2;
+  $('#cfg-usu tbody').innerHTML = us.map(u => '<tr data-login="'+esc(u.login)+'"><td><b>'+esc(u.nome)+'</b></td><td class="mini-n">'+esc(u.login)+'</td><td>'+(u.admin?'Administrador':'Usuário')+'</td>'+
+    '<td>'+(u.ativo===false?'<span class="st pre">Desativado</span>':u.trocarSenha?'<span class="st adv">Senha provisória</span>':'<span class="st ok">Ativo</span>')+'</td>'+
+    '<td>'+quandoBR(u.alteradoEm)+(u.alteradoPor?' · '+esc(u.alteradoPor):'')+'</td>'+
+    '<td><button class="linkbtn" type="button" data-u-acao="redefinir">Redefinir senha</button>'+
+    '<button class="linkbtn" type="button" data-u-acao="ativo"'+(unico(u)?' disabled title="Cadastre outro administrador antes"':'')+'>'+(u.ativo===false?'Ativar':'Desativar')+'</button>'+
+    '<button class="linkbtn" type="button" data-u-acao="admin"'+(unico(u)?' disabled title="Cadastre outro administrador antes"':'')+'>'+(u.admin?'Deixar de ser administrador':'Tornar administrador')+'</button></td></tr>').join('');
+  const hs = await historicoAcessos();
+  $('#cfg-hist tbody').innerHTML = hs.length ? hs.slice(0, 300).map(e => '<tr><td>'+quandoBR(e.em)+'</td><td>'+esc(e.nome||e.login||'—')+'</td><td>'+esc(TIPO_HIST[e.tipo]||e.tipo)+(e.detalhe?' · '+esc(e.detalhe):'')+'</td><td class="mini-n">'+esc(e.origem||'')+'</td></tr>').join('')
+    : '<tr><td colspan="4" class="sec-note">Nenhum acesso registrado neste mês nem no anterior.</td></tr>';
+}
+$('#cfg-minha').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('#cfg-minha-msg'), ok = t => { msg.textContent = t; };
+  const u = await acesso.usuario(sessao.login);
+  if(!u || !(await senhaConfere(u, $('#cfg-atual').value))){ await acesso.registrar('senha-errada', u||sessao); return ok('Senha incorreta.'); }
+  const pr = problemaSenha($('#cfg-nova').value, $('#cfg-repete').value); if(pr) return ok(pr);
+  Object.assign(u, {senha:await hashSenha($('#cfg-nova').value), trocarSenha:false, alteradoEm:new Date().toISOString(), alteradoPor:sessao.nome});
+  await acesso.gravarUsuario(u); await acesso.registrar('troca-senha', u);
+  e.target.reset(); ok('Senha alterada.');
+});
+$('#cfg-novo').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('#cfg-usu-msg'), nome = $('#cfg-novo-nome').value.trim().replace(/\s+/g, ' '), senha = $('#cfg-novo-senha').value;
+  if(!sessao || !sessao.admin) return;
+  if(nome.length < 2){ msg.textContent = 'Informe o nome.'; return; }
+  const pr = problemaSenha(senha); if(pr){ msg.textContent = pr; return; }
+  const login = loginDe(nome);
+  if(await acesso.usuario(login)){ msg.textContent = 'Já existe um usuário com este nome.'; return; }
+  const agora = new Date().toISOString();
+  await acesso.gravarUsuario({versao:1, login, nome, admin:$('#cfg-novo-admin').checked, ativo:true, trocarSenha:true, senha:await hashSenha(senha), criadoEm:agora, criadoPor:sessao.nome, alteradoEm:agora, alteradoPor:sessao.nome});
+  await acesso.registrar('usuario-criado', sessao, nome);
+  e.target.reset();
+  msg.textContent = nome+' cadastrado. Na primeira entrada, o sistema pede uma senha nova.';
+  renderCfg();
+});
+$('#cfg-usu').addEventListener('click', async e => {
+  const b = e.target.closest('[data-u-acao]'); if(!b || b.disabled || !sessao || !sessao.admin) return;
+  const u = await acesso.usuario(b.closest('tr').dataset.login); if(!u) return;
+  const msg = $('#cfg-usu-msg'), a = b.dataset.uAcao;
+  const us = await acesso.usuarios(), admins = us.filter(x => x.admin && x.ativo!==false);
+  if((a==='ativo' || a==='admin') && u.admin && u.ativo!==false && admins.length < 2) return; // sempre um administrador ativo
+  const ag = {alteradoEm:new Date().toISOString(), alteradoPor:sessao.nome};
+  if(a==='redefinir'){
+    const prov = senhaProvisoria();
+    Object.assign(u, ag, {senha:await hashSenha(prov), trocarSenha:true});
+    await acesso.gravarUsuario(u); await acesso.registrar('senha-redefinida', sessao, u.nome);
+    msg.textContent = 'Senha provisória de '+u.nome+': '+prov+' — passe a ela pessoalmente. Na entrada, o sistema pede uma senha nova.';
+  } else if(a==='ativo'){
+    Object.assign(u, ag, {ativo:u.ativo===false});
+    await acesso.gravarUsuario(u); await acesso.registrar('usuario-alterado', sessao, u.nome+(u.ativo?' ativado':' desativado'));
+    msg.textContent = u.nome+(u.ativo?' ativado.':' desativado.');
+  } else if(a==='admin'){
+    Object.assign(u, ag, {admin:!u.admin});
+    await acesso.gravarUsuario(u); await acesso.registrar('usuario-alterado', sessao, u.nome+(u.admin?' agora é administrador':' deixou de ser administrador'));
+    msg.textContent = u.nome+(u.admin?' agora é administrador.':' deixou de ser administrador.');
+    if(u.login===sessao.login) sessao.admin = u.admin;
+  }
+  renderCfg();
+});
 
 async function gravarNaPasta(dir, nome, dados){
   const w = await (await dir.getFileHandle(nome, {create:true})).createWritable();
@@ -2788,8 +2908,9 @@ function renderRegras(){
 /* ================= EVENTOS ================= */
 function setTab(t){
   ui.tab = t;
-  ['geral','mot','hist','cad','imp','reg'].forEach(k => { $('#tab-'+k).setAttribute('aria-selected', String(k===t)); $('#v-'+k).hidden = k!==t; });
+  ['geral','mot','hist','cad','imp','reg','cfg'].forEach(k => { $('#tab-'+k).setAttribute('aria-selected', String(k===t)); $('#v-'+k).hidden = k!==t; });
   try{ localStorage.setItem('infra-vel-tab', t); }catch(e){}
+  if(t==='cfg') renderCfg();
 }
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.id.slice(4))));
 document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => setTab(b.dataset.goto)));

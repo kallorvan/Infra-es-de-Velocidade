@@ -652,6 +652,81 @@ teste('login: navegador sem suporte', async p => {
   ok((await p.innerText('#entCorpo')).includes('Abra o sistema no Google Chrome ou no Microsoft Edge. Este navegador não permite usar a pasta do SharePoint, onde ficam os usuários e as senhas.'), 'texto padrão');
 });
 
+/* ---------- aba Configurações ---------- */
+const BRUNO = {login:'bruno-lima', nome:'Bruno Lima', senha:'bruno-senha1'};
+const usuarioArq = async (p, login) => JSON.parse(await opfs.ler(p, 'Sistema/usuarios/'+login+'.json'));
+const esperarArq = async (p, cam, cond = () => true) => { for(let i = 0; i < 50; i++){ try{ const j = JSON.parse(await opfs.ler(p, cam)); if(cond(j)) return j; }catch(e){} await p.waitForTimeout(100); } throw new Error('arquivo não chegou: '+cam); };
+const abrirCfg = async p => { await p.click('#tab-cfg'); await p.waitForSelector('#v-cfg:not([hidden])'); };
+
+teste('config: administrador cadastra colega com senha provisória', async p => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await abrirCfg(p);
+  await p.fill('#cfg-novo-nome', 'Bruno Lima'); await p.fill('#cfg-novo-senha', 'inicio123');
+  await p.click('#cfg-novo-ok');
+  const u = await esperarArq(p, 'Sistema/usuarios/bruno-lima.json');
+  igual([u.trocarSenha, u.admin, u.ativo, u.criadoPor], [true, false, true, 'Ana Souza']);
+  ok(await __senhaOk(p, u, 'inicio123'), 'senha provisória confere');
+  ok((await historico(p)).some(e => e.tipo === 'usuario-criado' && e.detalhe.includes('Bruno Lima')), 'histórico');
+  await p.waitForSelector('#cfg-usu tr[data-login="bruno-lima"]');
+});
+const __senhaOk = (p, u, senha) => p.evaluate(async ([u, s]) => (await __painel.acesso.hashSenha(s, u.senha.sal, u.senha.iter)).hash === u.senha.hash, [u, senha]);
+
+teste('config: redefinir senha gera provisória', async p => {
+  await novoComUsuarios(p, [ANA, BRUNO]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await abrirCfg(p);
+  await p.click('#cfg-usu tr[data-login="bruno-lima"] [data-u-acao="redefinir"]');
+  await p.waitForFunction(() => /Senha provisória de Bruno Lima: \S{8,}/.test(document.querySelector('#cfg-usu-msg').innerText));
+  const prov = (await p.innerText('#cfg-usu-msg')).match(/Bruno Lima: (\S+?)\.?(\s|$)/)[1];
+  const u = await esperarArq(p, 'Sistema/usuarios/bruno-lima.json', j => j.trocarSenha);
+  ok(await __senhaOk(p, u, prov), 'a provisória mostrada é a gravada');
+  ok((await historico(p)).some(e => e.tipo === 'senha-redefinida'), 'histórico');
+});
+
+teste('config: único administrador não pode se desativar nem perder o perfil', async p => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await abrirCfg(p);
+  const linha = '#cfg-usu tr[data-login="ana-souza"] ';
+  ok(await p.isDisabled(linha+'[data-u-acao="ativo"]') && await p.isDisabled(linha+'[data-u-acao="admin"]'), 'controles desativados');
+  igual(await p.getAttribute(linha+'[data-u-acao="admin"]', 'title'), 'Cadastre outro administrador antes');
+  igual(await p.innerText('#cfg-admin-aviso'), 'Cadastre um segundo administrador para não perder o acesso em férias ou se alguém esquecer a senha.');
+  await p.fill('#cfg-novo-nome', 'Bruno Lima'); await p.fill('#cfg-novo-senha', 'inicio123'); await p.check('#cfg-novo-admin');
+  await p.click('#cfg-novo-ok');
+  await p.waitForSelector('#cfg-usu tr[data-login="bruno-lima"]');
+  ok(await p.isHidden('#cfg-admin-aviso'), 'aviso some com 2 administradores');
+  ok(!(await p.isDisabled(linha+'[data-u-acao="admin"]')), 'liberado');
+});
+
+teste('config: usuário comum vê só Minha senha', async p => {
+  await novoComUsuarios(p, [ANA, BRUNO]);
+  await entrar(p, {disp:'pcbruno', nome:'Bruno Lima', senha:'bruno-senha1'});
+  await abrirCfg(p);
+  ok(await p.isHidden('#cfg-usu-sec') && await p.isHidden('#cfg-hist-sec'), 'só Minha senha');
+  await p.fill('#cfg-atual', 'errada99'); await p.fill('#cfg-nova', 'nova-senha2'); await p.fill('#cfg-repete', 'nova-senha2'); await p.click('#cfg-minha-ok');
+  await p.waitForFunction(() => document.querySelector('#cfg-minha-msg').innerText === 'Senha incorreta.');
+  await p.fill('#cfg-atual', 'bruno-senha1'); await p.fill('#cfg-nova', 'nova-senha2'); await p.fill('#cfg-repete', 'nova-senha2'); await p.click('#cfg-minha-ok');
+  await p.waitForFunction(() => document.querySelector('#cfg-minha-msg').innerText === 'Senha alterada.');
+  ok(await __senhaOk(p, await usuarioArq(p, 'bruno-lima'), 'nova-senha2'), 'nova senha gravada');
+  ok((await historico(p)).some(e => e.tipo === 'troca-senha' && e.login === 'bruno-lima'), 'histórico');
+});
+
+teste('config: histórico de acessos lista o mês atual e o anterior de todos os navegadores', async p => {
+  await novoComUsuarios(p, [ANA]);
+  const d = new Date(), ant = new Date(d.getFullYear(), d.getMonth()-1, 15, 9, 0);
+  const mesAnt = ant.getFullYear()+'-'+String(ant.getMonth()+1).padStart(2, '0');
+  await opfs.escrever(p, 'Sistema/historico/'+mesAnt+'_pcbruno.json', JSON.stringify({versao:1, origem:'pcbruno', eventos:[{em:ant.toISOString(), tipo:'entrada', login:'bruno-lima', nome:'Bruno Lima', detalhe:'', origem:'pcbruno'}]}));
+  await opfs.escrever(p, 'Sistema/historico/2020-01_pcvelho.json', JSON.stringify({versao:1, origem:'pcvelho', eventos:[{em:'2020-01-05T10:00:00.000Z', tipo:'entrada', login:'velho', nome:'Velho', detalhe:'', origem:'pcvelho'}]}));
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await abrirCfg(p);
+  await p.waitForFunction(() => document.querySelectorAll('#cfg-hist tbody tr').length >= 2);
+  const linhas = await p.$$eval('#cfg-hist tbody tr', trs => trs.map(t => t.innerText));
+  ok(linhas[0].includes('Ana Souza') && linhas[0].includes('Entrou'), linhas[0]);
+  ok(linhas.some(l => l.includes('Bruno Lima')), 'mês anterior, outro navegador');
+  ok(!linhas.some(l => l.includes('Velho')), 'meses antigos ficam de fora');
+});
+
 teste('regressão: importar planilha, salvar cadastro, comunicado e RH continuam funcionando', async p => {
   if(!temXlsx) throw new Error('falta tools/test/.cache/xlsx.full.min.js (cd tools/test/.cache && npm pack xlsx@0.18.5 e extraia package/dist/xlsx.full.min.js)');
   await semear(p, {config:{rh:{para:'rh@exemplo.com.br', cc:''}}});
