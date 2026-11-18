@@ -727,6 +727,68 @@ teste('config: histórico de acessos lista o mês atual e o anterior de todos os
   ok(!linhas.some(l => l.includes('Velho')), 'meses antigos ficam de fora');
 });
 
+/* ---------- ficha do motorista em uso por um colega ---------- */
+const duasPessoas = async (p, ctx, tA = {}, tB = {}) => {
+  await novoComUsuarios(p, [ANA, BRUNO]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1', tempos:Object.assign({ONLINE_MS:3000}, tA)});
+  await p.evaluate(d => __painel.store.put('meses', '2026-09-seco', d).then(__painel.render), mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 36, 92, 'AAA1A11').concat(picos('BIA TESTE', '2026-09', 5, 92, 'BBB2B22'))));
+  const B = await ctx.newPage(); B.setDefaultTimeout(15000);
+  await rotas(B); await B.addInitScript(() => { window.__teste = true; });
+  await entrar(B, {disp:'pcbruno', suf:'-b', nome:'Bruno Lima', senha:'bruno-senha1', tempos:Object.assign({ONLINE_MS:3000}, tB)});
+  await B.waitForFunction(() => __painel.A().mot.has('ANA TESTE') && __painel.A().mot.has('BIA TESTE'));
+  return B;
+};
+const fichaBloqueada = async B => (await B.isHidden('#m-ev input[data-anul]')) && (await B.getAttribute('#com-wa', 'aria-disabled')) === 'true' && (await B.isDisabled('#rh-ok')) && (await B.isDisabled('#rh-eml'));
+const MSG_USO = /^A ficha de ANA TESTE está em uso por Ana Souza desde \d{2}:\d{2}\. Escolha outro motorista ou aguarde: ela é liberada sozinha quando essa pessoa trocar de motorista, ficar 20 minutos sem mexer ou fechar o sistema\.$/;
+
+teste('ficha: aberta por A aparece em uso para B e bloqueia anular e envios', async (p, ctx) => {
+  const B = await duasPessoas(p, ctx);
+  await abrirMotorista(p, 'ANA TESTE'); await p.waitForTimeout(600);
+  await abrirMotorista(B, 'ANA TESTE');
+  await B.waitForFunction(() => !document.querySelector('#ficha-uso').hidden);
+  ok(MSG_USO.test(await B.innerText('#ficha-uso')), await B.innerText('#ficha-uso'));
+  ok(await fichaBloqueada(B), 'ações de gravar bloqueadas');
+  ok(await p.isHidden('#ficha-uso'), 'quem abriu primeiro continua livre');
+});
+
+teste('ficha: liberada quando A troca de motorista', async (p, ctx) => {
+  const B = await duasPessoas(p, ctx);
+  await abrirMotorista(p, 'ANA TESTE'); await p.waitForTimeout(600);
+  await abrirMotorista(B, 'ANA TESTE');
+  await B.waitForFunction(() => !document.querySelector('#ficha-uso').hidden);
+  await p.selectOption('#m-sel', 'BIA TESTE');
+  await B.waitForFunction(() => document.querySelector('#ficha-uso').hidden);
+  ok(!(await fichaBloqueada(B)) && await B.isVisible('#m-ev input[data-anul]'), 'liberada');
+});
+
+teste('ficha: liberada 3 min sem presença (A fechou sem avisar)', async (p, ctx) => {
+  const B = await duasPessoas(p, ctx);
+  await abrirMotorista(p, 'ANA TESTE'); await p.waitForTimeout(600);
+  await abrirMotorista(B, 'ANA TESTE');
+  await B.waitForFunction(() => !document.querySelector('#ficha-uso').hidden);
+  // queda de energia: o computador de A para de avisar a presença e não grava a saída
+  await p.evaluate(() => { clearInterval(__painel.pasta.timer); __painel.store._visto = async () => {}; });
+  await p.close({runBeforeUnload:false});
+  await B.waitForTimeout(800);
+  ok(!(await B.isHidden('#ficha-uso')), 'ainda em uso antes do prazo');
+  await B.waitForFunction(() => document.querySelector('#ficha-uso').hidden, null, {timeout:8000});
+});
+
+teste('ficha: aguardando dados do colega com Abrir assim mesmo', async (p, ctx) => {
+  const B = await duasPessoas(p, ctx, {GRAVAR_MS:6000});
+  await abrirMotorista(p, 'ANA TESTE'); await p.waitForTimeout(300);
+  const L = picos('ANA TESTE', '2026-09', 36, 92, 'AAA1A11'), [id, reg] = anul('seco', L[0], 'sascar');
+  await p.evaluate(([i, r]) => __painel.store.put('anulacoes', i, r), [id, reg]);
+  await p.selectOption('#m-sel', 'BIA TESTE'); await p.waitForTimeout(600);
+  await abrirMotorista(B, 'ANA TESTE');
+  await B.waitForFunction(() => !document.querySelector('#ficha-uso').hidden);
+  igual(await B.innerText('#ficha-uso .txt'), 'Aguardando chegar pelo OneDrive o que Ana Souza alterou nesta ficha. Costuma levar menos de um minuto.');
+  ok(await fichaBloqueada(B), 'bloqueada enquanto aguarda');
+  await B.click('[data-ficha="abrir"]');
+  await B.waitForFunction(() => document.querySelector('#ficha-uso').hidden);
+  ok(!(await fichaBloqueada(B)), 'abriu assim mesmo');
+});
+
 teste('regressão: importar planilha, salvar cadastro, comunicado e RH continuam funcionando', async p => {
   if(!temXlsx) throw new Error('falta tools/test/.cache/xlsx.full.min.js (cd tools/test/.cache && npm pack xlsx@0.18.5 e extraia package/dist/xlsx.full.min.js)');
   await semear(p, {config:{rh:{para:'rh@exemplo.com.br', cc:''}}});

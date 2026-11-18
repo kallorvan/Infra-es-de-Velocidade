@@ -358,6 +358,8 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 .cfg-form .actions{grid-column:1/-1;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .cfg-chk{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600}
 #cfg-usu td .linkbtn+.linkbtn{margin-left:10px}
+.ficha-uso{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
+.ficha-bloq input[data-anul],.ficha-bloq #anul-all,.ficha-bloq [data-anul-desfazer],.ficha-bloq #anul-bar{display:none!important}
 .sessao-u{display:inline-flex;align-items:center;gap:8px;font:600 12.5px var(--body);color:var(--ink)}
 .s-avatar{width:26px;height:26px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font:700 10.5px var(--body);background:var(--g-foco)}
 </style>
@@ -458,6 +460,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 
   <!-- MOTORISTA -->
   <section id="v-mot" role="tabpanel" aria-labelledby="tab-mot" hidden>
+    <div class="msg info ficha-uso" id="ficha-uso" role="status" hidden><span class="txt"></span></div>
     <div id="mot-empty" class="card empty sec" hidden>
       <div class="big">Sem motoristas neste mês</div>
       <p>Importe as planilhas do mês para ver o histórico disciplinar de cada motorista.</p>
@@ -984,7 +987,7 @@ const store = {
     }
   },
   // ciclo do padrão: lê os colegas, junta e avisa a presença
-  async ciclo(){ await this._ler(false); await this._visto(); await conferirUsuario(); },
+  async ciclo(){ await this._ler(false); await this._visto(); renderFichaUso(); await conferirUsuario(); },
   async _ler(sempre){
     if(this.mode!=='pasta') return;
     let mudou = sempre;
@@ -1000,11 +1003,12 @@ const store = {
         catch(e){ /* arquivo ainda chegando pela sincronização: tenta na próxima leitura */ }
       }
       for(const nome in pasta.outros) if(!vistos.has(nome)){ delete pasta.outros[nome]; mudou = true; }
-      const pres = [];
+      const pres = [], colegas = [];
       for await (const [nome, h] of pasta.online.entries()){
         if(h.kind!=='file' || !/\.json$/i.test(nome)) continue;
-        try{ const f = await h.getFile(); const j = JSON.parse(await f.text()); if(j && j.origem!==pasta.disp && !j.saiu && Date.now()-(new Date(j.visto).getTime()||0) < T.ONLINE_MS) pres.push(j.usuario||'Sem nome'); }catch(e){ /* ainda chegando pelo OneDrive */ }
+        try{ const f = await h.getFile(); const j = JSON.parse(await f.text()); if(j && j.origem!==pasta.disp && !j.saiu && Date.now()-(new Date(j.visto).getTime()||0) < T.ONLINE_MS){ pres.push(j.usuario||'Sem nome'); colegas.push(j); } }catch(e){ /* ainda chegando pelo OneDrive */ }
       }
+      pasta.colegas = colegas;
       const novaPres = [...new Set(pres)].sort((a,b)=>a.localeCompare(b,'pt-BR'));
       if(novaPres.join('|')!==pasta.presenca.join('|')){ pasta.presenca = novaPres; renderOnline(); }
       pasta.ultimaLeitura = new Date(); pasta.erroLer = '';
@@ -1015,6 +1019,7 @@ const store = {
   _marcar(col, id, b){
     const c = pasta.proprio.cols[col] || (pasta.proprio.cols[col] = {});
     c[id] = {t:Math.max(Date.now(), ((c[id]&&c[id].t)||0)+1), b};
+    if(pasta.registro){ pasta.versoes = Object.assign({}, pasta.versoes, {[pasta.registro]:Date.now()}); this._visto(); }
     this._fundir();
     clearTimeout(pasta.pend); pasta.pend = setTimeout(() => { this._gravar(); }, T.GRAVAR_MS);
   },
@@ -1360,6 +1365,55 @@ $('#cfg-usu').addEventListener('click', async e => {
   renderCfg();
 });
 
+/* ---------- ficha do motorista em uso (bloqueio por registro do padrão) ---------- */
+// registro = a ficha aberta na aba Motorista; quem abriu primeiro fica com ela
+const registroAtual = () => (store.mode==='pasta' && ui.tab==='mot' && ui.motorista && !sessaoBloqueada && !$('#mot-body').hidden) ? 'mot:'+slug(ui.motorista) : '';
+const donoDoRegistro = (id, desde) => (pasta.colegas||[])
+  .filter(c => c.registro===id && (Date.parse(c.desde) < Date.parse(desde) || (c.desde===desde && c.origem < pasta.disp)))
+  .sort((a,b) => Date.parse(a.desde) - Date.parse(b.desde))[0] || null;
+// colega alterou esta ficha e o arquivo dele ainda não chegou
+function aguardandoColega(id){
+  return (pasta.colegas||[]).find(c => {
+    const t = c.versoes && c.versoes[id]; if(!t) return false;
+    if((pasta.abrirAssim||{})[id] >= t) return false;
+    const o = pasta.outros[c.origem+'.json'];
+    return !o || o.lm < t;
+  }) || null;
+}
+function estadoFicha(){
+  const id = pasta.registro;
+  if(!id || store.mode!=='pasta') return null;
+  const dono = donoDoRegistro(id, pasta.desde); if(dono) return {tipo:'uso', c:dono};
+  const ag = aguardandoColega(id); if(ag) return {tipo:'aguarda', c:ag};
+  return null;
+}
+const fichaLivre = () => !estadoFicha();
+function atualizarRegistro(){
+  const reg = registroAtual();
+  if(reg===(pasta.registro||'')) return;
+  pasta.registro = reg; pasta.desde = reg ? new Date().toISOString() : '';
+  if(store.mode==='pasta') store._visto();
+}
+function renderFichaUso(){
+  atualizarRegistro();
+  const el = $('#ficha-uso'), st = estadoFicha();
+  el.hidden = !st;
+  $('#v-mot').classList.toggle('ficha-bloq', !!st);
+  ['#rh-ok','#rh-eml','#rh-img','#com-fora'].forEach(q => { const b = $(q); if(b && st) b.disabled = true; });
+  if(st) $('#com-wa').setAttribute('aria-disabled', 'true');
+  if(!st){ el.innerHTML = '<span class="txt"></span>'; return; }
+  const hora = new Date(st.c.desde||st.c.visto).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  el.innerHTML = st.tipo==='uso'
+    ? '<span class="txt">A ficha de '+esc(ui.motorista)+' está em uso por '+esc(st.c.usuario||'um colega')+' desde '+hora+'. Escolha outro motorista ou aguarde: ela é liberada sozinha quando essa pessoa trocar de motorista, ficar 20 minutos sem mexer ou fechar o sistema.</span>'
+    : '<span class="txt">Aguardando chegar pelo OneDrive o que '+esc(st.c.usuario||'um colega')+' alterou nesta ficha. Costuma levar menos de um minuto.</span><button class="btn ghost" type="button" data-ficha="abrir">Abrir assim mesmo</button>';
+}
+document.addEventListener('click', e => {
+  if(!e.target.closest('[data-ficha="abrir"]')) return;
+  const ag = aguardandoColega(pasta.registro);
+  if(ag) pasta.abrirAssim = Object.assign({}, pasta.abrirAssim, {[pasta.registro]:ag.versoes[pasta.registro]});
+  renderMot();
+});
+
 async function gravarNaPasta(dir, nome, dados){
   const w = await (await dir.getFileHandle(nome, {create:true})).createWritable();
   await w.write(dados); await w.close();
@@ -1643,7 +1697,9 @@ function showTip(ev, html){ const t=$('#tip'); t.innerHTML=html; t.hidden=false;
 function hideTip(){ $('#tip').hidden=true; }
 
 /* ---------- motorista ---------- */
-function renderMot(){
+// a ficha confere o bloqueio do padrão depois de desenhada
+function renderMot(){ renderMotFicha(); renderFichaUso(); }
+function renderMotFicha(){
   const L = linhasMes();
   L.sort((a,b)=> ST_ORD[a.s.k]-ST_ORD[b.s.k] || a.M.nome.localeCompare(b.M.nome,'pt-BR'));
   // motorista aberto pelo Histórico continua na ficha mesmo sem eventos no mês escolhido
@@ -1816,6 +1872,7 @@ function renderAnulBar(){
   $('#anul-prev').innerHTML = L.join('<br>');
 }
 async function anularSelecionados(){
+  if(!fichaLivre()) return;
   const M = anulUi.M, mes = anulUi.mes; if(!M || !anulUi.sel.size || $('#anul-ok').disabled) return;
   const evs = M.meses[mes].ev.filter(e => anulUi.sel.has(e.chave) && !e.anulado);
   const quando = new Date().toISOString();
@@ -1828,6 +1885,7 @@ async function anularSelecionados(){
   }catch(err){ $('#anul-msg').innerHTML = '<div class="msg err">Não foi possível anular ('+esc((err&&(err.code||err.message))||err)+'). Tente de novo.</div>'; renderAnulBar(); }
 }
 async function desfazerAnulacao(id){
+  if(!fichaLivre()) return;
   try{ await store.del('anulacoes', id); render(); }
   catch(err){ $('#anul-msg').innerHTML = '<div class="msg err">Não foi possível desfazer a anulação.</div>'; }
 }
@@ -2336,6 +2394,7 @@ function renderRH(M, mes, info){
   $('#rh-ok').textContent = ult ? 'Já marcado como enviado' : 'Marcar como enviado';
 }
 async function marcarRH(){
+  if(!fichaLivre()) return;
   const M = A.mot.get(comUi.motorista); if(!M) return;
   const info = comInfo(M, ui.mes); if(!info || info.inativo) return;
   const ret = info.est.rh.st==='retificar';
@@ -2386,6 +2445,7 @@ function baixarArquivo(blob, nome){
   setTimeout(() => URL.revokeObjectURL(u), 4000);
 }
 async function abrirEmlRH(){
+  if(!fichaLivre()) return;
   const M = A.mot.get(comUi.motorista); if(!M) return;
   const btn = $('#rh-eml'), orig = btn.textContent, cfg = rhCfg();
   btn.disabled = true; btn.textContent = 'Gerando…';
@@ -2514,6 +2574,7 @@ function renderPendAlerta(){
   el.innerHTML = '<span><b>'+P.length+(P.length===1?' pendência de envio':' pendências de envio')+'</b> <span class="det">· '+det+'</span></span><button class="btn" type="button" data-pend-ver>Ver</button>';
 }
 async function marcarFora(){
+  if(!fichaLivre()) return;
   const M = A.mot.get(comUi.motorista); if(!M) return;
   const info = comInfo(M, ui.mes); if(!info) return;
   const ret = info.est.wa.st==='retificar';
@@ -2752,6 +2813,7 @@ function atualizarLinkWa(){
   else { a.href = '#'; a.setAttribute('aria-disabled','true'); }
 }
 async function registrarEnvio(){
+  if(!fichaLivre()) return;
   const M = A.mot.get(comUi.motorista); if(!M) return;
   const cad = cadDe(M.nome); if(!cad || !cad.celular || !ativo(cad)) return;
   const info = comInfo(M, ui.mes);
@@ -2920,6 +2982,7 @@ function setTab(t){
   ['geral','mot','hist','cad','imp','reg','cfg'].forEach(k => { $('#tab-'+k).setAttribute('aria-selected', String(k===t)); $('#v-'+k).hidden = k!==t; });
   try{ localStorage.setItem('infra-vel-tab', t); }catch(e){}
   if(t==='cfg') renderCfg();
+  renderFichaUso();
 }
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.id.slice(4))));
 document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => setTab(b.dataset.goto)));
@@ -2979,7 +3042,7 @@ $('#tbody').addEventListener('click', e => {
 $('#com-tipos').addEventListener('click', e => { const b=e.target.closest('[data-tipo]'); if(!b || b.disabled) return; comUi.tipo=b.dataset.tipo; renderMot(); });
 $('#com-leg').addEventListener('input', e => { comUi.texto = e.target.value; atualizarLinkWa(); });
 $('#com-dl').addEventListener('click', baixarImagem);
-$('#com-wa').addEventListener('click', e => { if($('#com-wa').getAttribute('aria-disabled')==='true'){ e.preventDefault(); return; } registrarEnvio(); });
+$('#com-wa').addEventListener('click', e => { if($('#com-wa').getAttribute('aria-disabled')==='true' || !fichaLivre()){ e.preventDefault(); return; } registrarEnvio(); });
 $('#com-copy').addEventListener('click', copiarImagem);
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-cad-ir]'); if(!b) return;
