@@ -679,13 +679,27 @@ const dataBR = iso => { const [d,t]=iso.split(' '); const [y,m,dd]=d.split('-');
 const COLECOES = ['meses','motoristas','comunicados','config','anulacoes'];
 const LS_KEY = c => c==='meses' ? 'infra-vel-meses-v1' : 'infra-vel-'+c+'-v1';
 
-/* Pasta da equipe (SharePoint/OneDrive sincronizado).
-   Cada computador grava só o próprio arquivo em "Dados do painel/dados/<dispositivo>.json", com a última versão
+/* Pasta Sistema do canal no Teams (SharePoint/OneDrive sincronizado), no Padrão de Sistemas Tóliman.
+   Cada navegador grava só o próprio arquivo em "Sistema/dados/<id do navegador>.json", com a última versão
    de cada registro que ele mudou e a hora da mudança. Ninguém escreve no arquivo de outro, então o OneDrive não
    gera conflito. Ao ler, o painel junta os arquivos de todos: vale a versão mais recente de cada registro e, nos
    meses, os eventos de todas as versões são somados sem duplicar. Exclusões ficam marcadas (registro vazio). */
-const PASTA_NOME = 'Dados do painel';
-const POLL_MS = 8000, VISTO_MS = 30000, ONLINE_MS = 150000, BKP_GUARDAR = 30;
+const PASTA_NOME = 'Sistema', PASTA_SUBS = ['usuarios', 'dados', 'historico'], PASTA_ANTIGA = 'Dados do painel';
+const NOME_SISTEMA = 'Infracoes-de-Velocidade';
+// tempos do padrão; nos testes, window.__tempos pode encurtar qualquer um
+const T = Object.assign({PARADO_MS:20*60000, PULSO_MS:20000, GRAVAR_MS:2000, ONLINE_MS:3*60000, CHECA_MS:30000}, (window.__teste && window.__tempos) || {});
+const BKP_GUARDAR = 30;
+// Pasta errada: confere ao conectar, antes de gravar qualquer coisa ('' = pasta certa)
+async function avisoPasta(h){
+  const nomes = [];
+  for await (const [n] of h.entries()) nomes.push(n);
+  if(nomes.includes(PASTA_ANTIGA) && h.name!==PASTA_NOME) return {antiga:true, t:'Esta é a pasta do canal. Os dados do painel agora ficam na pasta Sistema: no Teams, renomeie a pasta Dados do painel para Sistema, coloque este arquivo dentro dela e conecte a pasta Sistema.'};
+  const estrutura = !nomes.length || PASTA_SUBS.some(n => nomes.includes(n));
+  if(h.name===PASTA_NOME && estrutura) return null;
+  return {t:'A pasta escolhida se chama '+h.name+'. Os dados do sistema ficam na pasta Sistema do canal. Escolha a pasta Sistema ou, se for esta mesmo, clique em Usar esta pasta.'};
+}
+// arquivo de dados: versão 2 (padrão) e versão 1 (painel antigo) têm "cols"
+const lerDados = j => ({cols:(j && j.cols) || {}, usuario:j && j.usuario});
 const lsGet = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
 const lsSet = (k, v) => { try{ localStorage.setItem(k, v); }catch(e){} };
 function idbHandle(op, val){
@@ -728,6 +742,7 @@ const pasta = {
   dir:null, raiz:null, dados:null, online:null, backups:null, nomePasta:'',
   disp:null, usuario:'', proprio:{cols:{}}, outros:{}, presenca:[], pend:null, gravando:null, timer:null, visto:null,
   estado:'nenhuma', erro:'', ultimaLeitura:null, falhaGravar:'',
+  sub(nome){ return pasta.raiz.getDirectoryHandle(nome, {create:true}); },
   suportado(){ return typeof window.showDirectoryPicker==='function' || typeof window.__escolherPasta==='function'; },
   dispositivo(){
     let d = lsGet('infra-vel-dispositivo');
@@ -783,7 +798,7 @@ const store = {
     }
   },
   // escolhe (ou reabre) a pasta do projeto e passa a gravar nela
-  async conectarPasta(h){
+  async conectarPasta(h, usar){
     try{
       if(!h){
         const escolher = window.__escolherPasta || (() => window.showDirectoryPicker({id:'infra-vel', mode:'readwrite'}));
@@ -796,16 +811,22 @@ const store = {
         if(perm!=='granted') throw {code:'permissao', message:'o navegador não liberou a gravação na pasta'};
       }
       pasta.dir = h; pasta.nomePasta = h.name;
-      pasta.raiz = h.name===PASTA_NOME ? h : await h.getDirectoryHandle(PASTA_NOME, {create:true});
-      pasta.dados = await pasta.raiz.getDirectoryHandle('dados', {create:true});
-      pasta.online = await pasta.raiz.getDirectoryHandle('online', {create:true});
-      pasta.backups = await pasta.raiz.getDirectoryHandle('backups', {create:true});
+      if(!usar){
+        const av = await avisoPasta(h);
+        if(av){ pasta.estado = 'aviso-pasta'; pasta.aviso = av; pasta.erro = ''; this.onChange && this.onChange(); return false; }
+      }
+      pasta.aviso = null;
+      pasta.raiz = h;
+      pasta.dados = await pasta.sub('dados');
+      pasta.online = await pasta.sub('presenca');
+      pasta.backups = await pasta.sub('backups');
+      await pasta.sub('usuarios'); await pasta.sub('historico');
       try{ await idbHandle('set', h); }catch(e){}
       pasta.disp = pasta.dispositivo();
       pasta.proprio = {cols:{}}; pasta.outros = {};
       try{
         const f = await (await pasta.dados.getFileHandle(pasta.disp+'.json')).getFile();
-        const j = JSON.parse(await f.text()); if(j && j.cols) pasta.proprio = {cols:j.cols};
+        const j = lerDados(JSON.parse(await f.text())); pasta.proprio = {cols:j.cols};
       }catch(e){}
       // na primeira conexão deste computador, leva o que estava só no navegador (com data antiga: o que já
       // está na pasta prevalece, e o que foi apagado lá continua apagado)
@@ -822,9 +843,7 @@ const store = {
       if(pasta.pend){ await this._gravar(); lsSet('infra-vel-migrado-'+pasta.disp, '1'); }
       await this._visto();
       clearInterval(pasta.timer);
-      pasta.timer = setInterval(() => { this._ler(false); }, POLL_MS);
-      clearInterval(pasta.visto);
-      pasta.visto = setInterval(() => { this._visto(); }, VISTO_MS);
+      pasta.timer = setInterval(() => { this.ciclo(); }, T.PULSO_MS);
       this._backupDiario();
       return true;
     }catch(e){
@@ -835,6 +854,8 @@ const store = {
       return false;
     }
   },
+  // ciclo do padrão: lê os colegas, junta e avisa a presença
+  async ciclo(){ await this._ler(false); await this._visto(); },
   async _ler(sempre){
     if(this.mode!=='pasta') return;
     let mudou = sempre;
@@ -846,14 +867,14 @@ const store = {
         const f = await h.getFile();
         const at = pasta.outros[nome];
         if(at && at.lm===f.lastModified && at.size===f.size) continue;
-        try{ const j = JSON.parse(await f.text()); pasta.outros[nome] = {lm:f.lastModified, size:f.size, cols:(j&&j.cols)||{}, usuario:j&&j.usuario}; mudou = true; }
+        try{ const j = lerDados(JSON.parse(await f.text())); pasta.outros[nome] = {lm:f.lastModified, size:f.size, cols:j.cols, usuario:j.usuario}; mudou = true; }
         catch(e){ /* arquivo ainda chegando pela sincronização: tenta na próxima leitura */ }
       }
       for(const nome in pasta.outros) if(!vistos.has(nome)){ delete pasta.outros[nome]; mudou = true; }
       const pres = [];
       for await (const [nome, h] of pasta.online.entries()){
         if(h.kind!=='file' || !/\.json$/i.test(nome)) continue;
-        try{ const f = await h.getFile(); const j = JSON.parse(await f.text()); if(j && j.dispositivo!==pasta.disp && Date.now()-Math.max(new Date(j.visto).getTime()||0, f.lastModified) < ONLINE_MS) pres.push(j.usuario||'Sem nome'); }catch(e){}
+        try{ const f = await h.getFile(); const j = JSON.parse(await f.text()); if(j && j.origem!==pasta.disp && !j.saiu && Date.now()-(new Date(j.visto).getTime()||0) < T.ONLINE_MS) pres.push(j.usuario||'Sem nome'); }catch(e){ /* ainda chegando pelo OneDrive */ }
       }
       const novaPres = [...new Set(pres)].sort((a,b)=>a.localeCompare(b,'pt-BR'));
       if(novaPres.join('|')!==pasta.presenca.join('|')){ pasta.presenca = novaPres; renderOnline(); }
@@ -866,13 +887,13 @@ const store = {
     const c = pasta.proprio.cols[col] || (pasta.proprio.cols[col] = {});
     c[id] = {t:Math.max(Date.now(), ((c[id]&&c[id].t)||0)+1), b};
     this._fundir();
-    clearTimeout(pasta.pend); pasta.pend = setTimeout(() => { this._gravar(); }, 300);
+    clearTimeout(pasta.pend); pasta.pend = setTimeout(() => { this._gravar(); }, T.GRAVAR_MS);
   },
   async _gravar(){
     clearTimeout(pasta.pend); pasta.pend = null;
     if(pasta.gravando){ await pasta.gravando; }
     pasta.gravando = (async () => {
-      const corpo = JSON.stringify({formato:'infracoes-velocidade-pasta', versao:1, dispositivo:pasta.disp, usuario:pasta.usuario, atualizadoEm:new Date().toISOString(), cols:pasta.proprio.cols});
+      const corpo = JSON.stringify({versao:2, geradoEm:new Date().toISOString(), origem:pasta.disp, usuario:pasta.usuario, cols:pasta.proprio.cols});
       try{
         const w = await (await pasta.dados.getFileHandle(pasta.disp+'.json', {create:true})).createWritable();
         await w.write(corpo); await w.close();
@@ -889,9 +910,8 @@ const store = {
   async _visto(sair){
     if(this.mode!=='pasta') return;
     try{
-      if(sair){ await pasta.online.removeEntry(pasta.disp+'.json'); return; }
       const w = await (await pasta.online.getFileHandle(pasta.disp+'.json', {create:true})).createWritable();
-      await w.write(JSON.stringify({dispositivo:pasta.disp, usuario:pasta.usuario, visto:new Date().toISOString()})); await w.close();
+      await w.write(JSON.stringify({origem:pasta.disp, usuario:pasta.usuario, visto:new Date().toISOString(), saiu:!!sair, registro:sair ? '' : (pasta.registro||''), desde:pasta.desde||'', versoes:pasta.versoes||{}})); await w.close();
     }catch(e){}
   },
   // um backup completo por dia na pasta "backups", guardando os mais recentes
@@ -934,13 +954,13 @@ async function gravarNaPasta(dir, nome, dados){
 }
 addEventListener('pagehide', () => { if(store.mode==='pasta'){ if(pasta.pend) store._gravar(); store._visto(true); } });
 addEventListener('beforeunload', e => { if(store.mode==='pasta' && (pasta.pend || pasta.gravando)){ e.preventDefault(); e.returnValue = ''; } });
-addEventListener('focus', () => { if(store.mode==='pasta') store._ler(false); });
+addEventListener('focus', () => { if(store.mode==='pasta') store.ciclo(); });
+document.addEventListener('visibilitychange', () => { if(store.mode!=='pasta') return; if(document.visibilityState==='hidden'){ if(pasta.pend) store._gravar(); } else store.ciclo(); });
 function renderOnline(){
   const el = $('#online');
   if(store.mode!=='pasta'){ el.innerHTML = ''; return; }
   el.innerHTML = '<span class="on-u eu" title="Você">'+esc(pasta.usuario||'Sem nome')+' (você)</span>'+
-    pasta.presenca.map(n => '<span class="on-u" title="Online agora">'+esc(n)+'</span>').join('')+
-    '<button class="linkbtn" type="button" id="on-trocar">trocar</button>';
+    pasta.presenca.map(n => '<span class="on-u" title="Online agora">'+esc(n)+'</span>').join('');
 }
 function renderPasta(){
   if(store.mode==='pasta'){
@@ -949,32 +969,15 @@ function renderPasta(){
     return '';
   }
   if(store.mode!=='local') return '';
-  if(pasta.estado==='sem-api') return '<div class="aviso-topo" role="status"><span><b>Este navegador não grava na pasta da equipe.</b> Abra o arquivo no Chrome ou no Edge para salvar e ver os dados de todos. Aqui, o que você fizer fica só neste navegador.</span></div>';
-  const nome = '<input id="pasta-nome" placeholder="Seu nome" autocomplete="name" value="'+esc(pasta.usuario)+'" aria-label="Seu nome">';
-  const erro = pasta.erro ? '<div class="msg err" style="margin:6px 0 0;width:100%">Não foi possível usar a pasta: '+esc(pasta.erro)+'.</div>' : '';
-  if(pasta.estado==='reconectar') return '<div class="aviso-topo" role="status"><span><b>Reconecte a pasta '+esc(pasta.nomePasta)+'.</b> O navegador pede a sua confirmação para o painel voltar a ler e gravar os dados da equipe.</span><span class="pasta-form">'+(pasta.usuario?'':nome)+'<button class="btn" type="button" data-pasta="reconectar" style="padding:6px 12px">Reconectar pasta</button><button class="linkbtn" type="button" data-pasta="escolher">Escolher outra</button></span>'+erro+'</div>';
-  return '<div class="aviso-topo" role="status"><span><b>Conecte a pasta da equipe para salvar e compartilhar os dados.</b> Escolha a pasta onde está este arquivo (<i>Infrações de velocidade.html</i>). O painel cria nela a pasta <i>'+PASTA_NOME+'</i> e passa a gravar tudo lá. Até conectar, o que você fizer fica só neste navegador.</span><span class="pasta-form">'+nome+'<button class="btn" type="button" data-pasta="escolher" style="padding:6px 12px">Conectar pasta</button></span>'+erro+'</div>';
+  if(pasta.estado==='aviso-pasta' && pasta.aviso) return '<div class="aviso-topo" role="alert"><span>'+esc(pasta.aviso.t)+'</span><span class="pasta-form"><button class="btn" type="button" data-pasta="outra" style="padding:6px 12px">Escolher outra pasta</button>'+(pasta.aviso.antiga?'':'<button class="btn ghost" type="button" data-pasta="usar" style="padding:6px 12px">Usar esta pasta</button>')+'</span></div>';
+  if(pasta.erro) return '<div class="aviso-topo" role="alert"><span>Não foi possível usar a pasta: '+esc(pasta.erro)+'. Confira se o OneDrive está sincronizando.</span></div>';
+  return '';
 }
 async function acaoPasta(tipo){
-  const inp = $('#pasta-nome');
-  if(inp){
-    const n = inp.value.trim().replace(/\s+/g,' ');
-    if(!n){ inp.focus(); inp.style.borderColor = 'var(--sus)'; return; }
-    pasta.usuario = n; lsSet('infra-vel-usuario', n);
-  }
-  if(!pasta.usuario){ pasta.estado = 'nenhuma'; render(); return; }
-  await store.conectarPasta(tipo==='reconectar' ? pasta.dir : null);
+  if(tipo==='usar') return store.conectarPasta(pasta.dir, true);
+  return store.conectarPasta(tipo==='reconectar' ? pasta.dir : null);
 }
-document.addEventListener('click', e => {
-  const b = e.target.closest('[data-pasta]'); if(b){ acaoPasta(b.dataset.pasta); return; }
-  if(e.target.closest('#on-trocar')){
-    const n = (prompt('Seu nome (aparece para quem estiver usando o painel):', pasta.usuario)||'').trim().replace(/\s+/g,' ');
-    if(!n) return;
-    pasta.usuario = n; store.uid = n; lsSet('infra-vel-usuario', n);
-    store._visto(); renderOnline();
-  }
-});
-document.addEventListener('keydown', e => { if(e.key==='Enter' && e.target.id==='pasta-nome'){ const b = e.target.closest('.aviso-topo').querySelector('[data-pasta]'); if(b) b.click(); } });
+document.addEventListener('click', e => { const b = e.target.closest('[data-pasta]'); if(b) acaoPasta(b.dataset.pasta); });
 function setSync(cls, t){ const s=$('#sync'); s.className='sync '+cls; $('#sync-t').textContent=t; }
 
 /* ================= MOTOR DE PENALIDADES ================= */
@@ -1058,8 +1061,7 @@ function render(){
   else if(store.mode==='local') setSync('local', ateTxt+' · salvo só neste navegador');
   else if(store.mode==='semdb') setSync('err', 'Sem acesso aos dados da equipe');
   const avPasta = renderPasta();
-  const foco = document.activeElement && document.activeElement.id==='pasta-nome';
-  if(!foco) $('#modo-aviso').innerHTML = avPasta || (store.mode==='semdb' ? '<div class="aviso-topo" role="alert" style="background:var(--sus-bg);border-color:rgba(221,70,99,.4)"><span><b style="color:var(--sus)">O painel não conseguiu acessar os dados compartilhados da equipe.</b> Nada pode ser importado ou salvo agora. Recarregue a página; se continuar, confira se você entrou com a sua conta do claude.ai e se o painel foi compartilhado com você.</span></div>' : '');
+  $('#modo-aviso').innerHTML = avPasta || (store.mode==='semdb' ? '<div class="aviso-topo" role="alert" style="background:var(--sus-bg);border-color:rgba(221,70,99,.4)"><span><b style="color:var(--sus)">O painel não conseguiu acessar os dados compartilhados da equipe.</b> Nada pode ser importado ou salvo agora. Recarregue a página; se continuar, confira se você entrou com a sua conta do claude.ai e se o painel foi compartilhado com você.</span></div>' : '');
   renderOnline();
   indexarComunicados();
   renderPendAlerta();
@@ -2612,6 +2614,6 @@ setTab(ui.tab);
 render();
 store.init(render);
 // gancho só para os testes automáticos (tools/test): não existe no uso normal
-if(window.__teste) window.__painel = {A:() => A, store, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias, emailRH:(n, m) => montarEmailRH(A.mot.get(n), m).corpo, textosImg:async (n, m, t, c) => (await desenharComunicado(A.mot.get(n), m, t, c)).__textos, montarEml};
+if(window.__teste) window.__painel = {A:() => A, store, pasta, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias, emailRH:(n, m) => montarEmailRH(A.mot.get(n), m).corpo, textosImg:async (n, m, t, c) => (await desenharComunicado(A.mot.get(n), m, t, c)).__textos, montarEml};
 })();
 </script>

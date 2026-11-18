@@ -401,35 +401,95 @@ teste('ficha: histórico disciplinar mostra meses posteriores ao escolhido', asy
 
 /* ---------- pasta da equipe e regressão ---------- */
 // pasta simulada com o armazenamento privado do navegador (OPFS), como em tools/manual/prints.js
-const conectarPasta = async (p, disp, nome, idbSufixo) => {
-  await p.addInitScript(([d, n, suf]) => {
-    window.__escolherPasta = async () => (await navigator.storage.getDirectory()).getDirectoryHandle('Equipe', {create:true});
-    if(!sessionStorage.x){ sessionStorage.x = 1; localStorage.setItem('infra-vel-dispositivo', d); localStorage.setItem('infra-vel-usuario', n); }
-    // este Chromium de teste cai ao reler da IndexedDB um atalho de pasta OPFS: cada aba usa a sua base
-    if(suf){ const o = indexedDB.open.bind(indexedDB); indexedDB.open = (x, v) => o(x+suf, v); }
-  }, [disp, nome, idbSufixo]);
-  if(p.url().startsWith('http')) await p.reload(); else await viaHttp(p);
-  await p.click('[data-pasta="escolher"]');
-  await p.waitForFunction(() => __painel.store.mode === 'pasta', null, {timeout:15000});
-};
-
 const HTTP0 = 'http://localhost:8765/painel.html'; // a pasta simulada (OPFS) não existe em páginas file://
 const viaHttp = async pg => { await pg.route(HTTP0, r => r.fulfill({path:decodeURIComponent(new URL(URL0).pathname), contentType:'text/html; charset=utf-8'})); await pg.goto(HTTP0); };
+const limparOpfs = p => p.evaluate(async () => { const r = await navigator.storage.getDirectory(); for await (const [n] of r.entries()) await r.removeEntry(n, {recursive:true}); });
+// caminho "Sistema/dados/x.json" dentro do OPFS
+const opfs = {
+  ler: (p, cam) => p.evaluate(async cam => { let d = await navigator.storage.getDirectory(); const ps = cam.split('/'); for(const x of ps.slice(0, -1)) d = await d.getDirectoryHandle(x); return await (await (await d.getFileHandle(ps[ps.length-1])).getFile()).text(); }, cam),
+  escrever: (p, cam, txt) => p.evaluate(async ([cam, txt]) => { let d = await navigator.storage.getDirectory(); const ps = cam.split('/'); for(const x of ps.slice(0, -1)) d = await d.getDirectoryHandle(x, {create:true}); const w = await (await d.getFileHandle(ps[ps.length-1], {create:true})).createWritable(); await w.write(txt); await w.close(); }, [cam, txt]),
+  lista: (p, cam) => p.evaluate(async cam => { let d = await navigator.storage.getDirectory(); for(const x of cam.split('/')) d = await d.getDirectoryHandle(x); const l = []; for await (const [n] of d.entries()) l.push(n); return l.sort(); }, cam)
+};
+// define a pasta simulada, o id do navegador e tempos curtos; na próxima navegação, vale para a página
+const prepPasta = async (p, disp, suf, o = {}) => {
+  await p.addInitScript(([d, suf, o]) => {
+    window.__escolherPasta = async () => (await navigator.storage.getDirectory()).getDirectoryHandle(o.dir || 'Sistema', {create:true});
+    window.__tempos = Object.assign({GRAVAR_MS:150, PULSO_MS:400}, o.tempos || {});
+    if(!sessionStorage.x){ sessionStorage.x = 1; localStorage.setItem('infra-vel-dispositivo', d); if(o.nome) localStorage.setItem('infra-vel-usuario', o.nome); }
+    // este Chromium de teste cai ao reler da IndexedDB um atalho de pasta OPFS: cada aba usa a sua base
+    if(suf){ const op = indexedDB.open.bind(indexedDB); indexedDB.open = (x, v) => op(x+suf, v); }
+  }, [disp, suf, o]);
+};
+// conecta direto (sem a janela de entrada): usado com __semLogin
+const conectarPasta = async (p, disp, nome, suf, o = {}) => {
+  await prepPasta(p, disp, suf, Object.assign({nome}, o));
+  if(p.url().startsWith('http')) await p.reload(); else await viaHttp(p);
+  await p.waitForFunction(() => window.__painel && __painel.store.mode !== 'loading');
+  await p.evaluate(() => __painel.store.conectarPasta());
+  await p.waitForFunction(() => __painel.store.mode === 'pasta', null, {timeout:15000});
+};
+const DADOS_V1 = (disp, cols) => JSON.stringify({formato:'infracoes-velocidade-pasta', versao:1, dispositivo:disp, usuario:'Velho', atualizadoEm:'2026-11-01T10:00:00.000Z', cols});
 
 teste('pasta: anulação feita na aba A aparece na aba B após a leitura', async (p, ctx) => {
-  await viaHttp(p);
-  await p.evaluate(async () => { const r = await navigator.storage.getDirectory(); for await (const [n] of r.entries()) await r.removeEntry(n, {recursive:true}); });
+  await viaHttp(p); await limparOpfs(p);
   await conectarPasta(p, 'pcana', 'Ana Souza', '');
   const L = picos('ANA TESTE', '2026-09', 36, 92);
   await p.evaluate(d => __painel.store.put('meses', '2026-09-seco', d).then(__painel.render), mesDoc('2026-09', 'seco', L));
   const B = await ctx.newPage(); B.setDefaultTimeout(20000);
-  await rotas(B); await B.addInitScript(() => { window.__teste = true; });
+  await rotas(B); await B.addInitScript(() => { window.__teste = true; window.__semLogin = true; });
   await conectarPasta(B, 'pcbruno', 'Bruno Lima', '-b');
   await B.waitForFunction(() => { const M = __painel.A().mot.get('ANA TESTE'); return M && M.meses['2026-09'].b1 === 36; });
   const [id, reg] = anul('seco', L[0], 'caminhao');
   await p.evaluate(([i, r]) => __painel.store.put('anulacoes', i, Object.assign(r, {anuladoPor:'Ana Souza'})).then(__painel.render), [id, reg]);
   await B.waitForFunction(() => __painel.A().mot.get('ANA TESTE').meses['2026-09'].anulados === 1);
   igual(await B.evaluate(() => __painel.A().mot.get('ANA TESTE').meses['2026-09'].b1), 35);
+});
+
+teste('pasta: grava dados/<id>.json com versao 2, origem e usuario', async p => {
+  await viaHttp(p); await limparOpfs(p);
+  await conectarPasta(p, 'pcana', 'Ana Souza', '');
+  await p.evaluate(d => __painel.store.put('meses', '2026-09-seco', d), mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 3, 92)));
+  await p.waitForTimeout(700);
+  const j = JSON.parse(await opfs.ler(p, 'Sistema/dados/pcana.json'));
+  igual([j.versao, j.origem, j.usuario, typeof j.geradoEm], [2, 'pcana', 'Ana Souza', 'string']);
+  ok(j.cols.meses['2026-09-seco'] && j.cols.meses['2026-09-seco'].b, 'mês gravado');
+});
+
+teste('pasta: lê arquivo versão 1 de outro navegador (pasta antiga renomeada)', async p => {
+  await viaHttp(p); await limparOpfs(p);
+  await opfs.escrever(p, 'Sistema/dados/pcvelho.json', DADOS_V1('pcvelho', {meses:{'2026-09-seco':{t:1700000000000, b:mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 36, 92))}}}));
+  await opfs.escrever(p, 'Sistema/backups/backup-completo-infracoes-velocidade-2026-11-01_10h00.json', '{}');
+  await conectarPasta(p, 'pcana', 'Ana Souza', '');
+  await p.waitForFunction(() => { const M = __painel.A().mot.get('ANA TESTE'); return M && M.meses['2026-09'].b1 === 36; });
+  const subs = await opfs.lista(p, 'Sistema');
+  ok(['backups', 'dados', 'historico', 'presenca', 'usuarios'].every(x => subs.includes(x)), JSON.stringify(subs));
+  ok((await opfs.lista(p, 'Sistema/backups')).includes('backup-completo-infracoes-velocidade-2026-11-01_10h00.json'), 'backup antigo fica');
+});
+
+const MSG_OUTRA = 'A pasta escolhida se chama Outra. Os dados do sistema ficam na pasta Sistema do canal. Escolha a pasta Sistema ou, se for esta mesmo, clique em Usar esta pasta.';
+teste('pasta: pasta com outro nome mostra o aviso e Usar esta pasta segue', async p => {
+  await viaHttp(p); await limparOpfs(p);
+  await opfs.escrever(p, 'Outra/x.txt', 'oi');
+  await prepPasta(p, 'pcana', '', {dir:'Outra', nome:'Ana Souza'}); await p.reload();
+  await p.waitForFunction(() => window.__painel && __painel.store.mode !== 'loading');
+  await p.evaluate(() => __painel.store.conectarPasta());
+  await p.getByText(MSG_OUTRA).waitFor();
+  ok(await p.isVisible('[data-pasta="outra"]'), 'Escolher outra pasta');
+  igual(await p.evaluate(() => __painel.store.mode), 'local');
+  igual(await opfs.lista(p, 'Outra'), ['x.txt'], 'nada criado antes de confirmar');
+  await p.click('[data-pasta="usar"]');
+  await p.waitForFunction(() => __painel.store.mode === 'pasta');
+});
+
+teste('pasta: pasta do canal com "Dados do painel" pede a renomeação', async p => {
+  await viaHttp(p); await limparOpfs(p);
+  await opfs.escrever(p, 'Equipe/Dados do painel/dados/pcvelho.json', '{}');
+  await prepPasta(p, 'pcana', '', {dir:'Equipe', nome:'Ana Souza'}); await p.reload();
+  await p.waitForFunction(() => window.__painel && __painel.store.mode !== 'loading');
+  await p.evaluate(() => __painel.store.conectarPasta());
+  await p.getByText('renomeie a pasta Dados do painel para Sistema', {exact:false}).waitFor();
+  igual(await opfs.lista(p, 'Equipe'), ['Dados do painel'], 'nada criado na pasta do canal');
+  ok(!(await p.isVisible('[data-pasta="usar"]')), 'sem Usar esta pasta');
 });
 
 teste('regressão: importar planilha, salvar cadastro, comunicado e RH continuam funcionando', async p => {
@@ -473,7 +533,7 @@ teste('regressão: importar planilha, salvar cadastro, comunicado e RH continuam
     const erros = [];
     p.on('pageerror', e => erros.push(e.message));
     await rotas(p);
-    await p.addInitScript(() => { window.__teste = true; });
+    await p.addInitScript(() => { window.__teste = true; window.__semLogin = true; });
     p.on('dialog', d => d.accept());
     try{
       await p.goto(URL0);
