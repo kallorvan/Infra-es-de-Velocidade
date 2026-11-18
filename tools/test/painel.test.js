@@ -789,6 +789,39 @@ teste('ficha: aguardando dados do colega com Abrir assim mesmo', async (p, ctx) 
   ok(!(await fichaBloqueada(B)), 'abriu assim mesmo');
 });
 
+/* ---------- design do padrão ---------- */
+teste('design: rodapé mostra a versão do build', async p => {
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 3, 92))}});
+  const d = new Date(), v = 'v'+d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2, '0')+'.'+String(d.getDate()).padStart(2, '0');
+  igual(await p.innerText('#versao'), 'Versão '+v);
+});
+
+teste('design: cabeçalho e abas do padrão', async p => {
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 3, 92))}});
+  ok(await p.isVisible('header .s-cab') && await p.isVisible('header .s-abas'), 's-cab e s-abas');
+  const sub = await p.evaluate(() => getComputedStyle(document.querySelector('.tab[aria-selected="true"]'), '::after').backgroundImage);
+  ok(sub.includes('linear-gradient'), 'aba ativa em degradê: '+sub);
+  const h1 = await p.evaluate(() => getComputedStyle(document.querySelector('#v-geral .s-faixa-titulo h1')).fontFamily);
+  ok(h1.includes('Barlow Condensed'), h1);
+  ok((await p.evaluate(() => getComputedStyle(document.body).fontFamily)).includes('IBM Plex Sans'), 'texto em IBM Plex Sans');
+  ok((await p.textContent('#v-geral .s-faixa-titulo small')).includes('Setembro 2026'), 'mês em uso na faixa');
+});
+
+teste('design: sem rolagem lateral em 390px', async p => {
+  await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 36, 92))}});
+  await p.setViewportSize({width:390, height:800});
+  for(const t of ['geral', 'mot', 'hist', 'cad', 'imp', 'reg']){
+    await p.click('#tab-'+t); await p.waitForTimeout(150);
+    const [sw, cw] = await p.evaluate(() => [document.documentElement.scrollWidth, document.documentElement.clientWidth]);
+    ok(sw <= cw, 'aba '+t+': '+sw+' > '+cw);
+  }
+});
+
+teste('design: funciona sem internet (fontes embutidas)', async p => {
+  for(const f of ['700 20px "Barlow Condensed"', '400 14px "IBM Plex Sans"', '500 12px "IBM Plex Mono"'])
+    ok(await p.evaluate(async f => (await document.fonts.load(f)).length > 0, f), 'fonte embutida: '+f);
+});
+
 teste('regressão: importar planilha, salvar cadastro, comunicado e RH continuam funcionando', async p => {
   if(!temXlsx) throw new Error('falta tools/test/.cache/xlsx.full.min.js (cd tools/test/.cache && npm pack xlsx@0.18.5 e extraia package/dist/xlsx.full.min.js)');
   await semear(p, {config:{rh:{para:'rh@exemplo.com.br', cc:''}}});

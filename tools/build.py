@@ -4,7 +4,7 @@ Gera:
   Infrações de velocidade.html   documento completo, para abrir localmente (dados salvos no navegador)
   dist/artefato.html  fragmento publicado como artefato claude.ai (dados no banco compartilhado)
 """
-import base64, pathlib, sys
+import base64, datetime, pathlib, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 b64 = lambda p: base64.b64encode((ROOT / p).read_bytes()).decode()
@@ -15,7 +15,13 @@ logos = ('<img src="data:image/png;base64,%s" alt="Grupo Dínamo">\n      <span 
     b64('assets/logo-grupo-dinamo.png'), b64('assets/logo-toliman-transportes.png'))
 icon = '<link rel="icon" type="image/png" href="data:image/png;base64,%s">' % b64('assets/favicon.png')
 logo = '<img src="data:image/png;base64,%s" alt="Grupo Dínamo · Tóliman Transportes">' % b64('assets/logo.png')
-frag = src.replace('%%LOGOS%%', logos).replace('%%LOGO%%', logo).replace('%%ICON%%', icon)
+# fontes do padrão (Barlow Condensed, IBM Plex Sans e IBM Plex Mono), embutidas para abrir sem internet
+FONTES = [('Barlow Condensed', 'barlow-condensed', (500, 600, 700)), ('IBM Plex Sans', 'ibm-plex-sans', (400, 500, 600, 700)), ('IBM Plex Mono', 'ibm-plex-mono', (400, 500, 600))]
+fontes = ''.join("@font-face{font-family:'%s';font-style:normal;font-weight:%d;font-display:swap;src:url(data:font/woff2;base64,%s) format('woff2')}" % (fam, w, b64('assets/fonts/%s-latin-%d-normal.woff2' % (arq, w)))
+                 for fam, arq, pesos in FONTES for w in pesos)
+versao = 'v' + datetime.date.today().strftime('%Y.%m.%d')
+frag = (src.replace('%%LOGOS%%', logos).replace('%%LOGO%%', logo).replace('%%ICON%%', icon)
+        .replace('%%FONTES%%', fontes).replace('__VERSAO__', versao))
 
 out = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / 'dist/artefato.html'
 out.parent.mkdir(parents=True, exist_ok=True)

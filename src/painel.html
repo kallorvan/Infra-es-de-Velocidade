@@ -1,17 +1,18 @@
 <title>Infrações de Velocidade · Grupo Dínamo</title>
 %%ICON%%
-<meta name="theme-color" content="#1C2543">
+<meta name="theme-color" content="#112346">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&display=swap" rel="stylesheet">
+<style>%%FONTES%%</style>
 <style>
 /* Layout: cabeçalho fixo com marcas + abas; painel operacional em cartões sobre fundo papel,
    mesma identidade do painel "Produtividade de Motoristas" (visual claro único, por escolha). */
 :root{
   color-scheme:light;
-  --ink:#1C2543; --ink2:#363E58; --ink3:#5C6486;
-  --coral:#DD4663; --mauve:#AE82B1; --sand:#F4D38D; --rose:#E88A9C;
-  --paper:#EFF0F5; --card:#FFFFFF; --line:#DCDEE8; --muted:#767B8D; --track:#E7E9F1; --track-ink:#B9BDCC; --hover:#F6F7FB;
+  --ink:#0B1730; --ink2:#1D2644; --ink3:#2B3A5C;
+  --coral:#E4536C; --mauve:#A275B4; --sand:#F5CE7A; --rose:#E88A9C;
+  --paper:#EFF2F7; --card:#FFFFFF; --line:#DCE3ED; --muted:#6B7A94; --track:#E7EBF2; --track-ink:#B9C2D2; --hover:#F8FAFD;
   --ok:#1E8E5A; --ok-bg:rgba(30,142,90,.12); --wa:#128C4A; --wa-d:#0B6B37;
   --pre:#C99A2E; --pre-bg:rgba(244,211,141,.45); --pre-ink:#6B4E0E;
   --b1:#8B5BB0; --b2:#E0405F; --b3:#9A0F3A;
@@ -19,7 +20,7 @@
   --sus:#C22C4C; --sus-bg:rgba(221,70,99,.14);
   --ter:#FFFFFF; --ter-bg:#7A1030;
   --r:10px; --maxw:1360px;
-  --f-ui:'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-ui:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
   --f-num:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
 }
 *{box-sizing:border-box}
@@ -353,6 +354,86 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 #cfg-usu td .linkbtn+.linkbtn{margin-left:10px}
 .ficha-uso{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
 .ficha-bloq input[data-anul],.ficha-bloq #anul-all,.ficha-bloq [data-anul-desfazer],.ficha-bloq #anul-bar{display:none!important}
+/* ===== Padrão de Sistemas Tóliman: componentes e efeitos de gradiente ===== */
+:root{--r-campo:10px;--r-card:12px;--r-kpi:14px;--r-faixa:16px;--r-janela:18px;--r:12px;
+  --s1:0 6px 18px rgba(17,35,70,.06);--s2:0 18px 40px rgba(17,35,70,.25);--s3:0 30px 80px rgba(3,8,25,.55);
+  --ok-p:#1E7A46;--ok-pbg:#E5F5EC;--aviso:#8A5E00;--aviso-bg:#FFF4DC;--erro-bg:#FBE9EC;--info:#1D2644;--info-bg:#EAF0F8}
+body{font-family:var(--body);font-variation-settings:normal}
+h1,h2,.empty .big{font-family:var(--disp);font-variation-settings:normal}
+/* cabeçalho e abas */
+header.top{background:#fff;border-bottom:0}
+.s-cab{position:relative;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding:14px 24px;max-width:var(--maxw);margin:0 auto}
+.s-linha{height:3px;background:var(--g-logo)}
+.s-cab img{height:28px;width:auto;display:block}
+.s-cab .s-sep{width:1px;height:28px;background:var(--line)}
+.s-cab .s-nome{font:500 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--steel)}
+.s-cab .s-nome b{display:block;margin-top:3px;font:700 21px/1 var(--disp);letter-spacing:.01em;color:var(--ink);text-transform:uppercase}
+.s-cab .s-dir{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px 12px}
+.s-cab .sync,.s-cab .online{width:auto;margin:0}
+.s-situacao,.s-cab .sync{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;font:600 12px var(--body);color:var(--ink);background:#F2F5FA;border:1px solid var(--line);white-space:nowrap}
+.s-cab .sync .sd{width:8px;height:8px;background:#2EAF6A;box-shadow:0 0 0 3px rgba(46,175,106,.18)}
+.s-cab .sync.err .sd,.s-cab .sync.local .sd{background:var(--accent);box-shadow:0 0 0 3px rgba(228,83,108,.18)}
+.s-cab .mes-wrap{border-radius:999px}
+.s-cab .mes-wrap label{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--steel)}
+nav.tabs.s-abas{display:flex;gap:26px;padding:3px max(24px,calc((100% - var(--maxw))/2 + 24px)) 0;margin:0;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;max-width:none}
+.s-abas .tab{padding:12px 0 13px;font:600 13.5px var(--body);color:var(--steel)}
+.s-abas .tab:hover,.s-abas .tab[aria-selected="true"]{color:var(--ink)}
+.s-abas .tab[aria-selected="true"]::after{left:0;right:0;bottom:2px;height:3px;border-radius:3px;background:var(--g-foco)}
+.brand-canvas{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* faixa de título */
+.s-faixa-titulo{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px 24px;padding:22px 26px;margin-top:22px;border-radius:var(--r-faixa);color:#fff;background:var(--listras),var(--g-noite);box-shadow:var(--s2)}
+.s-faixa-titulo small{font:500 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.65)}
+.s-faixa-titulo h1{margin:6px 0 0;font:700 34px/1 var(--disp);text-transform:uppercase;letter-spacing:.01em;color:#fff}
+.s-faixa-titulo p{margin:8px 0 0;color:rgba(255,255,255,.75);max-width:560px;font-size:14px}
+.s-faixa-titulo .s-acoes{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+/* botões */
+.btn,.s-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:0 16px;border-radius:999px;font:600 13px var(--body);white-space:nowrap;text-decoration:none;
+  border:1px solid transparent;color:#fff;background:var(--g-cta);box-shadow:0 10px 24px rgba(228,83,108,.32),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn:hover{background:var(--g-cta);filter:brightness(1.05)}
+.btn.ghost{background:#fff;color:var(--ink);border-color:var(--line);box-shadow:none;filter:none}
+.btn.ghost:hover{border-color:var(--navy)}
+.btn.danger{background:#fff;color:var(--accent-d);border-color:rgba(198,62,86,.45);box-shadow:none}
+.btn.danger:hover{background:var(--erro-bg);border-color:var(--accent-d)}
+.btn.danger.armed{background:var(--accent-d);color:#fff}
+.btn.vidro{color:#fff;background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.28);box-shadow:none;backdrop-filter:blur(6px)}
+.btn.vidro:hover{background:rgba(255,255,255,.16)}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;filter:none}
+.btn:focus-visible,.linkbtn:focus-visible,.chip:focus-visible,.tab:focus-visible{outline:2px solid var(--plum);outline-offset:2px}
+.linkbtn{color:var(--accent-d)}
+.chip{border-radius:999px}
+.chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy)}
+/* campos */
+.fld label{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--steel)}
+.fld input,.fld textarea,input[type=search],select.inp,.mes-wrap select{border-radius:var(--r-campo);font-family:var(--body)}
+.fld input,.fld textarea,input[type=search],select.inp{min-height:42px;font-size:14px;background:linear-gradient(180deg,#fff,#FAFBFD)}
+.fld input:focus,.fld textarea:focus,input[type=search]:focus,select.inp:focus{outline:none;border-color:transparent;background:linear-gradient(#fff,#fff) padding-box,var(--g-foco) border-box;box-shadow:0 0 0 4px rgba(162,117,180,.16)}
+/* mensagens */
+.msg,.aviso-topo,.pend-alerta{border-radius:10px;font-size:13px;line-height:1.45}
+.msg.ok{background:var(--ok-pbg);color:var(--ok-p)}
+.msg.err{background:var(--erro-bg);color:var(--accent-d)}
+.msg.info{background:var(--info-bg);color:var(--info)}
+.aviso-topo{background:var(--aviso-bg);border-color:rgba(138,94,0,.25)}
+.aviso-topo b{color:var(--aviso)}
+.pend-alerta{background:var(--erro-bg);border-color:rgba(198,62,86,.3)}
+/* selos de situação: cor sólida e clara, sem degradê */
+.st{font:600 11.5px var(--body);padding:3px 10px}
+/* cartões, números e tabelas */
+.card{border-radius:var(--r-kpi);box-shadow:var(--s1)}
+h2{font:700 18px var(--disp);letter-spacing:.02em;text-transform:uppercase;color:var(--ink)}
+.kpi{border-radius:var(--r-kpi);border:1px solid transparent;background:linear-gradient(#fff,#fff) padding-box,linear-gradient(160deg,rgba(162,117,180,.45),var(--line) 40%) border-box;box-shadow:var(--s1)}
+.kpi::before{left:0;right:0;top:0;bottom:auto;width:auto;height:3px;background:var(--g-logo)}
+.kpi.k-b1::before,.kpi.k-ch::before,.kpi.k-adv::before,.kpi.k-sus::before,.kpi.k-ter::before,.kpi.k-com::before{background:var(--g-logo)}
+.kpi .lab{font:500 10.5px var(--mono);letter-spacing:.12em;color:var(--steel)}
+.kpi .val{font:700 38px/1 var(--disp);font-variant-numeric:tabular-nums;background:linear-gradient(90deg,var(--ink),var(--plum));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tbl-scroll{border-radius:var(--r-kpi);box-shadow:var(--s1);background:#fff}
+thead th{background:linear-gradient(180deg,#F7F8FC,#F0F3F8);color:var(--steel);font:500 10.5px var(--mono);letter-spacing:.1em;border-bottom:1px solid var(--line)}
+thead th.s:hover{background:#E9EDF5}
+tbody td{border-bottom:0;border-top:1px solid #EEF1F6}
+tbody tr.click:hover{background:#F8FAFD}
+tbody tr.sel,tbody tr[aria-selected="true"]{background:linear-gradient(90deg,rgba(228,83,108,.08),rgba(162,117,180,.06) 55%,transparent)}
+footer{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+#versao{font:500 11px var(--mono);letter-spacing:.08em;color:var(--steel);white-space:nowrap}
+@media (max-width:640px){.s-cab{padding:12px 16px}.s-cab .s-dir{margin-left:0;justify-content:flex-start;flex:1 1 100%;min-width:0}.s-cab .sync{white-space:normal;max-width:100%}.s-cab .mes-wrap{max-width:100%}nav.tabs.s-abas{padding:3px 16px 0;gap:18px}.s-faixa-titulo{padding:18px}.s-faixa-titulo h1{font-size:28px}}
 .sessao-u{display:inline-flex;align-items:center;gap:8px;font:600 12.5px var(--body);color:var(--ink)}
 .s-avatar{width:26px;height:26px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font:700 10.5px var(--body);background:var(--g-foco)}
 </style>
@@ -372,17 +453,15 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 </dialog>
 
 <header class="top" id="top">
-  <div class="top-in">
-    <div class="brand">
+  <div class="brand brand-canvas" aria-hidden="true">
       %%LOGOS%%
-    </div>
-    <div class="titles">
-      <p class="eyebrow">Telemetria · Excesso de velocidade</p>
-      <h1>Infrações de Velocidade</h1>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end">
+  </div>
+  <div class="s-cab">
+    %%LOGO%%
+    <span class="s-sep"></span>
+    <div class="s-nome">Gestão de Frota<b>Infrações de velocidade</b></div>
+    <div class="s-dir">
       <div class="mes-wrap">
-        <span class="dot"></span>
         <label for="mes">Mês</label>
         <select id="mes" aria-label="Selecionar mês"></select>
       </div>
@@ -391,7 +470,8 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
       <div class="sessao-u" id="sessao" hidden><span class="s-avatar" id="sessao-ini"></span><span id="sessao-nome"></span><button class="linkbtn" type="button" id="btn-sair" title="Encerrar a sessão neste computador">Sair</button></div>
     </div>
   </div>
-  <nav class="tabs" role="tablist">
+  <div class="s-linha"></div>
+  <nav class="tabs s-abas" role="tablist" aria-label="Telas do painel">
     <button class="tab" role="tab" id="tab-geral" aria-selected="true" aria-controls="v-geral">Visão geral</button>
     <button class="tab" role="tab" id="tab-mot" aria-selected="false" aria-controls="v-mot">Motorista</button>
     <button class="tab" role="tab" id="tab-hist" aria-selected="false" aria-controls="v-hist">Histórico</button>
@@ -408,6 +488,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
   <div id="bkpc-aviso"></div>
   <!-- VISÃO GERAL -->
   <section id="v-geral" role="tabpanel" aria-labelledby="tab-geral">
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Visão geral</h1><p>Situação de cada motorista no mês: picos, penalidades e envios.</p></div><div class="s-acoes"><button class="btn vidro" type="button" data-goto="imp">Importar planilha</button></div></div>
     <div id="geral-empty" class="card empty sec" hidden>
       <div class="big">Nenhuma planilha importada ainda</div>
       <p>O painel calcula advertências, suspensões e términos de contrato a partir das planilhas de infrações de velocidade exportadas da telemetria (seco e chuva). Importe o primeiro mês para começar.</p>
@@ -451,6 +532,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 
   <!-- MOTORISTA -->
   <section id="v-mot" role="tabpanel" aria-labelledby="tab-mot" hidden>
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Ficha do motorista</h1><p>Picos do mês, anulações, comunicado por WhatsApp e e-mail ao RH.</p></div></div>
     <div class="msg info ficha-uso" id="ficha-uso" role="status" hidden><span class="txt"></span></div>
     <div id="mot-empty" class="card empty sec" hidden>
       <div class="big">Sem motoristas neste mês</div>
@@ -553,6 +635,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 
   <!-- CADASTRO -->
   <section id="v-hist" role="tabpanel" aria-labelledby="tab-hist" hidden>
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Histórico</h1><p>Cada motorista mês a mês, com o envio de cada penalidade.</p></div></div>
     <div class="sec">
       <div class="sec-h"><h2>Histórico dos motoristas</h2><span class="sec-note" id="hist-note"></span></div>
       <div class="tools">
@@ -571,6 +654,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
   </section>
 
   <section id="v-cad" role="tabpanel" aria-labelledby="tab-cad" hidden>
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Cadastro de motoristas</h1><p>Código, situação e celular de cada motorista, e o e-mail do RH.</p></div></div>
     <div class="sec">
       <div class="sec-h"><h2 id="cad-title">Cadastrar motorista</h2><span class="sec-note">Para corrigir um motorista sem esperar o próximo PDF</span></div>
       <div id="cad-ro" class="msg info" hidden>Só quem tem permissão de edição consegue alterar o cadastro.</div>
@@ -634,6 +718,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 
   <!-- IMPORTAR -->
   <section id="v-imp" role="tabpanel" aria-labelledby="tab-imp" hidden>
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Importar planilhas</h1><p>Planilhas de excesso de velocidade da telemetria (seco e chuva) e backup.</p></div></div>
     <div class="sec">
       <div class="sec-h"><h2>Importar planilhas da telemetria</h2><span class="sec-note">Formato .xlsx, aba "Infrações de Velocidade"</span></div>
       <div id="imp-ro" class="msg info" hidden>Você pode consultar o painel, mas só quem tem permissão de edição consegue importar ou remover meses.</div>
@@ -672,6 +757,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 
   <!-- REGRAS -->
   <section id="v-cfg" role="tabpanel" aria-labelledby="tab-cfg" hidden>
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Configurações</h1><p>Sua senha e, para administradores, usuários e histórico de acessos.</p></div></div>
     <div class="sec" id="cfg-minha-sec">
       <div class="sec-h"><h2>Minha senha</h2><span class="sec-note" id="cfg-eu"></span></div>
       <form class="card pad cfg-form" id="cfg-minha" autocomplete="off">
@@ -700,6 +786,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
   </section>
 
   <section id="v-reg" role="tabpanel" aria-labelledby="tab-reg" hidden>
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Regras</h1><p>Faixas de velocidade, tolerâncias e escalada das penalidades.</p></div></div>
     <div class="sec">
       <div class="sec-h"><h2>Faixas de velocidade e tolerância mensal</h2><span class="sec-note">Contagem de picos por motorista, por mês</span></div>
       <div class="rules-grid" id="r-faixas"></div>
@@ -716,7 +803,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
     </div>
   </section>
 
-  <footer id="foot">Fonte: planilhas "Infrações de Velocidade" da telemetria, importadas diariamente no painel. Os eventos ficam salvos e são vistos por todos que abrem este painel; o cadastro dos motoristas e o registro de comunicados só aparecem para quem pode editar.</footer>
+  <footer id="foot"><span>Fonte: planilhas "Infrações de Velocidade" da telemetria, importadas no painel. Os dados ficam na pasta Sistema do canal Infrações de velocidade.</span><span id="versao">Versão __VERSAO__</span></footer>
 </main>
 <div class="tip" id="tip" hidden></div>
 
@@ -1022,7 +1109,7 @@ const store = {
       try{
         const w = await (await pasta.dados.getFileHandle(pasta.disp+'.json', {create:true})).createWritable();
         await w.write(corpo); await w.close();
-        pasta.falhaGravar = '';
+        pasta.falhaGravar = ''; pasta.salvoEm = new Date();
         this._backupDiario();
       }catch(e){
         pasta.falhaGravar = (e && (e.message||e.name)) || 'erro';
@@ -1515,9 +1602,10 @@ function render(){
   const ultimo = meses.length ? A.ate[meses[meses.length-1]] : '';
   const ateTxt = ultimo ? 'Dados até '+dataBR(ultimo).slice(0,10) : 'Sem dados';
   if(store.mode==='db') setSync('on', ateTxt+' · compartilhado');
-  else if(store.mode==='pasta') setSync(pasta.falhaGravar||pasta.erroLer ? 'err' : 'on', ateTxt+' · pasta da equipe'+(pasta.ultimaLeitura?' · sincronizado '+pasta.ultimaLeitura.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):''));
-  else if(store.mode==='local') setSync('local', ateTxt+' · salvo só neste navegador');
+  else if(store.mode==='pasta') setSync(pasta.falhaGravar||pasta.erroLer ? 'err' : 'on', pasta.falhaGravar ? 'SharePoint: não foi possível salvar' : pasta.erroLer ? 'SharePoint: clique para reconectar' : 'SharePoint: salvo em '+(pasta.salvoEm||pasta.ultimaLeitura||new Date()).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
+  else if(store.mode==='local') setSync('local', 'Nenhuma pasta escolhida. Os dados ficam só neste navegador.');
   else if(store.mode==='semdb') setSync('err', 'Sem acesso aos dados da equipe');
+  document.querySelectorAll('.fx-mes').forEach(el => { el.textContent = ui.mes ? 'Mês em uso · '+mesNome(ui.mes)+' · '+ateTxt.toLowerCase() : 'Nenhuma planilha importada'; });
   const avPasta = renderPasta();
   $('#modo-aviso').innerHTML = avPasta || (store.mode==='semdb' ? '<div class="aviso-topo" role="alert" style="background:var(--sus-bg);border-color:rgba(221,70,99,.4)"><span><b style="color:var(--sus)">O painel não conseguiu acessar os dados compartilhados da equipe.</b> Nada pode ser importado ou salvo agora. Recarregue a página; se continuar, confira se você entrou com a sua conta do claude.ai e se o painel foi compartilhado com você.</span></div>' : '');
   renderOnline();
