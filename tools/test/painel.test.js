@@ -823,6 +823,13 @@ teste('design: cabeçalho e abas do padrão', async p => {
   ok((await p.textContent('#v-geral .s-faixa-titulo small')).includes('Setembro 2026'), 'mês em uso na faixa');
 });
 
+teste('design: favicon do padrão (faixas da logo)', async p => {
+  const svg = await p.getAttribute('link[rel="icon"][type="image/svg+xml"]', 'href');
+  ok(svg && svg.startsWith('data:image/svg+xml;base64,'), 'svg embutido');
+  ok(Buffer.from(svg.split(',')[1], 'base64').toString().includes('#D84864'), 'faixas da logo');
+  ok(await p.$('link[rel="icon"][sizes="32x32"]'), 'png 32 px');
+});
+
 teste('design: sem rolagem lateral em 390px', async p => {
   await semear(p, {meses:{'2026-09-seco': mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 36, 92))}});
   await p.setViewportSize({width:390, height:800});

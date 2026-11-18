@@ -13,7 +13,9 @@ src = (ROOT / 'src/painel.html').read_text(encoding='utf-8')
 logos = ('<img src="data:image/png;base64,%s" alt="Grupo Dínamo">\n      <span class="sep"></span>\n'
          '      <img src="data:image/png;base64,%s" alt="Tóliman Transportes">') % (
     b64('assets/logo-grupo-dinamo.png'), b64('assets/logo-toliman-transportes.png'))
-icon = '<link rel="icon" type="image/png" href="data:image/png;base64,%s">' % b64('assets/favicon.png')
+# favicon do padrão (faixas da logo), do artefato Layout Base
+icon = ('<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,%s">\n'
+        '<link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,%s">') % (b64('assets/favicon.svg'), b64('assets/favicon-32.png'))
 logo = '<img src="data:image/png;base64,%s" alt="Grupo Dínamo · Tóliman Transportes">' % b64('assets/logo.png')
 # fontes do padrão (Barlow Condensed, IBM Plex Sans e IBM Plex Mono), embutidas para abrir sem internet
 FONTES = [('Barlow Condensed', 'barlow-condensed', (500, 600, 700)), ('IBM Plex Sans', 'ibm-plex-sans', (400, 500, 600, 700)), ('IBM Plex Mono', 'ibm-plex-mono', (400, 500, 600))]
