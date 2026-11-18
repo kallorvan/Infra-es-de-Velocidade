@@ -484,6 +484,19 @@ teste('pasta: pasta com outro nome mostra o aviso e Usar esta pasta segue', asyn
   await p.waitForFunction(() => __painel.store.mode === 'pasta');
 });
 
+teste('pasta: "Usar esta pasta" fica lembrado ao reabrir', async p => {
+  await viaHttp(p); await limparOpfs(p);
+  await opfs.escrever(p, 'Outra/x.txt', 'oi');
+  await prepPasta(p, 'pcana', '', {dir:'Outra', nome:'Ana Souza'}); await p.reload();
+  await p.waitForFunction(() => window.__painel && __painel.store.mode !== 'loading');
+  await p.evaluate(() => __painel.store.conectarPasta());
+  await p.click('[data-pasta="usar"]');
+  await p.waitForFunction(() => __painel.store.mode === 'pasta');
+  // ao reabrir, o painel chama conectarPasta com o atalho salvo (reler o atalho OPFS derruba este Chromium de teste)
+  igual(await p.evaluate(() => __painel.store.conectarPasta(__painel.pasta.dir)), true);
+  igual(await p.evaluate(() => __painel.pasta.estado), 'ok', 'sem o aviso de novo');
+});
+
 teste('pasta: pasta do canal com "Dados do painel" pede a renomeação', async p => {
   await viaHttp(p); await limparOpfs(p);
   await opfs.escrever(p, 'Equipe/Dados do painel/dados/pcvelho.json', '{}');

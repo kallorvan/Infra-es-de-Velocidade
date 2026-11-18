@@ -1022,6 +1022,9 @@ const store = {
         if(perm!=='granted') throw {code:'permissao', message:'o navegador não liberou a gravação na pasta'};
       }
       pasta.dir = h; pasta.nomePasta = h.name;
+      // "Usar esta pasta" fica lembrado para a pasta escolhida
+      if(usar) lsSet('infra-vel-pasta-usar', h.name);
+      else if(lsGet('infra-vel-pasta-usar')===h.name) usar = true;
       if(!usar){
         const av = await avisoPasta(h);
         if(av){ pasta.estado = 'aviso-pasta'; pasta.aviso = av; pasta.erro = ''; this.onChange && this.onChange(); return false; }
