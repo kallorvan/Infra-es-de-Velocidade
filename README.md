@@ -16,22 +16,46 @@ Painel HTML que lê as planilhas "Infrações de Velocidade" da telemetria (seco
 - **Comunicado por WhatsApp** (aba Motorista ou botão "Enviar" na visão geral): gera uma imagem JPEG com o layout do painel, com **só os picos do mês** (sem advertência, suspensão, término nem acumulado: a penalidade é comunicada ao motorista pelo RH). Tipos: Picos do mês, Alerta preventivo (a partir de 80% da tolerância) ou Resumo do mês. Baixe ou copie a imagem e abra a conversa (`wa.me`, com um texto curto) para anexá-la; abrir a conversa registra o envio; os picos ou o alerta já registrados deixam de aparecer como pendentes até surgir uma penalidade nova no mês.
 - **E-mail ao RH** (aba Motorista ou botão "Abrir" na coluna Comunicado): para advertência, suspensão e término. O painel monta para, cópia, assunto e mensagem. **Abrir no Outlook (.eml)** baixa o e-mail pronto, com a imagem completa (picos, penalidade e acumulado) anexada: abra o arquivo no Outlook e clique em Enviar. Também dá para copiar os campos e usar **Baixar imagem completa**. "Marcar como enviado" tira a pendência. O e-mail do RH fica em Cadastro de motoristas → E-mail do RH.
 - **Motoristas inativos**: envio por WhatsApp e e-mail ao RH bloqueado enquanto o cadastro estiver inativo.
-- **Pasta da equipe (Teams/SharePoint)**: abra o `Infrações de velocidade.html` da pasta sincronizada no Chrome ou Edge. Na primeira vez, informe seu nome e clique em "Conectar pasta", escolhendo a pasta onde está o arquivo. O painel cria nela a pasta `Dados do painel` e grava tudo lá:
-  - `dados/<computador>.json`: cada computador grava só o próprio arquivo, com a versão mais recente dos registros que mudou. O painel lê os arquivos de todos a cada 8 segundos e junta: vale a versão mais recente de cada registro, e os eventos de um mês importado por duas pessoas ao mesmo tempo são somados sem duplicar. Como ninguém grava no arquivo de outro, o OneDrive não cria cópias em conflito.
-  - `online/<computador>.json`: sinal de presença, renovado a cada 30 segundos. O topo do painel mostra quem está usando agora (online nos últimos 2,5 minutos); "trocar" muda o seu nome.
-  - `backups/`: um backup completo automático por dia, guardando os 30 mais recentes.
-  - O que estava só no navegador antes de conectar é levado para a pasta na primeira conexão, sem passar por cima do que já está lá. Ao reabrir, o navegador pode pedir para "Reconectar pasta" (um clique). Firefox e Safari não gravam em pasta: nesses o painel avisa e guarda só no navegador.
+- **Pasta Sistema (Teams/SharePoint)**: o painel segue o [Padrão de Sistemas Tóliman](https://claude.ai/artifact/NiiyT3so8rej7pLiy84L5M). O arquivo fica na pasta **Sistema** do canal Infrações de velocidade e grava tudo nela, sem servidor:
+  - `dados/<id do navegador>.json`: cada navegador grava só o próprio arquivo (versão 2: `versao`, `geradoEm`, `origem`, `usuario`, `cols`), cerca de 2 s depois de cada alteração. A cada 20 s (e ao voltar para a aba) o painel lê os arquivos dos colegas e junta: vale a versão mais recente de cada registro, e os eventos de um mês importado por duas pessoas ao mesmo tempo são somados sem duplicar. Arquivos da versão 1 (pasta antiga) continuam sendo lidos.
+  - `presenca/<id>.json`: quem está online (visto nos últimos 3 minutos), em qual ficha e desde quando.
+  - `usuarios/<login>.json`: um por pessoa, com a senha só como hash (PBKDF2-SHA256, 150 mil iterações).
+  - `historico/AAAA-MM_<id>.json`: entradas, senhas erradas, trocas de senha, bloqueios e cadastros. Só administradores consultam (Configurações).
+  - `backups/Infracoes-de-Velocidade_dados_AAAA-MM-DD_<login>.json`: uma cópia por dia de cada pessoa. Depois de 60 dias fica só a primeira de cada mês (cada navegador limpa só as do próprio usuário).
+  - Se a pasta escolhida não se chama Sistema (ou não tem a estrutura esperada), o painel avisa antes de gravar, com "Escolher outra pasta" e "Usar esta pasta".
+- **Entrar**: o painel fica fechado até conectar a pasta e entrar com usuário e senha (Esc não fecha a janela). A primeira pessoa numa pasta sem usuários cria o acesso e vira administradora. Administradores cadastram colegas com senha provisória (trocada na primeira entrada) e redefinem senhas em **Configurações › Usuários e senhas**. Depois de 20 minutos sem uso a sessão bloqueia e pede só a senha. Mantenha sempre **pelo menos dois administradores**.
+- **Ficha em uso**: quem abre primeiro a ficha de um motorista (aba Motorista) fica com ela. Os colegas veem "em uso por" e não conseguem anular nem marcar envios até ela ser liberada (troca de motorista, 20 minutos parado ou painel fechado). Se o colega alterou a ficha e o arquivo dele ainda não chegou, aparece "Aguardando chegar pelo OneDrive…" com "Abrir assim mesmo".
+- **Versão**: o rodapé mostra `Versão vAAAA.MM.DD` (data do build). Para atualizar, substitua o HTML na pasta Sistema e aperte F5 em quem estiver com o painel aberto.
+
+## Preparar o computador (uma vez em cada computador)
+
+1. No Teams: Equipe GR › canal **Infrações de velocidade** › Arquivos › pasta **Sistema** › **Adicionar atalho ao OneDrive**.
+2. No Explorador de Arquivos, botão direito na pasta › **Sempre manter neste dispositivo**.
+3. Abra o `Infrações de velocidade.html` sempre por essa pasta, no Chrome ou no Edge, clique em **Conectar a pasta**, escolha a mesma pasta **Sistema** e entre com o seu usuário.
+
+## Migrar da pasta "Dados do painel" (uma vez)
+
+Até novembro/2026 os dados ficavam em `Dados do painel`. No Teams, renomeie essa pasta para **Sistema** e mova o `Infrações de velocidade.html` para dentro dela. Nada se perde: `dados/` e `backups/` continuam valendo e os arquivos antigos são lidos. Quem conectar a pasta do canal recebe um aviso explicando essa troca. Depois, o primeiro a entrar cria o acesso (vira administrador) e cadastra os colegas.
+
+## Férias e substituição
+
+- **Quem vai sair:** confira no topo "SharePoint: salvo em …" com a hora de agora, confira que o OneDrive não tem arquivos pendentes e feche o painel (libera a ficha que estava aberta).
+- **Quem cobre:** tenha acesso ao canal e um usuário no painel, abra pela mesma pasta Sistema e entre. Os dados chegam sozinhos, em até um minuto.
+- **Esqueceu a senha?** Outro administrador redefine em Configurações › Usuários e senhas. Por isso o painel tem sempre pelo menos dois administradores.
+
+## Mais funções
+
 - **Anular picos** (aba Motorista › Eventos do mês): marque os picos causados por falha no caminhão ou erro de leitura da SASCAR, escolha o motivo (Falha no caminhão, Erro de leitura SASCAR ou Outro, este com observação obrigatória) e confirme. A planilha não muda: o pico fica riscado, com motivo, quem anulou e quando, e deixa de contar nas faixas, gráficos e penalidades; o acumulado dos meses seguintes é refeito. A prévia mostra o efeito antes de salvar. "Desfazer" volta atrás.
 - **Histórico** (aba própria): uma linha por motorista e uma coluna por mês, com a situação do mês, picos anulados (⊘) e o envio: **M** (picos ao motorista) e **RH** (penalidade ao RH), em verde (enviado), vermelho (pendente), âmbar (retificar) ou cinza (bloqueado). Busca por nome, placa ou código; filtros Com pendência, Com penalidade, Com anulação e Término. Clicar no nome ou no mês abre a ficha.
 - **Pendências de envio**: faixa no topo com as penalidades de qualquer mês ainda não enviadas ao motorista ou ao RH, e as retificações. "Ver" abre o Histórico filtrado. Cadastro inativo não conta. Comunicado já entregue por fora do painel: "Marcar como enviado (fora do painel)" no quadro de WhatsApp.
 - **Retificação**: se uma anulação muda uma penalidade já enviada (dados novos do mesmo mês que aumentam a penalidade geram uma pendência normal, não retificação), o canal que a recebeu fica como "Retificar". O quadro do RH monta o e-mail de retificação (antes, depois e picos anulados) e o WhatsApp oferece o tipo "Picos corrigidos", com a imagem de picos já recalculada.
-- **Backup completo** (aba Importar planilhas): um .json com todos os meses, cadastro, envios e e-mail do RH. Com a pasta conectada, é feito sozinho todo dia em `Dados do painel/backups` (o botão grava outro na mesma pasta). Sem a pasta, o arquivo é baixado e o painel avisa quando um mês fecha sem backup ou o último tem 7 dias ou mais. "Restaurar backup" traz tudo de volta sem apagar o que já está no painel.
+- **Backup completo** (aba Importar planilhas): um .json com todos os meses, cadastro, envios e e-mail do RH. Com a pasta conectada, é feito sozinho todo dia em `Sistema/backups` (o botão atualiza a sua cópia do dia). Sem a pasta, o arquivo é baixado e o painel avisa quando um mês fecha sem backup ou o último tem 7 dias ou mais. "Restaurar backup" traz tudo de volta sem apagar o que já está no painel.
 - No artefato do claude.ai, cadastro, e-mail do RH e registro de comunicados só podem ser lidos por quem tem acesso de Contribuidor ou acima.
 
 - `src/painel.html` — código-fonte do painel (logos entram no build).
 - `assets/` — logos Grupo Dínamo / Tóliman e ícone.
-- `tools/test/painel.test.js` — testes automáticos (Playwright, dados fictícios): `python3 tools/build.py && node tools/test/painel.test.js`. O teste de importação precisa de `tools/test/.cache/xlsx.full.min.js` (`npm pack xlsx@0.18.5` e extraia `package/dist/xlsx.full.min.js`).
-- `tools/build.py` — gera `Infrações de velocidade.html` (abre direto no navegador; dados ficam salvos no próprio navegador) e `dist/artefato.html` (versão publicada no claude.ai; dados ficam no banco compartilhado do artefato).
+- `tools/test/painel.test.js` — testes automáticos (Playwright, dados fictícios; pasta simulada com OPFS, login e duas pessoas na mesma pasta): `python3 tools/build.py && node tools/test/painel.test.js`. O teste de importação precisa de `tools/test/.cache/xlsx.full.min.js` (`npm pack xlsx@0.18.5` e extraia `package/dist/xlsx.full.min.js`).
+- `tools/build.py` — embute logos e fontes (Barlow Condensed, IBM Plex Sans e Mono, em `assets/fonts/`), grava a versão do dia e gera `Infrações de velocidade.html` (arquivo único, abre sem internet) e `dist/artefato.html` (versão publicada no claude.ai; dados ficam no banco compartilhado do artefato).
 
 ## Regras aplicadas
 

@@ -1,17 +1,18 @@
 <title>Infrações de Velocidade · Grupo Dínamo</title>
 %%ICON%%
-<meta name="theme-color" content="#1C2543">
+<meta name="theme-color" content="#112346">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&display=swap" rel="stylesheet">
+<style>%%FONTES%%</style>
 <style>
 /* Layout: cabeçalho fixo com marcas + abas; painel operacional em cartões sobre fundo papel,
    mesma identidade do painel "Produtividade de Motoristas" (visual claro único, por escolha). */
 :root{
   color-scheme:light;
-  --ink:#1C2543; --ink2:#363E58; --ink3:#5C6486;
-  --coral:#DD4663; --mauve:#AE82B1; --sand:#F4D38D; --rose:#E88A9C;
-  --paper:#EFF0F5; --card:#FFFFFF; --line:#DCDEE8; --muted:#767B8D; --track:#E7E9F1; --track-ink:#B9BDCC; --hover:#F6F7FB;
+  --ink:#0B1730; --ink2:#1D2644; --ink3:#2B3A5C;
+  --coral:#E4536C; --mauve:#A275B4; --sand:#F5CE7A; --rose:#E88A9C;
+  --paper:#EFF2F7; --card:#FFFFFF; --line:#DCE3ED; --muted:#6B7A94; --track:#E7EBF2; --track-ink:#B9C2D2; --hover:#F8FAFD;
   --ok:#1E8E5A; --ok-bg:rgba(30,142,90,.12); --wa:#128C4A; --wa-d:#0B6B37;
   --pre:#C99A2E; --pre-bg:rgba(244,211,141,.45); --pre-ink:#6B4E0E;
   --b1:#8B5BB0; --b2:#E0405F; --b3:#9A0F3A;
@@ -19,7 +20,7 @@
   --sus:#C22C4C; --sus-bg:rgba(221,70,99,.14);
   --ter:#FFFFFF; --ter-bg:#7A1030;
   --r:10px; --maxw:1360px;
-  --f-ui:'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-ui:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
   --f-num:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
 }
 *{box-sizing:border-box}
@@ -308,34 +309,176 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
   .brand img{height:32px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* Tela de entrada no Padrão de Sistemas Tóliman, com os efeitos de gradiente */
+:root{
+  --accent:#E4536C; --accent-d:#C63E56; --navy:#112346; --navy3:#2B3A5C; --plum:#8E5AA8; --steel:#6B7A94;
+  --ouro:#F5CE7A; --lilas:#A275B4;
+  --disp:'Barlow Condensed','Archivo',sans-serif; --body:'IBM Plex Sans','Archivo',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --g-logo:linear-gradient(90deg,var(--accent),var(--ouro) 50%,var(--lilas));
+  --g-borda:linear-gradient(135deg,rgba(228,83,108,.9),rgba(245,206,122,.9),rgba(162,117,180,.9));
+  --g-cta:linear-gradient(135deg,#EE6A80,var(--accent) 45%,var(--accent-d));
+  --g-foco:linear-gradient(135deg,var(--accent),var(--lilas));
+  --g-titulo:linear-gradient(90deg,#0B1730,var(--navy3) 60%,var(--plum));
+  --g-noite:radial-gradient(60% 70% at 12% 18%,rgba(228,83,108,.38),transparent 60%),radial-gradient(55% 65% at 90% 85%,rgba(162,117,180,.45),transparent 60%),radial-gradient(35% 40% at 72% 8%,rgba(245,206,122,.20),transparent 60%),linear-gradient(135deg,#08122A,var(--navy) 50%,var(--navy3));
+  --listras:repeating-linear-gradient(115deg,transparent 0 120px,rgba(255,255,255,.025) 120px 180px);
+}
+#dlgEntrada{width:min(440px,calc(100vw - 32px));padding:0;border-radius:18px;color:#0B1730;overflow:hidden;font-family:var(--body);
+  border:1.5px solid transparent;background:linear-gradient(#fff,#fff) padding-box,var(--g-borda) border-box;
+  box-shadow:0 30px 80px rgba(3,8,25,.55),0 0 0 8px rgba(255,255,255,.04)}
+#dlgEntrada::backdrop{background:var(--listras),var(--g-noite)}
+#dlgEntrada .faixa{height:6px;background:var(--g-logo)}
+#dlgEntrada .ent-head{padding:22px 24px 6px;background:linear-gradient(180deg,#F7F8FC,#fff)}
+#dlgEntrada .ent-head img{display:block;height:30px;width:auto;margin-bottom:16px}
+#dlgEntrada .ent-head p{margin:0;font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--steel)}
+#dlgEntrada .ent-head h2{margin:4px 0 0;font:700 28px/1.05 var(--disp);text-transform:uppercase;background:var(--g-titulo);-webkit-background-clip:text;background-clip:text;color:transparent}
+#dlgEntrada .ent-corpo{padding:8px 24px 24px;display:grid;gap:12px}
+#dlgEntrada h3{margin:6px 0 0;font:600 16px var(--body)}
+#dlgEntrada p{margin:0;font-size:14px;line-height:1.5}
+#dlgEntrada form{display:grid;gap:12px}
+#dlgEntrada label{display:block;font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin-bottom:4px}
+#dlgEntrada input,#dlgEntrada select{width:100%;font:inherit;font-size:14px;color:#0B1730;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:linear-gradient(180deg,#fff,#FAFBFD)}
+#dlgEntrada input:focus,#dlgEntrada select:focus{outline:none;border-color:transparent;background:linear-gradient(#fff,#fff) padding-box,var(--g-foco) border-box;box-shadow:0 0 0 4px rgba(162,117,180,.16)}
+#dlgEntrada button:focus-visible{outline:2px solid var(--plum);outline-offset:1px}
+#dlgEntrada .acoes{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#dlgEntrada button{font:600 13px var(--body);border:1px solid var(--line);background:#fff;color:#0B1730;border-radius:999px;padding:9px 16px;cursor:pointer}
+#dlgEntrada button:hover{border-color:var(--navy)}
+#dlgEntrada .cta{flex:1;background:var(--g-cta);border-color:transparent;color:#fff;font-weight:700;font-size:14px;padding:12px 18px;box-shadow:0 10px 24px rgba(228,83,108,.38),inset 0 1px 0 rgba(255,255,255,.35)}
+#dlgEntrada .cta:hover{filter:brightness(1.05);border-color:transparent}
+#dlgEntrada .dica{font-size:12.5px;color:var(--steel)}
+#dlgEntrada .msg{padding:10px 14px;border-radius:8px;font-size:13px;margin:0}
+#dlgEntrada .msg.err{background:#FBE9EC;color:var(--accent-d)}
+#dlgEntrada .msg.ok{background:#E5F5EC;color:#1e7a46}
+.cfg-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end}
+.cfg-form .actions{grid-column:1/-1;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.cfg-chk{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600}
+#cfg-usu td .linkbtn+.linkbtn{margin-left:10px}
+.ficha-uso{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
+.ficha-bloq input[data-anul],.ficha-bloq #anul-all,.ficha-bloq [data-anul-desfazer],.ficha-bloq #anul-bar{display:none!important}
+/* ===== Padrão de Sistemas Tóliman: componentes e efeitos de gradiente ===== */
+:root{--r-campo:10px;--r-card:12px;--r-kpi:14px;--r-faixa:16px;--r-janela:18px;--r:12px;
+  --s1:0 6px 18px rgba(17,35,70,.06);--s2:0 18px 40px rgba(17,35,70,.25);--s3:0 30px 80px rgba(3,8,25,.55);
+  --ok-p:#1E7A46;--ok-pbg:#E5F5EC;--aviso:#8A5E00;--aviso-bg:#FFF4DC;--erro-bg:#FBE9EC;--info:#1D2644;--info-bg:#EAF0F8}
+body{font-family:var(--body);font-variation-settings:normal}
+h1,h2,.empty .big{font-family:var(--disp);font-variation-settings:normal}
+/* cabeçalho e abas */
+header.top{background:#fff;border-bottom:0}
+.s-cab{position:relative;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding:14px 24px;max-width:var(--maxw);margin:0 auto}
+.s-linha{height:3px;background:var(--g-logo)}
+.s-cab img{height:28px;width:auto;display:block}
+.s-cab .s-sep{width:1px;height:28px;background:var(--line)}
+.s-cab .s-nome{font:500 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--steel)}
+.s-cab .s-nome b{display:block;margin-top:3px;font:700 21px/1 var(--disp);letter-spacing:.01em;color:var(--ink);text-transform:uppercase}
+.s-cab .s-dir{margin-left:auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px 12px}
+.s-cab .sync,.s-cab .online{width:auto;margin:0}
+.s-situacao,.s-cab .sync{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;font:600 12px var(--body);color:var(--ink);background:#F2F5FA;border:1px solid var(--line);white-space:nowrap}
+.s-cab .sync .sd{width:8px;height:8px;background:#2EAF6A;box-shadow:0 0 0 3px rgba(46,175,106,.18)}
+.s-cab .sync.err .sd,.s-cab .sync.local .sd{background:var(--accent);box-shadow:0 0 0 3px rgba(228,83,108,.18)}
+.s-cab .mes-wrap{border-radius:999px}
+.s-cab .mes-wrap label{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--steel)}
+nav.tabs.s-abas{display:flex;gap:26px;padding:3px max(24px,calc((100% - var(--maxw))/2 + 24px)) 0;margin:0;background:#fff;border-bottom:1px solid var(--line);overflow-x:auto;max-width:none}
+.s-abas .tab{padding:12px 0 13px;font:600 13.5px var(--body);color:var(--steel)}
+.s-abas .tab:hover,.s-abas .tab[aria-selected="true"]{color:var(--ink)}
+.s-abas .tab[aria-selected="true"]::after{left:0;right:0;bottom:2px;height:3px;border-radius:3px;background:var(--g-foco)}
+.brand-canvas{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* faixa de título */
+.s-faixa-titulo{position:relative;overflow:hidden;display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px 24px;padding:22px 26px;margin-top:22px;border-radius:var(--r-faixa);color:#fff;background:var(--listras),var(--g-noite);box-shadow:var(--s2)}
+.s-faixa-titulo small{font:500 10.5px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.65)}
+.s-faixa-titulo h1{margin:6px 0 0;font:700 34px/1 var(--disp);text-transform:uppercase;letter-spacing:.01em;color:#fff}
+.s-faixa-titulo p{margin:8px 0 0;color:rgba(255,255,255,.75);max-width:560px;font-size:14px}
+.s-faixa-titulo .s-acoes{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+/* botões */
+.btn,.s-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:0 16px;border-radius:999px;font:600 13px var(--body);white-space:nowrap;text-decoration:none;
+  border:1px solid transparent;color:#fff;background:var(--g-cta);box-shadow:0 10px 24px rgba(228,83,108,.32),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn:hover{background:var(--g-cta);filter:brightness(1.05)}
+.btn.ghost{background:#fff;color:var(--ink);border-color:var(--line);box-shadow:none;filter:none}
+.btn.ghost:hover{border-color:var(--navy)}
+.btn.danger{background:#fff;color:var(--accent-d);border-color:rgba(198,62,86,.45);box-shadow:none}
+.btn.danger:hover{background:var(--erro-bg);border-color:var(--accent-d)}
+.btn.danger.armed{background:var(--accent-d);color:#fff}
+.btn.vidro{color:#fff;background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.28);box-shadow:none;backdrop-filter:blur(6px)}
+.btn.vidro:hover{background:rgba(255,255,255,.16)}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;filter:none}
+.btn:focus-visible,.linkbtn:focus-visible,.chip:focus-visible,.tab:focus-visible{outline:2px solid var(--plum);outline-offset:2px}
+.linkbtn{color:var(--accent-d)}
+.chip{border-radius:999px}
+.chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy)}
+/* campos */
+.fld label{font:500 10.5px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--steel)}
+.fld input,.fld textarea,input[type=search],select.inp,.mes-wrap select{border-radius:var(--r-campo);font-family:var(--body)}
+.fld input,.fld textarea,input[type=search],select.inp{min-height:42px;font-size:14px;background:linear-gradient(180deg,#fff,#FAFBFD)}
+.fld input:focus,.fld textarea:focus,input[type=search]:focus,select.inp:focus{outline:none;border-color:transparent;background:linear-gradient(#fff,#fff) padding-box,var(--g-foco) border-box;box-shadow:0 0 0 4px rgba(162,117,180,.16)}
+/* mensagens */
+.msg,.aviso-topo,.pend-alerta{border-radius:10px;font-size:13px;line-height:1.45}
+.msg.ok{background:var(--ok-pbg);color:var(--ok-p)}
+.msg.err{background:var(--erro-bg);color:var(--accent-d)}
+.msg.info{background:var(--info-bg);color:var(--info)}
+.aviso-topo{background:var(--aviso-bg);border-color:rgba(138,94,0,.25)}
+.aviso-topo b{color:var(--aviso)}
+.pend-alerta{background:var(--erro-bg);border-color:rgba(198,62,86,.3)}
+/* selos de situação: cor sólida e clara, sem degradê */
+.st{font:600 11.5px var(--body);padding:3px 10px}
+/* cartões, números e tabelas */
+.card{border-radius:var(--r-kpi);box-shadow:var(--s1)}
+h2{font:700 18px var(--disp);letter-spacing:.02em;text-transform:uppercase;color:var(--ink)}
+.kpi{border-radius:var(--r-kpi);border:1px solid transparent;background:linear-gradient(#fff,#fff) padding-box,linear-gradient(160deg,rgba(162,117,180,.45),var(--line) 40%) border-box;box-shadow:var(--s1)}
+.kpi::before{left:0;right:0;top:0;bottom:auto;width:auto;height:3px;background:var(--g-logo)}
+.kpi.k-b1::before,.kpi.k-ch::before,.kpi.k-adv::before,.kpi.k-sus::before,.kpi.k-ter::before,.kpi.k-com::before{background:var(--g-logo)}
+.kpi .lab{font:500 10.5px var(--mono);letter-spacing:.12em;color:var(--steel)}
+.kpi .val{font:700 38px/1 var(--disp);font-variant-numeric:tabular-nums;background:linear-gradient(90deg,var(--ink),var(--plum));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tbl-scroll{border-radius:var(--r-kpi);box-shadow:var(--s1);background:#fff}
+thead th{background:linear-gradient(180deg,#F7F8FC,#F0F3F8);color:var(--steel);font:500 10.5px var(--mono);letter-spacing:.1em;border-bottom:1px solid var(--line)}
+thead th.s:hover{background:#E9EDF5}
+tbody td{border-bottom:0;border-top:1px solid #EEF1F6}
+tbody tr.click:hover{background:#F8FAFD}
+tbody tr.sel,tbody tr[aria-selected="true"]{background:linear-gradient(90deg,rgba(228,83,108,.08),rgba(162,117,180,.06) 55%,transparent)}
+footer{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+#versao{font:500 11px var(--mono);letter-spacing:.08em;color:var(--steel);white-space:nowrap}
+@media (max-width:640px){.s-cab{padding:12px 16px}.s-cab .s-dir{margin-left:0;justify-content:flex-start;flex:1 1 100%;min-width:0}.s-cab .sync{white-space:normal;max-width:100%}.s-cab .mes-wrap{max-width:100%}nav.tabs.s-abas{padding:3px 16px 0;gap:18px}.s-faixa-titulo{padding:18px}.s-faixa-titulo h1{font-size:28px}}
+.sessao-u{display:inline-flex;align-items:center;gap:8px;font:600 12.5px var(--body);color:var(--ink)}
+.s-avatar{width:26px;height:26px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font:700 10.5px var(--body);background:var(--g-foco)}
 </style>
 
+<dialog id="dlgEntrada" aria-labelledby="entTitulo">
+  <div class="faixa"></div>
+  <div class="ent-head">
+    %%LOGO%%
+    <p>Tóliman Transportes · Infrações de velocidade</p>
+    <h2>Infrações de velocidade</h2>
+  </div>
+  <div class="ent-corpo">
+    <h3 id="entTitulo">Entrar</h3>
+    <div id="entMsg"></div>
+    <div id="entCorpo"></div>
+  </div>
+</dialog>
+
 <header class="top" id="top">
-  <div class="top-in">
-    <div class="brand">
+  <div class="brand brand-canvas" aria-hidden="true">
       %%LOGOS%%
-    </div>
-    <div class="titles">
-      <p class="eyebrow">Telemetria · Excesso de velocidade</p>
-      <h1>Infrações de Velocidade</h1>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end">
+  </div>
+  <div class="s-cab">
+    %%LOGO%%
+    <span class="s-sep"></span>
+    <div class="s-nome">Gestão de Frota<b>Infrações de velocidade</b></div>
+    <div class="s-dir">
       <div class="mes-wrap">
-        <span class="dot"></span>
         <label for="mes">Mês</label>
         <select id="mes" aria-label="Selecionar mês"></select>
       </div>
       <div class="sync" id="sync"><span class="sd"></span><span id="sync-t">Conectando…</span></div>
       <div class="online" id="online"></div>
+      <div class="sessao-u" id="sessao" hidden><span class="s-avatar" id="sessao-ini"></span><span id="sessao-nome"></span><button class="linkbtn" type="button" id="btn-sair" title="Encerrar a sessão neste computador">Sair</button></div>
     </div>
   </div>
-  <nav class="tabs" role="tablist">
+  <div class="s-linha"></div>
+  <nav class="tabs s-abas" role="tablist" aria-label="Telas do painel">
     <button class="tab" role="tab" id="tab-geral" aria-selected="true" aria-controls="v-geral">Visão geral</button>
     <button class="tab" role="tab" id="tab-mot" aria-selected="false" aria-controls="v-mot">Motorista</button>
     <button class="tab" role="tab" id="tab-hist" aria-selected="false" aria-controls="v-hist">Histórico</button>
     <button class="tab" role="tab" id="tab-cad" aria-selected="false" aria-controls="v-cad">Cadastro de motoristas</button>
     <button class="tab" role="tab" id="tab-imp" aria-selected="false" aria-controls="v-imp">Importar planilhas</button>
     <button class="tab" role="tab" id="tab-reg" aria-selected="false" aria-controls="v-reg">Regras</button>
+    <button class="tab" role="tab" id="tab-cfg" aria-selected="false" aria-controls="v-cfg" hidden>Configurações</button>
   </nav>
 </header>
 
@@ -345,6 +488,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
   <div id="bkpc-aviso"></div>
   <!-- VISÃO GERAL -->
   <section id="v-geral" role="tabpanel" aria-labelledby="tab-geral">
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Visão geral</h1><p>Situação de cada motorista no mês: picos, penalidades e envios.</p></div><div class="s-acoes"><button class="btn vidro" type="button" data-goto="imp">Importar planilha</button></div></div>
     <div id="geral-empty" class="card empty sec" hidden>
       <div class="big">Nenhuma planilha importada ainda</div>
       <p>O painel calcula advertências, suspensões e términos de contrato a partir das planilhas de infrações de velocidade exportadas da telemetria (seco e chuva). Importe o primeiro mês para começar.</p>
@@ -388,6 +532,8 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 
   <!-- MOTORISTA -->
   <section id="v-mot" role="tabpanel" aria-labelledby="tab-mot" hidden>
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Ficha do motorista</h1><p>Picos do mês, anulações, comunicado por WhatsApp e e-mail ao RH.</p></div></div>
+    <div class="msg info ficha-uso" id="ficha-uso" role="status" hidden><span class="txt"></span></div>
     <div id="mot-empty" class="card empty sec" hidden>
       <div class="big">Sem motoristas neste mês</div>
       <p>Importe as planilhas do mês para ver o histórico disciplinar de cada motorista.</p>
@@ -489,6 +635,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 
   <!-- CADASTRO -->
   <section id="v-hist" role="tabpanel" aria-labelledby="tab-hist" hidden>
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Histórico</h1><p>Cada motorista mês a mês, com o envio de cada penalidade.</p></div></div>
     <div class="sec">
       <div class="sec-h"><h2>Histórico dos motoristas</h2><span class="sec-note" id="hist-note"></span></div>
       <div class="tools">
@@ -507,6 +654,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
   </section>
 
   <section id="v-cad" role="tabpanel" aria-labelledby="tab-cad" hidden>
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Cadastro de motoristas</h1><p>Código, situação e celular de cada motorista, e o e-mail do RH.</p></div></div>
     <div class="sec">
       <div class="sec-h"><h2 id="cad-title">Cadastrar motorista</h2><span class="sec-note">Para corrigir um motorista sem esperar o próximo PDF</span></div>
       <div id="cad-ro" class="msg info" hidden>Só quem tem permissão de edição consegue alterar o cadastro.</div>
@@ -570,6 +718,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 
   <!-- IMPORTAR -->
   <section id="v-imp" role="tabpanel" aria-labelledby="tab-imp" hidden>
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Importar planilhas</h1><p>Planilhas de excesso de velocidade da telemetria (seco e chuva) e backup.</p></div></div>
     <div class="sec">
       <div class="sec-h"><h2>Importar planilhas da telemetria</h2><span class="sec-note">Formato .xlsx, aba "Infrações de Velocidade"</span></div>
       <div id="imp-ro" class="msg info" hidden>Você pode consultar o painel, mas só quem tem permissão de edição consegue importar ou remover meses.</div>
@@ -607,7 +756,37 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
   </section>
 
   <!-- REGRAS -->
+  <section id="v-cfg" role="tabpanel" aria-labelledby="tab-cfg" hidden>
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Configurações</h1><p>Sua senha e, para administradores, usuários e histórico de acessos.</p></div></div>
+    <div class="sec" id="cfg-minha-sec">
+      <div class="sec-h"><h2>Minha senha</h2><span class="sec-note" id="cfg-eu"></span></div>
+      <form class="card pad cfg-form" id="cfg-minha" autocomplete="off">
+        <div class="fld"><label for="cfg-atual">Senha atual</label><input type="password" id="cfg-atual" autocomplete="current-password"></div>
+        <div class="fld"><label for="cfg-nova">Nova senha (mínimo 6 caracteres)</label><input type="password" id="cfg-nova" autocomplete="new-password"></div>
+        <div class="fld"><label for="cfg-repete">Repita a nova senha</label><input type="password" id="cfg-repete" autocomplete="new-password"></div>
+        <div class="actions"><button class="btn" type="submit" id="cfg-minha-ok">Trocar minha senha</button><span class="sec-note" id="cfg-minha-msg" role="status"></span></div>
+      </form>
+    </div>
+    <div class="sec" id="cfg-usu-sec" hidden>
+      <div class="sec-h"><h2>Usuários e senhas</h2><span class="sec-note">Só administradores cadastram pessoas e redefinem senhas</span></div>
+      <div class="msg info" id="cfg-admin-aviso" hidden>Cadastre um segundo administrador para não perder o acesso em férias ou se alguém esquecer a senha.</div>
+      <form class="card pad cfg-form" id="cfg-novo" autocomplete="off">
+        <div class="fld"><label for="cfg-novo-nome">Nome</label><input id="cfg-novo-nome" maxlength="40" autocomplete="off"></div>
+        <div class="fld"><label for="cfg-novo-senha">Senha provisória (mínimo 6 caracteres)</label><input type="text" id="cfg-novo-senha" autocomplete="off"></div>
+        <label class="cfg-chk"><input type="checkbox" id="cfg-novo-admin"> Administrador</label>
+        <div class="actions"><button class="btn" type="submit" id="cfg-novo-ok">Cadastrar usuário</button></div>
+      </form>
+      <div class="sec-note" id="cfg-usu-msg" role="status" style="margin:10px 0"></div>
+      <div class="tbl-scroll"><table id="cfg-usu"><thead><tr><th>Nome</th><th>Login</th><th>Perfil</th><th>Situação</th><th>Última alteração</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="sec" id="cfg-hist-sec" hidden>
+      <div class="sec-h"><h2>Histórico de acessos</h2><span class="sec-note">Mês atual e anterior, de todos os computadores</span></div>
+      <div class="tbl-scroll"><table id="cfg-hist"><thead><tr><th>Quando</th><th>Pessoa</th><th>O que</th><th>Computador</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
   <section id="v-reg" role="tabpanel" aria-labelledby="tab-reg" hidden>
+    <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Regras</h1><p>Faixas de velocidade, tolerâncias e escalada das penalidades.</p></div></div>
     <div class="sec">
       <div class="sec-h"><h2>Faixas de velocidade e tolerância mensal</h2><span class="sec-note">Contagem de picos por motorista, por mês</span></div>
       <div class="rules-grid" id="r-faixas"></div>
@@ -624,7 +803,7 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
     </div>
   </section>
 
-  <footer id="foot">Fonte: planilhas "Infrações de Velocidade" da telemetria, importadas diariamente no painel. Os eventos ficam salvos e são vistos por todos que abrem este painel; o cadastro dos motoristas e o registro de comunicados só aparecem para quem pode editar.</footer>
+  <footer id="foot"><span>Fonte: planilhas "Infrações de Velocidade" da telemetria, importadas no painel. Os dados ficam na pasta Sistema do canal Infrações de velocidade.</span><span id="versao">Versão __VERSAO__</span></footer>
 </main>
 <div class="tip" id="tip" hidden></div>
 
@@ -679,13 +858,50 @@ const dataBR = iso => { const [d,t]=iso.split(' '); const [y,m,dd]=d.split('-');
 const COLECOES = ['meses','motoristas','comunicados','config','anulacoes'];
 const LS_KEY = c => c==='meses' ? 'infra-vel-meses-v1' : 'infra-vel-'+c+'-v1';
 
-/* Pasta da equipe (SharePoint/OneDrive sincronizado).
-   Cada computador grava só o próprio arquivo em "Dados do painel/dados/<dispositivo>.json", com a última versão
+/* Pasta Sistema do canal no Teams (SharePoint/OneDrive sincronizado), no Padrão de Sistemas Tóliman.
+   Cada navegador grava só o próprio arquivo em "Sistema/dados/<id do navegador>.json", com a última versão
    de cada registro que ele mudou e a hora da mudança. Ninguém escreve no arquivo de outro, então o OneDrive não
    gera conflito. Ao ler, o painel junta os arquivos de todos: vale a versão mais recente de cada registro e, nos
    meses, os eventos de todas as versões são somados sem duplicar. Exclusões ficam marcadas (registro vazio). */
-const PASTA_NOME = 'Dados do painel';
-const POLL_MS = 8000, VISTO_MS = 30000, ONLINE_MS = 150000, BKP_GUARDAR = 30;
+const PASTA_NOME = 'Sistema', PASTA_SUBS = ['usuarios', 'dados', 'historico'], PASTA_ANTIGA = 'Dados do painel';
+const NOME_SISTEMA = 'Infracoes-de-Velocidade';
+// tempos do padrão; nos testes, window.__tempos pode encurtar qualquer um
+const T = Object.assign({PARADO_MS:20*60000, PULSO_MS:20000, GRAVAR_MS:2000, ONLINE_MS:3*60000, CHECA_MS:30000}, (window.__teste && window.__tempos) || {});
+const BACKUP_DIAS = 60;
+const hojeISO = (d = new Date()) => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+// login = nome sem acento, em minúsculas e com hífen
+const loginDe = nome => norm(nome).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || 'sem-nome';
+// Nome das exportações: <sistema>_<conteúdo>_AAAA-MM-DD_a_AAAA-MM-DD.<ext>, sem acentos e sem espaços
+const NOME_EXPORT = 'infracoes-velocidade';
+const nomeExport = (conteudo, ini, fim, ext) => [NOME_EXPORT, loginDe(conteudo), ini===fim ? ini : ini+'_a_'+fim].join('_')+'.'+ext;
+const periodoMes = mes => { const [y, m] = mes.split('-').map(Number); return [mes+'-01', mes+'-'+String(new Date(y, m, 0).getDate()).padStart(2,'0')]; };
+const nomeBackupDia = (dia, login) => NOME_SISTEMA+'_dados_'+dia+'_'+login+'.json';
+// Limpeza dos backups: uma vez por dia, só os do próprio usuário.
+// Fica tudo dos últimos 60 dias; antes disso, só a primeira cópia de cada mês.
+async function limparBackups(hoje){
+  if(lsGet('infra-vel-limpeza')===hoje || !pasta.backups) return;
+  const meu = '_'+loginDe(pasta.usuario)+'.json', pre = NOME_SISTEMA+'_dados_';
+  const limite = hojeISO(new Date(new Date(hoje+'T12:00:00').getTime() - BACKUP_DIAS*864e5));
+  const porMes = {};
+  for await (const [nome, h] of pasta.backups.entries()){
+    if(h.kind!=='file' || !nome.startsWith(pre) || !nome.endsWith(meu)) continue;
+    const dia = nome.slice(pre.length, pre.length+10);
+    if(/^\d{4}-\d{2}-\d{2}$/.test(dia) && dia < limite) (porMes[dia.slice(0,7)] = porMes[dia.slice(0,7)] || []).push(nome);
+  }
+  for(const lista of Object.values(porMes)) for(const nome of lista.sort().slice(1)) try{ await pasta.backups.removeEntry(nome); }catch(e){}
+  lsSet('infra-vel-limpeza', hoje);
+}
+// Pasta errada: confere ao conectar, antes de gravar qualquer coisa ('' = pasta certa)
+async function avisoPasta(h){
+  const nomes = [];
+  for await (const [n] of h.entries()) nomes.push(n);
+  if(nomes.includes(PASTA_ANTIGA) && h.name!==PASTA_NOME) return {antiga:true, t:'Esta é a pasta do canal. Os dados do painel agora ficam na pasta Sistema: no Teams, renomeie a pasta Dados do painel para Sistema, coloque este arquivo dentro dela e conecte a pasta Sistema.'};
+  const estrutura = !nomes.length || PASTA_SUBS.some(n => nomes.includes(n));
+  if(h.name===PASTA_NOME && estrutura) return null;
+  return {t:'A pasta escolhida se chama '+h.name+'. Os dados do sistema ficam na pasta Sistema do canal. Escolha a pasta Sistema ou, se for esta mesmo, clique em Usar esta pasta.'};
+}
+// arquivo de dados: versão 2 (padrão) e versão 1 (painel antigo) têm "cols"
+const lerDados = j => ({cols:(j && j.cols) || {}, usuario:j && j.usuario});
 const lsGet = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
 const lsSet = (k, v) => { try{ localStorage.setItem(k, v); }catch(e){} };
 function idbHandle(op, val){
@@ -728,6 +944,7 @@ const pasta = {
   dir:null, raiz:null, dados:null, online:null, backups:null, nomePasta:'',
   disp:null, usuario:'', proprio:{cols:{}}, outros:{}, presenca:[], pend:null, gravando:null, timer:null, visto:null,
   estado:'nenhuma', erro:'', ultimaLeitura:null, falhaGravar:'',
+  sub(nome){ return pasta.raiz.getDirectoryHandle(nome, {create:true}); },
   suportado(){ return typeof window.showDirectoryPicker==='function' || typeof window.__escolherPasta==='function'; },
   dispositivo(){
     let d = lsGet('infra-vel-dispositivo');
@@ -769,7 +986,7 @@ const store = {
     } else {
       this.mode='local';
       COLECOES.forEach(col => { try{ this.data[col] = JSON.parse(localStorage.getItem(LS_KEY(col))||'{}')||{}; }catch(e){ this.data[col]={}; } });
-      pasta.usuario = lsGet('infra-vel-usuario') || '';
+      pasta.usuario = SEM_LOGIN ? (lsGet('infra-vel-usuario') || '') : '';
       if(!pasta.suportado()){ pasta.estado = 'sem-api'; onChange(); return; }
       onChange();
       let h = null; try{ h = await idbHandle('get'); }catch(e){}
@@ -777,13 +994,13 @@ const store = {
         pasta.nomePasta = h.name;
         let perm = 'granted';
         try{ if(typeof h.queryPermission==='function') perm = await h.queryPermission({mode:'readwrite'}); }catch(e){}
-        if(perm==='granted' && pasta.usuario) await this.conectarPasta(h);
+        if(perm==='granted' && (pasta.usuario || !SEM_LOGIN)) await this.conectarPasta(h);
         else { pasta.estado = 'reconectar'; pasta.dir = h; onChange(); }
       }
     }
   },
   // escolhe (ou reabre) a pasta do projeto e passa a gravar nela
-  async conectarPasta(h){
+  async conectarPasta(h, usar){
     try{
       if(!h){
         const escolher = window.__escolherPasta || (() => window.showDirectoryPicker({id:'infra-vel', mode:'readwrite'}));
@@ -796,37 +1013,24 @@ const store = {
         if(perm!=='granted') throw {code:'permissao', message:'o navegador não liberou a gravação na pasta'};
       }
       pasta.dir = h; pasta.nomePasta = h.name;
-      pasta.raiz = h.name===PASTA_NOME ? h : await h.getDirectoryHandle(PASTA_NOME, {create:true});
-      pasta.dados = await pasta.raiz.getDirectoryHandle('dados', {create:true});
-      pasta.online = await pasta.raiz.getDirectoryHandle('online', {create:true});
-      pasta.backups = await pasta.raiz.getDirectoryHandle('backups', {create:true});
+      // "Usar esta pasta" fica lembrado para a pasta escolhida
+      if(usar) lsSet('infra-vel-pasta-usar', h.name);
+      else if(lsGet('infra-vel-pasta-usar')===h.name) usar = true;
+      if(!usar){
+        const av = await avisoPasta(h);
+        if(av){ pasta.estado = 'aviso-pasta'; pasta.aviso = av; pasta.erro = ''; this.onChange && this.onChange(); return false; }
+      }
+      pasta.aviso = null;
+      pasta.raiz = h;
+      pasta.dados = await pasta.sub('dados');
+      pasta.online = await pasta.sub('presenca');
+      pasta.backups = await pasta.sub('backups');
+      await pasta.sub('usuarios'); await pasta.sub('historico');
       try{ await idbHandle('set', h); }catch(e){}
       pasta.disp = pasta.dispositivo();
-      pasta.proprio = {cols:{}}; pasta.outros = {};
-      try{
-        const f = await (await pasta.dados.getFileHandle(pasta.disp+'.json')).getFile();
-        const j = JSON.parse(await f.text()); if(j && j.cols) pasta.proprio = {cols:j.cols};
-      }catch(e){}
-      // na primeira conexão deste computador, leva o que estava só no navegador (com data antiga: o que já
-      // está na pasta prevalece, e o que foi apagado lá continua apagado)
-      if(lsGet('infra-vel-migrado-'+pasta.disp)!=='1'){
-        COLECOES.forEach(col => {
-          const c = pasta.proprio.cols[col] || (pasta.proprio.cols[col] = {});
-          for(const id in this.data[col]) if(!c[id]) c[id] = {t:1, b:this.data[col][id]};
-        });
-        pasta.pend = true;
-      }
-      this.mode = 'pasta'; this.uid = pasta.usuario || null; this.canWrite = true;
-      pasta.estado = 'ok'; pasta.erro = '';
-      await this._ler(true);
-      if(pasta.pend){ await this._gravar(); lsSet('infra-vel-migrado-'+pasta.disp, '1'); }
-      await this._visto();
-      clearInterval(pasta.timer);
-      pasta.timer = setInterval(() => { this._ler(false); }, POLL_MS);
-      clearInterval(pasta.visto);
-      pasta.visto = setInterval(() => { this._visto(); }, VISTO_MS);
-      this._backupDiario();
-      return true;
+      // com login, os dados só são lidos e gravados depois de entrar (iniciarPasta)
+      if(!SEM_LOGIN && !sessao){ pasta.estado = 'conectada'; pasta.erro = ''; return true; }
+      return await this.iniciarPasta();
     }catch(e){
       if(e && (e.name==='AbortError')) return false;
       pasta.estado = pasta.dir ? 'reconectar' : 'nenhuma';
@@ -835,6 +1039,40 @@ const store = {
       return false;
     }
   },
+  async iniciarPasta(){
+    try{
+      pasta.proprio = {cols:{}}; pasta.outros = {};
+      try{
+        const f = await (await pasta.dados.getFileHandle(pasta.disp+'.json')).getFile();
+        const j = lerDados(JSON.parse(await f.text())); pasta.proprio = {cols:j.cols};
+      }catch(e){}
+      // na primeira conexão deste computador, leva o que estava só no navegador (com data antiga: o que já
+      // está na pasta prevalece, e o que foi apagado lá continua apagado)
+      if(lsGet('infra-vel-migrado-'+pasta.disp)!=='1'){
+        COLECOES.forEach(col => {
+          const c = pasta.proprio.cols[col] || (pasta.proprio.cols[col] = {});
+          for(const id in this.data[col]) if(!c[id]) c[id] = {t:1, b:this.data[col][id]};
+        });
+        pasta.migrar = true; // não use pasta.pend: clearTimeout(true) apagaria o cronômetro de número 1
+      }
+      this.mode = 'pasta'; this.uid = pasta.usuario || null; this.canWrite = true;
+      pasta.estado = 'ok'; pasta.erro = '';
+      await this._ler(true);
+      if(pasta.migrar){ pasta.migrar = false; await this._gravar(); lsSet('infra-vel-migrado-'+pasta.disp, '1'); }
+      await this._visto();
+      clearInterval(pasta.timer);
+      pasta.timer = setInterval(() => { this.ciclo(); }, T.PULSO_MS);
+      this._backupDiario();
+      return true;
+    }catch(e){
+      pasta.estado = pasta.dir ? 'reconectar' : 'nenhuma';
+      pasta.erro = (e && (e.message||e.code)) || String(e);
+      this.onChange && this.onChange();
+      return false;
+    }
+  },
+  // ciclo do padrão: lê os colegas, junta e avisa a presença
+  async ciclo(){ await this._ler(false); await this._visto(); renderFichaUso(); await conferirUsuario(); },
   async _ler(sempre){
     if(this.mode!=='pasta') return;
     let mudou = sempre;
@@ -846,15 +1084,16 @@ const store = {
         const f = await h.getFile();
         const at = pasta.outros[nome];
         if(at && at.lm===f.lastModified && at.size===f.size) continue;
-        try{ const j = JSON.parse(await f.text()); pasta.outros[nome] = {lm:f.lastModified, size:f.size, cols:(j&&j.cols)||{}, usuario:j&&j.usuario}; mudou = true; }
+        try{ const j = lerDados(JSON.parse(await f.text())); pasta.outros[nome] = {lm:f.lastModified, size:f.size, cols:j.cols, usuario:j.usuario}; mudou = true; }
         catch(e){ /* arquivo ainda chegando pela sincronização: tenta na próxima leitura */ }
       }
       for(const nome in pasta.outros) if(!vistos.has(nome)){ delete pasta.outros[nome]; mudou = true; }
-      const pres = [];
+      const pres = [], colegas = [];
       for await (const [nome, h] of pasta.online.entries()){
         if(h.kind!=='file' || !/\.json$/i.test(nome)) continue;
-        try{ const f = await h.getFile(); const j = JSON.parse(await f.text()); if(j && j.dispositivo!==pasta.disp && Date.now()-Math.max(new Date(j.visto).getTime()||0, f.lastModified) < ONLINE_MS) pres.push(j.usuario||'Sem nome'); }catch(e){}
+        try{ const f = await h.getFile(); const j = JSON.parse(await f.text()); if(j && j.origem!==pasta.disp && !j.saiu && Date.now()-(new Date(j.visto).getTime()||0) < T.ONLINE_MS){ pres.push(j.usuario||'Sem nome'); colegas.push(j); } }catch(e){ /* ainda chegando pelo OneDrive */ }
       }
+      pasta.colegas = colegas;
       const novaPres = [...new Set(pres)].sort((a,b)=>a.localeCompare(b,'pt-BR'));
       if(novaPres.join('|')!==pasta.presenca.join('|')){ pasta.presenca = novaPres; renderOnline(); }
       pasta.ultimaLeitura = new Date(); pasta.erroLer = '';
@@ -865,18 +1104,19 @@ const store = {
   _marcar(col, id, b){
     const c = pasta.proprio.cols[col] || (pasta.proprio.cols[col] = {});
     c[id] = {t:Math.max(Date.now(), ((c[id]&&c[id].t)||0)+1), b};
+    if(pasta.registro){ pasta.versoes = Object.assign({}, pasta.versoes, {[pasta.registro]:Date.now()}); this._visto(); }
     this._fundir();
-    clearTimeout(pasta.pend); pasta.pend = setTimeout(() => { this._gravar(); }, 300);
+    clearTimeout(pasta.pend); pasta.pend = setTimeout(() => { this._gravar(); }, T.GRAVAR_MS);
   },
   async _gravar(){
     clearTimeout(pasta.pend); pasta.pend = null;
     if(pasta.gravando){ await pasta.gravando; }
     pasta.gravando = (async () => {
-      const corpo = JSON.stringify({formato:'infracoes-velocidade-pasta', versao:1, dispositivo:pasta.disp, usuario:pasta.usuario, atualizadoEm:new Date().toISOString(), cols:pasta.proprio.cols});
+      const corpo = JSON.stringify({versao:2, geradoEm:new Date().toISOString(), origem:pasta.disp, usuario:pasta.usuario, cols:pasta.proprio.cols});
       try{
         const w = await (await pasta.dados.getFileHandle(pasta.disp+'.json', {create:true})).createWritable();
         await w.write(corpo); await w.close();
-        pasta.falhaGravar = '';
+        pasta.falhaGravar = ''; pasta.salvoEm = new Date();
         this._backupDiario();
       }catch(e){
         pasta.falhaGravar = (e && (e.message||e.name)) || 'erro';
@@ -889,38 +1129,36 @@ const store = {
   async _visto(sair){
     if(this.mode!=='pasta') return;
     try{
-      if(sair){ await pasta.online.removeEntry(pasta.disp+'.json'); return; }
       const w = await (await pasta.online.getFileHandle(pasta.disp+'.json', {create:true})).createWritable();
-      await w.write(JSON.stringify({dispositivo:pasta.disp, usuario:pasta.usuario, visto:new Date().toISOString()})); await w.close();
+      await w.write(JSON.stringify({origem:pasta.disp, usuario:pasta.usuario, visto:new Date().toISOString(), saiu:!!sair, registro:sair ? '' : (pasta.registro||''), desde:pasta.desde||'', versoes:pasta.versoes||{}})); await w.close();
     }catch(e){}
   },
-  // um backup completo por dia na pasta "backups", guardando os mais recentes
+  // uma cópia por dia de cada pessoa em backups/, mais a limpeza do padrão
   async _backupDiario(){
     if(this.mode!=='pasta' || !temDados()) return;
     try{
-      const hoje = new Date(), dia = hoje.getFullYear()+'-'+p2(hoje.getMonth()+1)+'-'+p2(hoje.getDate());
+      const hoje = new Date(), dia = hojeISO(hoje);
       if(pasta.bkpDia===dia) return;
       pasta.bkpDia = dia;
-      const nomes = [];
-      for await (const [nome, h] of pasta.backups.entries()) if(h.kind==='file' && /^backup-completo-infracoes-velocidade-.*\.json$/.test(nome)) nomes.push(nome);
-      if(!nomes.some(n => n.includes('-'+dia+'_'))){
-        const nome = nomeBackup(hoje);
+      const nome = nomeBackupDia(dia, loginDe(pasta.usuario));
+      let existe = false; try{ await pasta.backups.getFileHandle(nome); existe = true; }catch(e){}
+      if(!existe){
         await gravarNaPasta(pasta.backups, nome, JSON.stringify(dadosCompletos()));
-        nomes.push(nome);
         this.put('config', 'backupCompleto', {em:hoje.toISOString(), por:this.uid||null, arquivo:nome, automatico:true});
       }
-      nomes.sort();
-      for(const n of nomes.slice(0, Math.max(0, nomes.length-BKP_GUARDAR))) try{ await pasta.backups.removeEntry(n); }catch(e){}
+      await limparBackups(dia);
     }catch(e){ pasta.bkpDia = null; }
   },
   newId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); },
   async put(col, id, body){
+    if(sessaoBloqueada) throw {code:'bloqueado', message:'sessão bloqueada'};
     if(this.mode==='semdb') throw {code:'sem_banco', message:'sem acesso ao banco compartilhado'};
     if(this.mode==='db'){ await this.db.collection(col).doc(id).set(body); }
     else if(this.mode==='pasta'){ this._marcar(col, id, body); }
     else { this.data[col] = Object.assign({}, this.data[col], {[id]:body}); this._save(col); }
   },
   async del(col, id){
+    if(sessaoBloqueada) throw {code:'bloqueado', message:'sessão bloqueada'};
     if(this.mode==='semdb') throw {code:'sem_banco', message:'sem acesso ao banco compartilhado'};
     if(this.mode==='db'){ await this.db.collection(col).doc(id).delete(); }
     else if(this.mode==='pasta'){ this._marcar(col, id, null); }
@@ -928,19 +1166,352 @@ const store = {
   },
   _save(col){ try{ localStorage.setItem(LS_KEY(col), JSON.stringify(this.data[col])); }catch(e){ throw {code:'local_full', message:'Não foi possível salvar neste navegador (armazenamento cheio ou bloqueado).'}; } }
 };
+/* ================= ACESSO: usuários, senhas e histórico (Padrão de Sistemas Tóliman) ================= */
+const SEM_LOGIN = !!(window.__teste && window.__semLogin);
+// Senha: PBKDF2-SHA256 com sal. Só o hash vai para usuarios/<login>.json.
+const ITER_SENHA = 150000, MIN_SENHA = 6;
+const paraB64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const deB64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
+async function hashSenha(senha, sal, iter){
+  const sl = sal ? deB64(sal) : crypto.getRandomValues(new Uint8Array(16)), n = iter || ITER_SENHA;
+  const chave = await crypto.subtle.importKey('raw', new TextEncoder().encode(senha), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', hash:'SHA-256', salt:sl, iterations:n}, chave, 256);
+  return {alg:'PBKDF2-SHA256', iter:n, sal:paraB64(sl), hash:paraB64(bits)};
+}
+async function senhaConfere(u, senha){
+  if(!u || !u.senha || !u.senha.sal) return false;
+  return (await hashSenha(senha, u.senha.sal, u.senha.iter)).hash === u.senha.hash;
+}
+function problemaSenha(nova, repetida){
+  if(nova.length < MIN_SENHA) return 'A senha precisa ter pelo menos '+MIN_SENHA+' caracteres.';
+  if(repetida != null && nova !== repetida) return 'As duas senhas não são iguais.';
+  return '';
+}
+let sessao = null, sessaoBloqueada = false, atividade = Date.now(), pendenteTroca = null;
+const acesso = {
+  hashSenha,
+  fila: Promise.resolve(),
+  // lê usuarios/*.json; arquivo que não abre como JSON ainda está chegando pelo OneDrive
+  async usuarios(){
+    const dir = await pasta.sub('usuarios'), l = []; let arquivos = 0;
+    for await (const [nome, h] of dir.entries()){
+      if(h.kind!=='file' || !/\.json$/i.test(nome)) continue;
+      arquivos++;
+      try{ const u = JSON.parse(await (await h.getFile()).text()); if(u && u.login && u.senha) l.push(u); }catch(e){}
+    }
+    l.arquivos = arquivos;
+    return l.sort((a,b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
+  },
+  async usuario(login){ try{ const d = await pasta.sub('usuarios'); return JSON.parse(await (await (await d.getFileHandle(login+'.json')).getFile()).text()); }catch(e){ return null; } },
+  async gravarUsuario(u){ await gravarNaPasta(await pasta.sub('usuarios'), u.login+'.json', JSON.stringify(u)); },
+  // historico/AAAA-MM_<id do navegador>.json: entradas, senhas erradas, trocas, bloqueios
+  registrar(tipo, quem, detalhe){
+    const ev = {em:new Date().toISOString(), tipo, login:(quem||sessao||{}).login||'', nome:(quem||sessao||{}).nome||'', detalhe:detalhe||'', origem:pasta.disp||''};
+    this.fila = this.fila.then(async () => {
+      try{
+        const dir = await pasta.sub('historico'), nome = ev.em.slice(0,7)+'_'+(pasta.disp||pasta.dispositivo())+'.json';
+        let d = {versao:1, origem:pasta.disp, eventos:[]};
+        try{ const j = JSON.parse(await (await (await dir.getFileHandle(nome)).getFile()).text()); if(j && Array.isArray(j.eventos)) d = j; }catch(e){}
+        d.eventos.push(ev);
+        await gravarNaPasta(dir, nome, JSON.stringify(d));
+      }catch(e){}
+    });
+    return this.fila;
+  }
+};
+const iniciais = n => String(n||'').split(/\s+/).filter(Boolean).map(x => x[0]).slice(0,2).join('').toUpperCase();
+function renderSessao(){
+  const el = $('#sessao'); el.hidden = !sessao;
+  $('#tab-cfg').hidden = !sessao;
+  if(sessao){ $('#sessao-ini').textContent = iniciais(sessao.nome); $('#sessao-nome').textContent = sessao.nome+(sessao.admin?' · administrador':''); }
+}
+async function entrarComo(u){
+  sessao = {login:u.login, nome:u.nome, admin:!!u.admin}; sessaoBloqueada = false; atividade = Date.now();
+  pasta.usuario = u.nome; store.uid = u.nome;
+  lsSet('infra-vel-ultimo-usuario', u.login);
+  await acesso.registrar('entrada');
+  $('#dlgEntrada').close();
+  renderSessao();
+  if(store.mode!=='pasta') await store.iniciarPasta();
+  render();
+}
+// a sessão continua só enquanto o usuário existe e está ativo
+async function conferirUsuario(){
+  if(!sessao || sessaoBloqueada || SEM_LOGIN) return;
+  const u = await acesso.usuario(sessao.login);
+  if(u && !u.ativo) await sair();
+  else if(u) sessao.admin = !!u.admin;
+}
+function bloquearSessao(){
+  if(!sessao || sessaoBloqueada) return;
+  sessaoBloqueada = true;
+  acesso.registrar('bloqueio');
+  pasta.registro = ''; store._visto && store._visto();
+  mostrarEntrada('bloqueada');
+}
+async function sair(){
+  try{ await acesso.registrar('saida'); if(pasta.pend) await store._gravar(); await store._visto(true); }catch(e){}
+  location.reload();
+}
+const campoEnt = (id, rot, tipo, extra) => '<div><label for="'+id+'">'+rot+'</label><input type="'+tipo+'" id="'+id+'"'+(extra||'')+'></div>';
+const entUi = {modo:null, aviso:null};
+async function mostrarEntrada(modo, aviso){
+  const dlg = $('#dlgEntrada');
+  if(!modo){
+    if(!pasta.suportado()) modo = 'sem-suporte';
+    else if(pasta.estado==='aviso-pasta' && pasta.aviso) modo = 'aviso-pasta';
+    else if(!pasta.raiz) modo = pasta.dir ? 'reconectar' : 'pasta';
+    else { const us = await acesso.usuarios(); modo = us.arquivos ? 'login' : 'primeiro'; entUi.us = us; }
+    if(!aviso && pasta.erro && (modo==='pasta' || modo==='reconectar')) aviso = ['err', 'Não foi possível usar a pasta: '+pasta.erro+'. Confira se o OneDrive está sincronizando.'];
+  } else if(modo==='login') entUi.us = await acesso.usuarios();
+  entUi.modo = modo;
+  let t = 'Entrar', c = '';
+  if(modo==='sem-suporte'){
+    t = 'Navegador sem suporte';
+    c = '<p>Abra o sistema no <b>Google Chrome</b> ou no <b>Microsoft Edge</b>. Este navegador não permite usar a pasta do SharePoint, onde ficam os usuários e as senhas.</p>';
+  } else if(modo==='pasta'){
+    t = 'Conectar a pasta do SharePoint';
+    c = '<p class="dica">Os usuários e as senhas ficam na pasta <b>Sistema</b> do canal Infrações de velocidade. Conecte a pasta para entrar.</p><div class="acoes"><button type="button" class="cta" data-ac="conectar">Conectar a pasta</button></div>'+
+      '<p class="dica">Na janela que abrir, escolha a pasta <b>Sistema</b> (a mesma onde está este arquivo) e clique em <b>Permitir</b>.</p>';
+  } else if(modo==='reconectar'){
+    t = 'Autorizar a pasta';
+    c = '<p class="dica">O navegador precisa da sua autorização para usar a pasta <b>'+esc(pasta.nomePasta||PASTA_NOME)+'</b>.</p><div class="acoes"><button type="button" class="cta" data-ac="reconectar">Autorizar a pasta</button><button type="button" data-ac="conectar">Escolher outra pasta</button></div>';
+  } else if(modo==='aviso-pasta'){
+    t = 'Pasta diferente';
+    c = '<p class="dica">'+esc(pasta.aviso.t)+'</p><div class="acoes"><button type="button" class="cta" data-pasta="outra">Escolher outra pasta</button>'+(pasta.aviso.antiga?'':'<button type="button" data-pasta="usar">Usar esta pasta</button>')+'</div>';
+  } else if(modo==='primeiro'){
+    t = 'Primeiro acesso';
+    c = '<p class="dica">Ainda não há usuários nesta pasta. Crie o seu acesso: você será o <b>administrador</b> e poderá cadastrar os colegas em Configurações › Usuários e senhas.</p>'+
+      '<form data-modo="primeiro" autocomplete="off">'+campoEnt('entNome', 'Seu nome', 'text', ' maxlength="40" autocomplete="name"')+
+      campoEnt('entSenha', 'Senha (mínimo '+MIN_SENHA+' caracteres)', 'password', ' autocomplete="new-password"')+campoEnt('entRepete', 'Repita a senha', 'password', ' autocomplete="new-password"')+
+      '<div class="acoes"><button type="submit" class="cta">Criar acesso e entrar</button></div></form>';
+  } else if(modo==='login'){
+    const ativos = (entUi.us||[]).filter(u => u.ativo!==false), ult = lsGet('infra-vel-ultimo-usuario');
+    c = '<form data-modo="login" autocomplete="off"><div><label for="entUsuario">Usuário</label><select id="entUsuario">'+
+      ativos.map(u => '<option value="'+esc(u.login)+'"'+(u.login===ult?' selected':'')+'>'+esc(u.nome)+'</option>').join('')+'</select></div>'+
+      campoEnt('entSenha', 'Senha', 'password', ' autocomplete="current-password"')+
+      '<div class="acoes"><button type="submit" class="cta">Entrar</button></div></form>'+
+      '<p class="dica">Esqueceu a senha? Peça a um administrador para redefinir em Configurações › Usuários e senhas.</p>';
+  } else if(modo==='trocar'){
+    t = 'Crie a sua senha';
+    c = '<p class="dica">Olá, <b>'+esc(pendenteTroca.nome)+'</b>. Você entrou com uma senha provisória. Escolha uma senha sua para continuar.</p>'+
+      '<form data-modo="trocar" autocomplete="off">'+campoEnt('entSenha', 'Nova senha (mínimo '+MIN_SENHA+' caracteres)', 'password', ' autocomplete="new-password"')+
+      campoEnt('entRepete', 'Repita a nova senha', 'password', ' autocomplete="new-password"')+
+      '<div class="acoes"><button type="submit" class="cta">Salvar e entrar</button><button type="button" data-ac="voltar">Voltar</button></div></form>';
+  } else if(modo==='bloqueada'){
+    t = 'Sessão bloqueada';
+    c = '<p class="dica">O sistema ficou mais de 20 minutos sem uso. Para continuar como <b>'+esc(sessao.nome)+'</b>, digite a sua senha.</p>'+
+      '<form data-modo="bloqueada" autocomplete="off">'+campoEnt('entSenha', 'Senha', 'password', ' autocomplete="current-password"')+
+      '<div class="acoes"><button type="submit" class="cta">Continuar</button><button type="button" data-ac="sair">Entrar com outro usuário</button></div></form>';
+  }
+  $('#entTitulo').textContent = t;
+  $('#entCorpo').innerHTML = c;
+  $('#entMsg').innerHTML = aviso ? '<p class="msg '+aviso[0]+'">'+esc(aviso[1])+'</p>' : '';
+  if(!dlg.open) dlg.showModal();
+  const f = $('#entCorpo').querySelector('#entNome, #entSenha, .cta'); if(f) f.focus({preventScroll:true});
+}
+$('#dlgEntrada').addEventListener('cancel', e => e.preventDefault()); // Esc não fecha
+$('#entCorpo').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-ac]'); if(!b) return;
+  const a = b.dataset.ac;
+  if(a==='conectar'){ await store.conectarPasta(null); mostrarEntrada(); }
+  else if(a==='reconectar'){ await store.conectarPasta(pasta.dir); mostrarEntrada(); }
+  else if(a==='voltar'){ pendenteTroca = null; mostrarEntrada('login'); }
+  else if(a==='sair') sair();
+});
+$('#entCorpo').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, m = f.dataset.modo, v = id => (f.querySelector('#'+id) || {}).value || '';
+  const btn = f.querySelector('[type="submit"]'); btn.disabled = true;
+  const erro = t => mostrarEntrada(m, ['err', t]);
+  try{
+    if(m==='primeiro'){
+      const nome = v('entNome').trim().replace(/\s+/g, ' ');
+      if(nome.length < 2) return erro('Informe o seu nome.');
+      const pr = problemaSenha(v('entSenha'), v('entRepete')); if(pr) return erro(pr);
+      const login = loginDe(nome);
+      if(await acesso.usuario(login)) return erro('Já existe um usuário com este nome.');
+      const agora = new Date().toISOString();
+      const u = {versao:1, login, nome, admin:true, ativo:true, trocarSenha:false, senha:await hashSenha(v('entSenha')), criadoEm:agora, criadoPor:nome, alteradoEm:agora, alteradoPor:nome};
+      await acesso.gravarUsuario(u);
+      await entrarComo(u);
+    } else if(m==='login'){
+      const u = await acesso.usuario(v('entUsuario'));
+      if(!u || u.ativo===false) return erro('Usuário não encontrado ou desativado.');
+      if(!(await senhaConfere(u, v('entSenha')))){ await acesso.registrar('senha-errada', u); return erro('Senha incorreta.'); }
+      if(u.trocarSenha){ pendenteTroca = u; return mostrarEntrada('trocar'); }
+      await entrarComo(u);
+    } else if(m==='trocar'){
+      const pr = problemaSenha(v('entSenha'), v('entRepete')); if(pr) return erro(pr);
+      const u = pendenteTroca;
+      if(await senhaConfere(u, v('entSenha'))) return erro('Escolha uma senha diferente da provisória.');
+      Object.assign(u, {senha:await hashSenha(v('entSenha')), trocarSenha:false, alteradoEm:new Date().toISOString(), alteradoPor:u.nome});
+      await acesso.gravarUsuario(u);
+      await acesso.registrar('troca-senha', u);
+      pendenteTroca = null;
+      await entrarComo(u);
+    } else if(m==='bloqueada'){
+      const u = await acesso.usuario(sessao.login);
+      if(!u || u.ativo===false) return sair();
+      if(!(await senhaConfere(u, v('entSenha')))){ await acesso.registrar('senha-errada', u); return erro('Senha incorreta.'); }
+      sessaoBloqueada = false; atividade = Date.now(); sessao.admin = !!u.admin;
+      $('#dlgEntrada').close();
+      render();
+    }
+  }catch(x){ erro('Não foi possível usar a pasta: '+((x && (x.message||x.name)) || x)+'. Confira se o OneDrive está sincronizando.'); }
+  finally{ btn.disabled = false; }
+});
+['pointerdown','pointermove','keydown','wheel'].forEach(ev => document.addEventListener(ev, () => { if(!sessaoBloqueada) atividade = Date.now(); }, {passive:true}));
+setInterval(() => { if(sessao && !sessaoBloqueada && Date.now()-atividade > T.PARADO_MS) bloquearSessao(); }, T.CHECA_MS);
+
+/* ---------- aba Configurações: minha senha, usuários e senhas, histórico de acessos ---------- */
+const TIPO_HIST = {entrada:'Entrou', saida:'Saiu', 'senha-errada':'Senha incorreta', 'troca-senha':'Trocou a senha', bloqueio:'Sessão bloqueada', 'usuario-criado':'Cadastrou usuário', 'senha-redefinida':'Redefiniu senha', 'usuario-alterado':'Alterou usuário'};
+const quandoBR = iso => iso ? new Date(iso).toLocaleString('pt-BR', {dateStyle:'short', timeStyle:'short'}) : '—';
+// senha provisória legível, sem letras que se confundem
+function senhaProvisoria(){
+  const al = 'abcdefghjkmnpqrstuvwxyz23456789', r = crypto.getRandomValues(new Uint8Array(8));
+  return [...r].map(x => al[x % al.length]).join('');
+}
+async function historicoAcessos(){
+  const dir = await pasta.sub('historico'), d = new Date();
+  const meses = [hojeISO(d).slice(0,7), hojeISO(new Date(d.getFullYear(), d.getMonth()-1, 15)).slice(0,7)];
+  const l = [];
+  for await (const [nome, h] of dir.entries()){
+    if(h.kind!=='file' || !meses.includes(nome.slice(0,7))) continue;
+    try{ const j = JSON.parse(await (await h.getFile()).text()); if(j && Array.isArray(j.eventos)) l.push(...j.eventos); }catch(e){}
+  }
+  return l.sort((a,b) => a.em<b.em ? 1 : -1);
+}
+async function renderCfg(){
+  if(!sessao || !pasta.raiz) return;
+  $('#cfg-eu').textContent = sessao.nome+' · '+(sessao.admin ? 'administrador' : 'usuário');
+  $('#cfg-usu-sec').hidden = !sessao.admin; $('#cfg-hist-sec').hidden = !sessao.admin;
+  if(!sessao.admin) return;
+  const us = await acesso.usuarios(), admins = us.filter(u => u.admin && u.ativo!==false);
+  $('#cfg-admin-aviso').hidden = admins.length >= 2;
+  const unico = u => u.admin && u.ativo!==false && admins.length < 2;
+  $('#cfg-usu tbody').innerHTML = us.map(u => '<tr data-login="'+esc(u.login)+'"><td><b>'+esc(u.nome)+'</b></td><td class="mini-n">'+esc(u.login)+'</td><td>'+(u.admin?'Administrador':'Usuário')+'</td>'+
+    '<td>'+(u.ativo===false?'<span class="st pre">Desativado</span>':u.trocarSenha?'<span class="st adv">Senha provisória</span>':'<span class="st ok">Ativo</span>')+'</td>'+
+    '<td>'+quandoBR(u.alteradoEm)+(u.alteradoPor?' · '+esc(u.alteradoPor):'')+'</td>'+
+    '<td><button class="linkbtn" type="button" data-u-acao="redefinir">Redefinir senha</button>'+
+    '<button class="linkbtn" type="button" data-u-acao="ativo"'+(unico(u)?' disabled title="Cadastre outro administrador antes"':'')+'>'+(u.ativo===false?'Ativar':'Desativar')+'</button>'+
+    '<button class="linkbtn" type="button" data-u-acao="admin"'+(unico(u)?' disabled title="Cadastre outro administrador antes"':'')+'>'+(u.admin?'Deixar de ser administrador':'Tornar administrador')+'</button></td></tr>').join('');
+  const hs = await historicoAcessos();
+  $('#cfg-hist tbody').innerHTML = hs.length ? hs.slice(0, 300).map(e => '<tr><td>'+quandoBR(e.em)+'</td><td>'+esc(e.nome||e.login||'—')+'</td><td>'+esc(TIPO_HIST[e.tipo]||e.tipo)+(e.detalhe?' · '+esc(e.detalhe):'')+'</td><td class="mini-n">'+esc(e.origem||'')+'</td></tr>').join('')
+    : '<tr><td colspan="4" class="sec-note">Nenhum acesso registrado neste mês nem no anterior.</td></tr>';
+}
+$('#cfg-minha').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('#cfg-minha-msg'), ok = t => { msg.textContent = t; };
+  const u = await acesso.usuario(sessao.login);
+  if(!u || !(await senhaConfere(u, $('#cfg-atual').value))){ await acesso.registrar('senha-errada', u||sessao); return ok('Senha incorreta.'); }
+  const pr = problemaSenha($('#cfg-nova').value, $('#cfg-repete').value); if(pr) return ok(pr);
+  Object.assign(u, {senha:await hashSenha($('#cfg-nova').value), trocarSenha:false, alteradoEm:new Date().toISOString(), alteradoPor:sessao.nome});
+  await acesso.gravarUsuario(u); await acesso.registrar('troca-senha', u);
+  e.target.reset(); ok('Senha alterada.');
+});
+$('#cfg-novo').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('#cfg-usu-msg'), nome = $('#cfg-novo-nome').value.trim().replace(/\s+/g, ' '), senha = $('#cfg-novo-senha').value;
+  if(!sessao || !sessao.admin) return;
+  if(nome.length < 2){ msg.textContent = 'Informe o nome.'; return; }
+  const pr = problemaSenha(senha); if(pr){ msg.textContent = pr; return; }
+  const login = loginDe(nome);
+  if(await acesso.usuario(login)){ msg.textContent = 'Já existe um usuário com este nome.'; return; }
+  const agora = new Date().toISOString();
+  await acesso.gravarUsuario({versao:1, login, nome, admin:$('#cfg-novo-admin').checked, ativo:true, trocarSenha:true, senha:await hashSenha(senha), criadoEm:agora, criadoPor:sessao.nome, alteradoEm:agora, alteradoPor:sessao.nome});
+  await acesso.registrar('usuario-criado', sessao, nome);
+  e.target.reset();
+  msg.textContent = nome+' cadastrado. Na primeira entrada, o sistema pede uma senha nova.';
+  renderCfg();
+});
+$('#cfg-usu').addEventListener('click', async e => {
+  const b = e.target.closest('[data-u-acao]'); if(!b || b.disabled || !sessao || !sessao.admin) return;
+  const u = await acesso.usuario(b.closest('tr').dataset.login); if(!u) return;
+  const msg = $('#cfg-usu-msg'), a = b.dataset.uAcao;
+  const us = await acesso.usuarios(), admins = us.filter(x => x.admin && x.ativo!==false);
+  if((a==='ativo' || a==='admin') && u.admin && u.ativo!==false && admins.length < 2) return; // sempre um administrador ativo
+  const ag = {alteradoEm:new Date().toISOString(), alteradoPor:sessao.nome};
+  if(a==='redefinir'){
+    const prov = senhaProvisoria();
+    Object.assign(u, ag, {senha:await hashSenha(prov), trocarSenha:true});
+    await acesso.gravarUsuario(u); await acesso.registrar('senha-redefinida', sessao, u.nome);
+    msg.textContent = 'Senha provisória de '+u.nome+': '+prov+' — passe a ela pessoalmente. Na entrada, o sistema pede uma senha nova.';
+  } else if(a==='ativo'){
+    Object.assign(u, ag, {ativo:u.ativo===false});
+    await acesso.gravarUsuario(u); await acesso.registrar('usuario-alterado', sessao, u.nome+(u.ativo?' ativado':' desativado'));
+    msg.textContent = u.nome+(u.ativo?' ativado.':' desativado.');
+  } else if(a==='admin'){
+    Object.assign(u, ag, {admin:!u.admin});
+    await acesso.gravarUsuario(u); await acesso.registrar('usuario-alterado', sessao, u.nome+(u.admin?' agora é administrador':' deixou de ser administrador'));
+    msg.textContent = u.nome+(u.admin?' agora é administrador.':' deixou de ser administrador.');
+    if(u.login===sessao.login) sessao.admin = u.admin;
+  }
+  renderCfg();
+});
+
+/* ---------- ficha do motorista em uso (bloqueio por registro do padrão) ---------- */
+// registro = a ficha aberta na aba Motorista; quem abriu primeiro fica com ela
+const registroAtual = () => (store.mode==='pasta' && ui.tab==='mot' && ui.motorista && !sessaoBloqueada && !$('#mot-body').hidden) ? 'mot:'+slug(ui.motorista) : '';
+const donoDoRegistro = (id, desde) => (pasta.colegas||[])
+  .filter(c => c.registro===id && (Date.parse(c.desde) < Date.parse(desde) || (c.desde===desde && c.origem < pasta.disp)))
+  .sort((a,b) => Date.parse(a.desde) - Date.parse(b.desde))[0] || null;
+// colega alterou esta ficha e o arquivo dele ainda não chegou
+function aguardandoColega(id){
+  return (pasta.colegas||[]).find(c => {
+    const t = c.versoes && c.versoes[id]; if(!t) return false;
+    if((pasta.abrirAssim||{})[id] >= t) return false;
+    const o = pasta.outros[c.origem+'.json'];
+    return !o || o.lm < t;
+  }) || null;
+}
+function estadoFicha(){
+  const id = pasta.registro;
+  if(!id || store.mode!=='pasta') return null;
+  const dono = donoDoRegistro(id, pasta.desde); if(dono) return {tipo:'uso', c:dono};
+  const ag = aguardandoColega(id); if(ag) return {tipo:'aguarda', c:ag};
+  return null;
+}
+const fichaLivre = () => !estadoFicha();
+function atualizarRegistro(){
+  const reg = registroAtual();
+  if(reg===(pasta.registro||'')) return;
+  pasta.registro = reg; pasta.desde = reg ? new Date().toISOString() : '';
+  if(store.mode==='pasta') store._visto();
+}
+function renderFichaUso(){
+  atualizarRegistro();
+  const el = $('#ficha-uso'), st = estadoFicha();
+  el.hidden = !st;
+  $('#v-mot').classList.toggle('ficha-bloq', !!st);
+  ['#rh-ok','#rh-eml','#rh-img','#com-fora'].forEach(q => { const b = $(q); if(b && st) b.disabled = true; });
+  if(st) $('#com-wa').setAttribute('aria-disabled', 'true');
+  if(!st){ el.innerHTML = '<span class="txt"></span>'; return; }
+  const hora = new Date(st.c.desde||st.c.visto).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  el.innerHTML = st.tipo==='uso'
+    ? '<span class="txt">A ficha de '+esc(ui.motorista)+' está em uso por '+esc(st.c.usuario||'um colega')+' desde '+hora+'. Escolha outro motorista ou aguarde: ela é liberada sozinha quando essa pessoa trocar de motorista, ficar 20 minutos sem mexer ou fechar o sistema.</span>'
+    : '<span class="txt">Aguardando chegar pelo OneDrive o que '+esc(st.c.usuario||'um colega')+' alterou nesta ficha. Costuma levar menos de um minuto.</span><button class="btn ghost" type="button" data-ficha="abrir">Abrir assim mesmo</button>';
+}
+document.addEventListener('click', e => {
+  if(!e.target.closest('[data-ficha="abrir"]')) return;
+  const ag = aguardandoColega(pasta.registro);
+  if(ag) pasta.abrirAssim = Object.assign({}, pasta.abrirAssim, {[pasta.registro]:ag.versoes[pasta.registro]});
+  renderMot();
+});
+
 async function gravarNaPasta(dir, nome, dados){
   const w = await (await dir.getFileHandle(nome, {create:true})).createWritable();
   await w.write(dados); await w.close();
 }
 addEventListener('pagehide', () => { if(store.mode==='pasta'){ if(pasta.pend) store._gravar(); store._visto(true); } });
 addEventListener('beforeunload', e => { if(store.mode==='pasta' && (pasta.pend || pasta.gravando)){ e.preventDefault(); e.returnValue = ''; } });
-addEventListener('focus', () => { if(store.mode==='pasta') store._ler(false); });
+addEventListener('focus', () => { if(store.mode==='pasta') store.ciclo(); });
+document.addEventListener('visibilitychange', () => { if(store.mode!=='pasta') return; if(document.visibilityState==='hidden'){ if(pasta.pend) store._gravar(); } else store.ciclo(); });
 function renderOnline(){
   const el = $('#online');
   if(store.mode!=='pasta'){ el.innerHTML = ''; return; }
-  el.innerHTML = '<span class="on-u eu" title="Você">'+esc(pasta.usuario||'Sem nome')+' (você)</span>'+
-    pasta.presenca.map(n => '<span class="on-u" title="Online agora">'+esc(n)+'</span>').join('')+
-    '<button class="linkbtn" type="button" id="on-trocar">trocar</button>';
+  el.innerHTML = (sessao ? '' : '<span class="on-u eu" title="Você">'+esc(pasta.usuario||'Sem nome')+' (você)</span>')+
+    pasta.presenca.map(n => '<span class="on-u" title="Online agora">'+esc(n)+'</span>').join('');
 }
 function renderPasta(){
   if(store.mode==='pasta'){
@@ -949,32 +1520,16 @@ function renderPasta(){
     return '';
   }
   if(store.mode!=='local') return '';
-  if(pasta.estado==='sem-api') return '<div class="aviso-topo" role="status"><span><b>Este navegador não grava na pasta da equipe.</b> Abra o arquivo no Chrome ou no Edge para salvar e ver os dados de todos. Aqui, o que você fizer fica só neste navegador.</span></div>';
-  const nome = '<input id="pasta-nome" placeholder="Seu nome" autocomplete="name" value="'+esc(pasta.usuario)+'" aria-label="Seu nome">';
-  const erro = pasta.erro ? '<div class="msg err" style="margin:6px 0 0;width:100%">Não foi possível usar a pasta: '+esc(pasta.erro)+'.</div>' : '';
-  if(pasta.estado==='reconectar') return '<div class="aviso-topo" role="status"><span><b>Reconecte a pasta '+esc(pasta.nomePasta)+'.</b> O navegador pede a sua confirmação para o painel voltar a ler e gravar os dados da equipe.</span><span class="pasta-form">'+(pasta.usuario?'':nome)+'<button class="btn" type="button" data-pasta="reconectar" style="padding:6px 12px">Reconectar pasta</button><button class="linkbtn" type="button" data-pasta="escolher">Escolher outra</button></span>'+erro+'</div>';
-  return '<div class="aviso-topo" role="status"><span><b>Conecte a pasta da equipe para salvar e compartilhar os dados.</b> Escolha a pasta onde está este arquivo (<i>Infrações de velocidade.html</i>). O painel cria nela a pasta <i>'+PASTA_NOME+'</i> e passa a gravar tudo lá. Até conectar, o que você fizer fica só neste navegador.</span><span class="pasta-form">'+nome+'<button class="btn" type="button" data-pasta="escolher" style="padding:6px 12px">Conectar pasta</button></span>'+erro+'</div>';
+  if(pasta.estado==='aviso-pasta' && pasta.aviso) return '<div class="aviso-topo" role="alert"><span>'+esc(pasta.aviso.t)+'</span><span class="pasta-form"><button class="btn" type="button" data-pasta="outra" style="padding:6px 12px">Escolher outra pasta</button>'+(pasta.aviso.antiga?'':'<button class="btn ghost" type="button" data-pasta="usar" style="padding:6px 12px">Usar esta pasta</button>')+'</span></div>';
+  if(pasta.erro) return '<div class="aviso-topo" role="alert"><span>Não foi possível usar a pasta: '+esc(pasta.erro)+'. Confira se o OneDrive está sincronizando.</span></div>';
+  return '';
 }
 async function acaoPasta(tipo){
-  const inp = $('#pasta-nome');
-  if(inp){
-    const n = inp.value.trim().replace(/\s+/g,' ');
-    if(!n){ inp.focus(); inp.style.borderColor = 'var(--sus)'; return; }
-    pasta.usuario = n; lsSet('infra-vel-usuario', n);
-  }
-  if(!pasta.usuario){ pasta.estado = 'nenhuma'; render(); return; }
-  await store.conectarPasta(tipo==='reconectar' ? pasta.dir : null);
+  if(tipo==='usar') await store.conectarPasta(pasta.dir, true);
+  else await store.conectarPasta(tipo==='reconectar' ? pasta.dir : null);
+  if(!SEM_LOGIN && !sessao && store.mode!=='db') mostrarEntrada();
 }
-document.addEventListener('click', e => {
-  const b = e.target.closest('[data-pasta]'); if(b){ acaoPasta(b.dataset.pasta); return; }
-  if(e.target.closest('#on-trocar')){
-    const n = (prompt('Seu nome (aparece para quem estiver usando o painel):', pasta.usuario)||'').trim().replace(/\s+/g,' ');
-    if(!n) return;
-    pasta.usuario = n; store.uid = n; lsSet('infra-vel-usuario', n);
-    store._visto(); renderOnline();
-  }
-});
-document.addEventListener('keydown', e => { if(e.key==='Enter' && e.target.id==='pasta-nome'){ const b = e.target.closest('.aviso-topo').querySelector('[data-pasta]'); if(b) b.click(); } });
+document.addEventListener('click', e => { const b = e.target.closest('[data-pasta]'); if(b) acaoPasta(b.dataset.pasta); });
 function setSync(cls, t){ const s=$('#sync'); s.className='sync '+cls; $('#sync-t').textContent=t; }
 
 /* ================= MOTOR DE PENALIDADES ================= */
@@ -1054,12 +1609,12 @@ function render(){
   const ultimo = meses.length ? A.ate[meses[meses.length-1]] : '';
   const ateTxt = ultimo ? 'Dados até '+dataBR(ultimo).slice(0,10) : 'Sem dados';
   if(store.mode==='db') setSync('on', ateTxt+' · compartilhado');
-  else if(store.mode==='pasta') setSync(pasta.falhaGravar||pasta.erroLer ? 'err' : 'on', ateTxt+' · pasta da equipe'+(pasta.ultimaLeitura?' · sincronizado '+pasta.ultimaLeitura.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):''));
-  else if(store.mode==='local') setSync('local', ateTxt+' · salvo só neste navegador');
+  else if(store.mode==='pasta') setSync(pasta.falhaGravar||pasta.erroLer ? 'err' : 'on', pasta.falhaGravar ? 'SharePoint: não foi possível salvar' : pasta.erroLer ? 'SharePoint: clique para reconectar' : 'SharePoint: salvo em '+(pasta.salvoEm||pasta.ultimaLeitura||new Date()).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
+  else if(store.mode==='local') setSync('local', 'Nenhuma pasta escolhida. Os dados ficam só neste navegador.');
   else if(store.mode==='semdb') setSync('err', 'Sem acesso aos dados da equipe');
+  document.querySelectorAll('.fx-mes').forEach(el => { el.textContent = ui.mes ? 'Mês em uso · '+mesNome(ui.mes)+' · '+ateTxt.toLowerCase() : 'Nenhuma planilha importada'; });
   const avPasta = renderPasta();
-  const foco = document.activeElement && document.activeElement.id==='pasta-nome';
-  if(!foco) $('#modo-aviso').innerHTML = avPasta || (store.mode==='semdb' ? '<div class="aviso-topo" role="alert" style="background:var(--sus-bg);border-color:rgba(221,70,99,.4)"><span><b style="color:var(--sus)">O painel não conseguiu acessar os dados compartilhados da equipe.</b> Nada pode ser importado ou salvo agora. Recarregue a página; se continuar, confira se você entrou com a sua conta do claude.ai e se o painel foi compartilhado com você.</span></div>' : '');
+  $('#modo-aviso').innerHTML = avPasta || (store.mode==='semdb' ? '<div class="aviso-topo" role="alert" style="background:var(--sus-bg);border-color:rgba(221,70,99,.4)"><span><b style="color:var(--sus)">O painel não conseguiu acessar os dados compartilhados da equipe.</b> Nada pode ser importado ou salvo agora. Recarregue a página; se continuar, confira se você entrou com a sua conta do claude.ai e se o painel foi compartilhado com você.</span></div>' : '');
   renderOnline();
   indexarComunicados();
   renderPendAlerta();
@@ -1228,7 +1783,9 @@ function showTip(ev, html){ const t=$('#tip'); t.innerHTML=html; t.hidden=false;
 function hideTip(){ $('#tip').hidden=true; }
 
 /* ---------- motorista ---------- */
-function renderMot(){
+// a ficha confere o bloqueio do padrão depois de desenhada
+function renderMot(){ renderMotFicha(); renderFichaUso(); }
+function renderMotFicha(){
   const L = linhasMes();
   L.sort((a,b)=> ST_ORD[a.s.k]-ST_ORD[b.s.k] || a.M.nome.localeCompare(b.M.nome,'pt-BR'));
   // motorista aberto pelo Histórico continua na ficha mesmo sem eventos no mês escolhido
@@ -1401,6 +1958,7 @@ function renderAnulBar(){
   $('#anul-prev').innerHTML = L.join('<br>');
 }
 async function anularSelecionados(){
+  if(!fichaLivre()) return;
   const M = anulUi.M, mes = anulUi.mes; if(!M || !anulUi.sel.size || $('#anul-ok').disabled) return;
   const evs = M.meses[mes].ev.filter(e => anulUi.sel.has(e.chave) && !e.anulado);
   const quando = new Date().toISOString();
@@ -1413,6 +1971,7 @@ async function anularSelecionados(){
   }catch(err){ $('#anul-msg').innerHTML = '<div class="msg err">Não foi possível anular ('+esc((err&&(err.code||err.message))||err)+'). Tente de novo.</div>'; renderAnulBar(); }
 }
 async function desfazerAnulacao(id){
+  if(!fichaLivre()) return;
   try{ await store.del('anulacoes', id); render(); }
   catch(err){ $('#anul-msg').innerHTML = '<div class="msg err">Não foi possível desfazer a anulação.</div>'; }
 }
@@ -1921,6 +2480,7 @@ function renderRH(M, mes, info){
   $('#rh-ok').textContent = ult ? 'Já marcado como enviado' : 'Marcar como enviado';
 }
 async function marcarRH(){
+  if(!fichaLivre()) return;
   const M = A.mot.get(comUi.motorista); if(!M) return;
   const info = comInfo(M, ui.mes); if(!info || info.inativo) return;
   const ret = info.est.rh.st==='retificar';
@@ -1964,20 +2524,21 @@ const blobB64 = b => new Promise((res, rej) => { const fr = new FileReader(); fr
 async function imagemRH(M, mes){
   const cv = await desenharComunicado(M, mes, 'pen', true);
   const blob = await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.92));
-  return {blob, nome:'comunicado-completo-'+slug(M.nome)+'-'+mes+'.jpg'};
+  return {blob, nome:nomeExport('comunicado-completo '+M.nome, ...periodoMes(mes), 'jpg')};
 }
 function baixarArquivo(blob, nome){
   const u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = nome; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(u), 4000);
 }
 async function abrirEmlRH(){
+  if(!fichaLivre()) return;
   const M = A.mot.get(comUi.motorista); if(!M) return;
   const btn = $('#rh-eml'), orig = btn.textContent, cfg = rhCfg();
   btn.disabled = true; btn.textContent = 'Gerando…';
   try{
     const img = await imagemRH(M, ui.mes);
     const eml = montarEml({para:cfg.para, cc:cfg.cc, assunto:$('#rh-assunto').value, html:$('#rh-corpo').innerHTML, texto:textoDe($('#rh-corpo')), anexo:{nome:img.nome, b64:await blobB64(img.blob)}});
-    const nome = ('E-mail RH - '+M.nome+' - '+mesNome(ui.mes)).replace(/[\\/:*?"<>|]/g, '')+'.eml';
+    const nome = nomeExport('email-rh '+M.nome, ...periodoMes(ui.mes), 'eml');
     baixarArquivo(new Blob([eml], {type:'message/rfc822'}), nome);
     btn.textContent = 'E-mail gerado';
   }catch(e){ $('#rh-hint').textContent = 'Não foi possível gerar o e-mail ('+((e&&(e.code||e.message))||e)+').'; btn.textContent = orig; }
@@ -2099,6 +2660,7 @@ function renderPendAlerta(){
   el.innerHTML = '<span><b>'+P.length+(P.length===1?' pendência de envio':' pendências de envio')+'</b> <span class="det">· '+det+'</span></span><button class="btn" type="button" data-pend-ver>Ver</button>';
 }
 async function marcarFora(){
+  if(!fichaLivre()) return;
   const M = A.mot.get(comUi.motorista); if(!M) return;
   const info = comInfo(M, ui.mes); if(!info) return;
   const ret = info.est.wa.st==='retificar';
@@ -2302,7 +2864,7 @@ async function gerarImagem(M, mes, tipo, key){
     if(comUi.imgKey!==key || !b) return;
     if(comUi.imgUrl) URL.revokeObjectURL(comUi.imgUrl);
     comUi.blob = b; comUi.canvas = cv; comUi.imgUrl = URL.createObjectURL(b);
-    comUi.arquivo = 'comunicado-velocidade-'+slug(M.nome)+'-'+mes+'.jpg';
+    comUi.arquivo = nomeExport('picos '+M.nome, ...periodoMes(mes), 'jpg');
     $('#com-img').src = comUi.imgUrl;
   }, 'image/jpeg', 0.92);
 }
@@ -2337,6 +2899,7 @@ function atualizarLinkWa(){
   else { a.href = '#'; a.setAttribute('aria-disabled','true'); }
 }
 async function registrarEnvio(){
+  if(!fichaLivre()) return;
   const M = A.mot.get(comUi.motorista); if(!M) return;
   const cad = cadDe(M.nome); if(!cad || !cad.celular || !ativo(cad)) return;
   const info = comInfo(M, ui.mes);
@@ -2378,7 +2941,7 @@ function renderBkpCompleto(){
   const botao = '<button class="btn" type="button" data-bkpc="1" style="padding:6px 12px">Fazer backup agora</button>';
   let aviso = '';
   if(store.mode==='pasta'){
-    $('#bkpc-nota').textContent = 'Os dados ficam na pasta '+PASTA_NOME+', na pasta da equipe, e todos que conectam a pasta veem as mesmas informações. Todo dia o painel salva sozinho um backup completo em '+PASTA_NOME+' › backups (guarda os '+BKP_GUARDAR+' mais recentes). "Restaurar backup" traz tudo de volta sem apagar o que já está no painel.';
+    $('#bkpc-nota').textContent = 'Os dados ficam na pasta '+PASTA_NOME+', na pasta da equipe, e todos que conectam a pasta veem as mesmas informações. Todo dia o painel salva sozinho um backup completo em '+PASTA_NOME+' › backups (uma cópia por dia de cada pessoa; depois de '+BACKUP_DIAS+' dias, fica a primeira de cada mês). "Restaurar backup" traz tudo de volta sem apagar o que já está no painel.';
   } else if(store.mode==='local'){
     // arquivo aberto da pasta (SharePoint/OneDrive): os dados vivem só neste navegador, então o lembrete é semanal
     // além do fechamento do mês
@@ -2396,7 +2959,8 @@ function dadosCompletos(){
     meses:store.data.meses, motoristas:store.data.motoristas, comunicados:store.data.comunicados, anulacoes:store.data.anulacoes,
     config:Object.fromEntries(Object.entries(store.data.config).filter(([k]) => k!=='backupCompleto'))};
 }
-function nomeBackup(d){ return 'backup-completo-infracoes-velocidade-'+d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())+'_'+p2(d.getHours())+'h'+p2(d.getMinutes())+'.json'; }
+// na pasta: a cópia do dia da pessoa (atualizada); fora dela: arquivo para baixar
+function nomeBackup(d){ return store.mode==='pasta' ? nomeBackupDia(hojeISO(d), loginDe(pasta.usuario)) : 'infracoes-velocidade_backup_'+hojeISO(d)+'.json'; }
 async function fazerBackupCompleto(btn){
   const msg = $('#bkpc-msg'); const orig = btn.textContent; btn.disabled = true;
   const nome = nomeBackup(new Date());
@@ -2410,7 +2974,7 @@ async function fazerBackupCompleto(btn){
   }finally{ btn.disabled = false; btn.textContent = orig; }
 }
 async function salvarArquivo(nome, dados){
-  if(store.mode==='pasta' && /^backup-completo-/.test(nome)){ await gravarNaPasta(pasta.backups, nome, dados); return; }
+  if(store.mode==='pasta' && nome.startsWith(NOME_SISTEMA+'_dados_')){ await gravarNaPasta(pasta.backups, nome, dados); return; }
   if(store.mode==='db'){
     const dl = await claude.use('downloads');
     if(!dl) throw {code:'unavailable'};
@@ -2501,8 +3065,10 @@ function renderRegras(){
 /* ================= EVENTOS ================= */
 function setTab(t){
   ui.tab = t;
-  ['geral','mot','hist','cad','imp','reg'].forEach(k => { $('#tab-'+k).setAttribute('aria-selected', String(k===t)); $('#v-'+k).hidden = k!==t; });
+  ['geral','mot','hist','cad','imp','reg','cfg'].forEach(k => { $('#tab-'+k).setAttribute('aria-selected', String(k===t)); $('#v-'+k).hidden = k!==t; });
   try{ localStorage.setItem('infra-vel-tab', t); }catch(e){}
+  if(t==='cfg') renderCfg();
+  renderFichaUso();
 }
 document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.id.slice(4))));
 document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => setTab(b.dataset.goto)));
@@ -2562,7 +3128,7 @@ $('#tbody').addEventListener('click', e => {
 $('#com-tipos').addEventListener('click', e => { const b=e.target.closest('[data-tipo]'); if(!b || b.disabled) return; comUi.tipo=b.dataset.tipo; renderMot(); });
 $('#com-leg').addEventListener('input', e => { comUi.texto = e.target.value; atualizarLinkWa(); });
 $('#com-dl').addEventListener('click', baixarImagem);
-$('#com-wa').addEventListener('click', e => { if($('#com-wa').getAttribute('aria-disabled')==='true'){ e.preventDefault(); return; } registrarEnvio(); });
+$('#com-wa').addEventListener('click', e => { if($('#com-wa').getAttribute('aria-disabled')==='true' || !fichaLivre()){ e.preventDefault(); return; } registrarEnvio(); });
 $('#com-copy').addEventListener('click', copiarImagem);
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-cad-ir]'); if(!b) return;
@@ -2610,8 +3176,9 @@ addEventListener('scroll', () => top.classList.toggle('stuck', scrollY>4), {pass
 
 setTab(ui.tab);
 render();
-store.init(render);
+store.init(render).then(() => { if(!SEM_LOGIN && store.mode!=='db' && store.mode!=='semdb') mostrarEntrada(); });
+$('#btn-sair').addEventListener('click', sair);
 // gancho só para os testes automáticos (tools/test): não existe no uso normal
-if(window.__teste) window.__painel = {A:() => A, store, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias, emailRH:(n, m) => montarEmailRH(A.mot.get(n), m).corpo, textosImg:async (n, m, t, c) => (await desenharComunicado(A.mot.get(n), m, t, c)).__textos, montarEml};
+if(window.__teste) window.__painel = {A:() => A, store, pasta, acesso, sessao:() => sessao, bloquear:bloquearSessao, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias, limparBackups, emailRH:(n, m) => montarEmailRH(A.mot.get(n), m).corpo, textosImg:async (n, m, t, c) => (await desenharComunicado(A.mot.get(n), m, t, c)).__textos, montarEml};
 })();
 </script>

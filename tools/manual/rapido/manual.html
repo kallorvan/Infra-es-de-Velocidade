@@ -88,17 +88,25 @@ td b{font-weight:600}
 </div></div>
 
 <section id="abrir"><div class="wrap">
-  <div class="sec-head"><h2>Abrir o painel</h2><p>Equipe GR › canal Infrações de velocidade</p></div>
-  <p class="lead">O arquivo fica no canal privado <b>Infrações de velocidade</b> da <b>Equipe GR</b>, no Teams. Na primeira vez em cada computador, siga o post "Como acessar o painel" (atalho no OneDrive + Conectar pasta). Depois disso:</p>
-  <div class="card"><ol class="passos">
-    <li><span>Abra o Explorador (<span class="k">Win</span> + <span class="k">E</span>) › <b>OneDrive</b> › pasta do canal.</span></li>
-    <li><span>Botão direito em <b>Infrações de velocidade.html</b> › <b>Abrir com</b> › Chrome ou Edge.</span></li>
-    <li><span>Se aparecer <b>Reconectar pasta</b>, clique e confirme.</span></li>
-  </ol>
-  <p class="nota ok">Está tudo certo quando o topo mostra <b>pasta da equipe · sincronizado</b> e o seu nome com um ponto verde.</p>
-  <p class="nota alerta">Não abra pelo Teams, Firefox ou Safari: nesses o painel não grava os dados.</p>
+  <div class="sec-head"><h2>Abrir o painel e entrar</h2><p>Equipe GR › canal Infrações de velocidade › pasta Sistema</p></div>
+  <p class="lead">O arquivo fica na pasta <b>Sistema</b> do canal privado <b>Infrações de velocidade</b> da <b>Equipe GR</b>, no Teams. Na primeira vez em cada computador, siga o post "Como acessar o painel" (atalho da pasta Sistema no OneDrive + Conectar a pasta). Depois disso:</p>
+  <div class="grid2">
+    <div class="card"><h3>Todo dia</h3><ol class="passos">
+      <li><span>Abra o Explorador (<span class="k">Win</span> + <span class="k">E</span>) › <b>OneDrive</b> › <b>Sistema</b>.</span></li>
+      <li><span>Botão direito em <b>Infrações de velocidade.html</b> › <b>Abrir com</b> › Chrome ou Edge.</span></li>
+      <li><span>Se aparecer <b>Autorizar a pasta</b>, clique e confirme. Escolha o seu nome, digite a senha e clique em <b>Entrar</b>.</span></li>
+    </ol>
+    <p class="nota ok">Está tudo certo quando o topo mostra <b>SharePoint: salvo em</b> e o seu nome.</p>
+    <p class="nota alerta">Não abra pelo Teams, Firefox ou Safari: nesses o painel não usa a pasta.</p></div>
+    <div class="card"><h3>Usuários e senhas</h3><ul class="lista">
+      <li>Na primeira entrada, troque a senha provisória por uma sua.</li>
+      <li>Esqueceu a senha? Um administrador redefine em <b>Configurações › Usuários e senhas</b>.</li>
+      <li>20 minutos sem uso bloqueiam a sessão: digite a senha para continuar.</li>
+      <li>Mantenha sempre dois administradores.</li>
+      <li><b>Férias:</b> antes de sair, confira "SharePoint: salvo em" e feche o painel. Quem cobre entra pela mesma pasta, com o próprio usuário.</li>
+    </ul></div>
   </div>
-  <p class="nota">O painel tem seis abas: <b>Visão geral</b>, <b>Motorista</b>, <b>Histórico</b>, <b>Cadastro de motoristas</b>, <b>Importar planilhas</b> e <b>Regras</b>. O mês fica no canto superior direito.</p>
+  <p class="nota">Abas: <b>Visão geral</b>, <b>Motorista</b>, <b>Histórico</b>, <b>Cadastro de motoristas</b>, <b>Importar planilhas</b>, <b>Regras</b> e <b>Configurações</b>. O mês fica no canto superior direito. Se um colega estiver com a ficha do mesmo motorista aberta, aparece <b>em uso por</b> até ele sair dela.</p>
 </div></section>
 
 <section id="importar" style="padding-top:0"><div class="wrap">
@@ -177,7 +185,7 @@ td b{font-weight:600}
         <li><span>Clique em <b>Salvar no cadastro</b>.</span></li>
       </ol>
       <p class="nota">Para corrigir um motorista na hora, clique no nome, ajuste e clique em <b>Salvar cadastro</b>. O WhatsApp só funciona com celular com DDD e 9 dígitos. O <b>E-mail do RH</b> (Para e Cópia) é preenchido uma vez nesta aba.</p></div>
-    <div class="card"><h3>Backup</h3><p class="hint">Automático com a pasta conectada: um por dia em Dados do painel › backups, guardando os 30 mais recentes.</p>
+    <div class="card"><h3>Backup</h3><p class="hint">Automático: uma cópia por dia de cada pessoa em Sistema › backups; depois de 60 dias fica a primeira de cada mês.</p>
       <ol class="passos">
         <li><span><b>Backup na hora</b> (antes de apagar um mês, por exemplo): aba <b>Importar planilhas</b> › <b>Fazer backup completo (.json)</b>.</span></li>
         <li><span><b>Restaurar</b>: mesma aba › <b>Restaurar backup (.json)</b> › escolha o arquivo em backups › <b>Restaurar tudo</b>.</span></li>
@@ -205,7 +213,9 @@ td b{font-weight:600}
   <div class="card"><div class="tblbox"><table>
     <thead><tr><th style="width:36%">Problema</th><th>O que fazer</th></tr></thead>
     <tbody>
-      <tr><td><b>Painel vazio ou pedindo para conectar</b></td><td>Clique em <b>Reconectar pasta</b> (ou <b>Conectar pasta</b> e escolha a pasta do arquivo). Confira se abriu no Chrome ou Edge, não no Teams.</td></tr>
+      <tr><td><b>Janela pedindo para conectar ou autorizar a pasta</b></td><td>Clique em <b>Autorizar a pasta</b> (ou <b>Conectar a pasta</b> e escolha a pasta <b>Sistema</b>). Confira se abriu no Chrome ou Edge, não no Teams.</td></tr>
+      <tr><td><b>Aviso "Esta é a pasta do canal…"</b></td><td>No Teams, renomeie a pasta <b>Dados do painel</b> para <b>Sistema</b>, coloque o arquivo dentro dela e conecte a pasta Sistema.</td></tr>
+      <tr><td><b>Esqueci a senha</b></td><td>Peça a um administrador: Configurações › Usuários e senhas › Redefinir senha.</td></tr>
       <tr><td><b>Aviso vermelho "Não foi possível gravar na pasta"</b></td><td>Confira o OneDrive e o acesso ao canal. O painel tenta de novo sozinho.</td></tr>
       <tr><td><b>O que um colega fez não apareceu</b></td><td>Aguarde o OneDrive sincronizar e deixe a pasta em <b>Sempre manter neste dispositivo</b>.</td></tr>
       <tr><td><b>Botão do WhatsApp não aparece</b></td><td>Motorista sem celular válido ou inativo: corrija no cadastro.</td></tr>
