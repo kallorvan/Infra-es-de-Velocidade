@@ -777,6 +777,10 @@ footer{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
         <div class="actions"><button class="btn" type="submit" id="cfg-novo-ok">Cadastrar usuário</button></div>
       </form>
       <div class="sec-note" id="cfg-usu-msg" role="status" style="margin:10px 0"></div>
+      <form class="card pad cfg-form" id="cfg-prov" autocomplete="off" hidden>
+        <div class="fld"><label for="cfg-prov-senha">Nova senha provisória de <span id="cfg-prov-nome"></span> (mínimo 6 caracteres)</label><input type="text" id="cfg-prov-senha" autocomplete="off"></div>
+        <div class="actions"><button class="btn" type="submit" id="cfg-prov-ok">Salvar senha provisória</button><button class="btn ghost" type="button" id="cfg-prov-cancelar">Cancelar</button><span class="sec-note" id="cfg-prov-msg" role="status"></span></div>
+      </form>
       <div class="tbl-scroll"><table id="cfg-usu"><thead><tr><th>Nome</th><th>Login</th><th>Perfil</th><th>Situação</th><th>Última alteração</th><th>Ações</th></tr></thead><tbody></tbody></table></div>
     </div>
     <div class="sec" id="cfg-hist-sec" hidden>
@@ -1394,6 +1398,7 @@ async function renderCfg(){
     '<td>'+(u.ativo===false?'<span class="st pre">Desativado</span>':u.trocarSenha?'<span class="st adv">Senha provisória</span>':'<span class="st ok">Ativo</span>')+'</td>'+
     '<td>'+quandoBR(u.alteradoEm)+(u.alteradoPor?' · '+esc(u.alteradoPor):'')+'</td>'+
     '<td><button class="linkbtn" type="button" data-u-acao="redefinir">Redefinir senha</button>'+
+    '<button class="linkbtn" type="button" data-u-acao="provisoria">Alterar senha provisória</button>'+
     '<button class="linkbtn" type="button" data-u-acao="ativo"'+(unico(u)?' disabled title="Cadastre outro administrador antes"':'')+'>'+(u.ativo===false?'Ativar':'Desativar')+'</button>'+
     '<button class="linkbtn" type="button" data-u-acao="admin"'+(unico(u)?' disabled title="Cadastre outro administrador antes"':'')+'>'+(u.admin?'Deixar de ser administrador':'Tornar administrador')+'</button></td></tr>').join('');
   const hs = await historicoAcessos();
@@ -1425,6 +1430,19 @@ $('#cfg-novo').addEventListener('submit', async e => {
   msg.textContent = nome+' cadastrado. Na primeira entrada, o sistema pede uma senha nova.';
   renderCfg();
 });
+$('#cfg-prov-cancelar').addEventListener('click', () => { $('#cfg-prov').hidden = true; });
+$('#cfg-prov').addEventListener('submit', async e => {
+  e.preventDefault();
+  if(!sessao || !sessao.admin) return;
+  const f = e.target, msg = $('#cfg-prov-msg'), senha = $('#cfg-prov-senha').value;
+  const pr = problemaSenha(senha); if(pr){ msg.textContent = pr; return; }
+  const u = await acesso.usuario(f.dataset.login); if(!u){ msg.textContent = 'Usuário não encontrado ou desativado.'; return; }
+  Object.assign(u, {senha:await hashSenha(senha), trocarSenha:true, alteradoEm:new Date().toISOString(), alteradoPor:sessao.nome});
+  await acesso.gravarUsuario(u); await acesso.registrar('senha-redefinida', sessao, u.nome);
+  f.hidden = true; $('#cfg-prov-senha').value = '';
+  $('#cfg-usu-msg').textContent = 'Senha provisória de '+u.nome+' alterada. Passe a ela pessoalmente; na entrada, o sistema pede uma senha nova.';
+  renderCfg();
+});
 $('#cfg-usu').addEventListener('click', async e => {
   const b = e.target.closest('[data-u-acao]'); if(!b || b.disabled || !sessao || !sessao.admin) return;
   const u = await acesso.usuario(b.closest('tr').dataset.login); if(!u) return;
@@ -1432,6 +1450,13 @@ $('#cfg-usu').addEventListener('click', async e => {
   const us = await acesso.usuarios(), admins = us.filter(x => x.admin && x.ativo!==false);
   if((a==='ativo' || a==='admin') && u.admin && u.ativo!==false && admins.length < 2) return; // sempre um administrador ativo
   const ag = {alteradoEm:new Date().toISOString(), alteradoPor:sessao.nome};
+  if(a==='provisoria'){
+    // o administrador esqueceu a provisória que passou: ele mesmo digita uma nova
+    const f = $('#cfg-prov'); f.dataset.login = u.login; f.hidden = false;
+    $('#cfg-prov-nome').textContent = u.nome; $('#cfg-prov-msg').textContent = ''; $('#cfg-prov-senha').value = '';
+    $('#cfg-prov-senha').focus();
+    return;
+  }
   if(a==='redefinir'){
     const prov = senhaProvisoria();
     Object.assign(u, ag, {senha:await hashSenha(prov), trocarSenha:true});
