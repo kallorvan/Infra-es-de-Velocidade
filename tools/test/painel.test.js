@@ -700,6 +700,24 @@ teste('config: redefinir senha gera provisória', async p => {
   ok((await historico(p)).some(e => e.tipo === 'senha-redefinida'), 'histórico');
 });
 
+teste('config: administrador altera a senha provisória que esqueceu', async p => {
+  await novoComUsuarios(p, [ANA, Object.assign({}, BRUNO, {trocarSenha:true})]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await abrirCfg(p);
+  await p.click('#cfg-usu tr[data-login="bruno-lima"] [data-u-acao="provisoria"]');
+  await p.waitForSelector('#cfg-prov:not([hidden])');
+  ok((await p.textContent('#cfg-prov-nome')) === 'Bruno Lima', 'mostra para quem é');
+  await p.fill('#cfg-prov-senha', '123'); await p.click('#cfg-prov-ok');
+  await p.waitForFunction(() => document.querySelector('#cfg-prov-msg').innerText === 'A senha precisa ter pelo menos 6 caracteres.');
+  await p.fill('#cfg-prov-senha', 'nova-prov1'); await p.click('#cfg-prov-ok');
+  await p.waitForFunction(() => document.querySelector('#cfg-usu-msg').innerText.startsWith('Senha provisória de Bruno Lima alterada.'));
+  ok(await p.isHidden('#cfg-prov'), 'formulário fecha');
+  const u = await esperarArq(p, 'Sistema/usuarios/bruno-lima.json', j => j.alteradoPor === 'Ana Souza');
+  ok(u.trocarSenha && await __senhaOk(p, u, 'nova-prov1'), 'nova provisória gravada e troca exigida');
+  ok(!(await opfs.ler(p, 'Sistema/usuarios/bruno-lima.json')).includes('nova-prov1'), 'só o hash');
+  ok((await historico(p)).some(e => e.tipo === 'senha-redefinida' && e.detalhe.includes('Bruno Lima')), 'histórico');
+});
+
 teste('config: único administrador não pode se desativar nem perder o perfil', async p => {
   await novoComUsuarios(p, [ANA]);
   await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
