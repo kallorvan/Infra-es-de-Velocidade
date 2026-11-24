@@ -358,6 +358,13 @@ footer{margin-top:34px;font-size:11px;color:var(--muted);line-height:1.6;border-
 #dlgEntrada .msg.ok{background:#E5F5EC;color:#1e7a46}
 .cfg-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end}
 .cfg-form .actions{grid-column:1/-1;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.cfg-pasta{display:grid;gap:12px}
+.cfg-pasta-info{display:grid;gap:8px;justify-items:start}
+.cfg-pasta-info p{margin:0;font-size:13px;color:var(--muted);max-width:70ch;line-height:1.5}
+.s-situacao i{width:8px;height:8px;border-radius:50%;background:#2EAF6A;box-shadow:0 0 0 3px rgba(46,175,106,.18)}
+.s-situacao.alerta i{background:var(--accent);box-shadow:0 0 0 3px rgba(228,83,108,.18)}
+#cfg-pasta-msg .msg{margin:0}
+#cfg-pasta-msg .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .cfg-chk{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600}
 #cfg-usu td .linkbtn+.linkbtn{margin-left:10px}
 .ficha-uso{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 12px}
@@ -768,6 +775,17 @@ footer{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
   <!-- REGRAS -->
   <section id="v-cfg" role="tabpanel" aria-labelledby="tab-cfg" hidden>
     <div class="s-faixa-titulo"><div><small class="fx-mes">Mês em uso</small><h1>Configurações</h1><p>Sua senha e, para administradores, usuários e histórico de acessos.</p></div></div>
+    <div class="sec" id="cfg-pasta-sec">
+      <div class="sec-h"><h2>Pasta conectada</h2><span class="sec-note">Onde ficam os dados, os usuários e os backups deste painel</span></div>
+      <div class="card pad cfg-pasta">
+        <div class="cfg-pasta-info">
+          <span class="s-situacao" id="cfg-pasta-sit"><i></i><span></span></span>
+          <p>Pasta <b id="cfg-pasta-nome"></b>. Para usar outra pasta Sistema (por exemplo, de outro canal), clique em Trocar pasta: o painel salva o que está pendente, reabre e pede para entrar com os usuários da pasta nova.</p>
+        </div>
+        <div class="actions"><button class="btn ghost" type="button" id="cfg-pasta-trocar">Trocar pasta</button></div>
+        <div id="cfg-pasta-msg" role="status"></div>
+      </div>
+    </div>
     <div class="sec" id="cfg-minha-sec">
       <div class="sec-h"><h2>Minha senha</h2><span class="sec-note" id="cfg-eu"></span></div>
       <form class="card pad cfg-form" id="cfg-minha" autocomplete="off">
@@ -817,7 +835,7 @@ footer{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
     </div>
   </section>
 
-  <footer id="foot"><span>Fonte: planilhas "Infrações de Velocidade" da telemetria, importadas no painel. Os dados ficam na pasta Sistema do canal Infrações de velocidade.</span><span id="versao">Versão v2026.11.19</span></footer>
+  <footer id="foot"><span>Fonte: planilhas "Infrações de Velocidade" da telemetria, importadas no painel. Os dados ficam na pasta Sistema do canal Infrações de velocidade.</span><span id="versao">Versão v2026.11.24</span></footer>
 </main>
 <div class="tip" id="tip" hidden></div>
 
@@ -1379,7 +1397,7 @@ $('#entCorpo').addEventListener('submit', async e => {
 setInterval(() => { if(sessao && !sessaoBloqueada && Date.now()-atividade > T.PARADO_MS) bloquearSessao(); }, T.CHECA_MS);
 
 /* ---------- aba Configurações: minha senha, usuários e senhas, histórico de acessos ---------- */
-const TIPO_HIST = {entrada:'Entrou', saida:'Saiu', 'senha-errada':'Senha incorreta', 'troca-senha':'Trocou a senha', bloqueio:'Sessão bloqueada', 'usuario-criado':'Cadastrou usuário', 'senha-redefinida':'Redefiniu senha', 'usuario-alterado':'Alterou usuário'};
+const TIPO_HIST = {entrada:'Entrou', saida:'Saiu', 'senha-errada':'Senha incorreta', 'troca-senha':'Trocou a senha', bloqueio:'Sessão bloqueada', 'usuario-criado':'Cadastrou usuário', 'senha-redefinida':'Redefiniu senha', 'usuario-alterado':'Alterou usuário', 'pasta-trocada':'Trocou a pasta'};
 const quandoBR = iso => iso ? new Date(iso).toLocaleString('pt-BR', {dateStyle:'short', timeStyle:'short'}) : '—';
 // senha provisória legível, sem letras que se confundem
 function senhaProvisoria(){
@@ -1398,6 +1416,10 @@ async function historicoAcessos(){
 }
 async function renderCfg(){
   if(!sessao || !pasta.raiz) return;
+  $('#cfg-pasta-nome').textContent = pasta.nomePasta || PASTA_NOME;
+  const ruim = pasta.falhaGravar || pasta.erroLer;
+  $('#cfg-pasta-sit').classList.toggle('alerta', !!ruim);
+  $('#cfg-pasta-sit span').textContent = pasta.falhaGravar ? 'SharePoint: não foi possível salvar' : pasta.erroLer ? 'SharePoint: clique para reconectar' : 'SharePoint: salvo em '+(pasta.salvoEm||pasta.ultimaLeitura||new Date()).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   $('#cfg-eu').textContent = sessao.nome+' · '+(sessao.admin ? 'administrador' : 'usuário');
   $('#cfg-usu-sec').hidden = !sessao.admin; $('#cfg-hist-sec').hidden = !sessao.admin;
   if(!sessao.admin) return;
@@ -1439,6 +1461,43 @@ $('#cfg-novo').addEventListener('submit', async e => {
   e.target.reset();
   msg.textContent = nome+' cadastrado. Na primeira entrada, o sistema pede uma senha nova.';
   renderCfg();
+});
+// Trocar a pasta conectada: confere a pasta nova, salva o pendente, avisa a saída e reabre para entrar nela
+let cfgPastaNova = null;
+async function trocarPasta(h, usar){
+  const msg = $('#cfg-pasta-msg'); msg.innerHTML = '';
+  try{
+    if(!h){ const escolher = window.__escolherPasta || (() => window.showDirectoryPicker({id:'infra-vel', mode:'readwrite'})); h = await escolher(); }
+    if(typeof h.requestPermission==='function'){
+      let perm = 'granted';
+      try{ perm = await h.queryPermission({mode:'readwrite'}); }catch(e){}
+      if(perm!=='granted') perm = await h.requestPermission({mode:'readwrite'});
+      if(perm!=='granted') throw {message:'o navegador não liberou a gravação na pasta'};
+    }
+    if(usar) lsSet('infra-vel-pasta-usar', h.name);
+    else if(lsGet('infra-vel-pasta-usar')!==h.name){
+      const av = await avisoPasta(h);
+      if(av){
+        cfgPastaNova = h;
+        msg.innerHTML = '<div class="msg info">'+esc(av.t)+'<div class="actions">'+(av.antiga?'':'<button class="btn ghost" type="button" data-cfg-pasta="usar">Usar esta pasta</button>')+'<button class="btn ghost" type="button" data-cfg-pasta="outra">Escolher outra pasta</button></div></div>';
+        return;
+      }
+    }
+    await acesso.registrar('pasta-trocada', sessao, h.name);
+    clearInterval(pasta.timer);
+    if(pasta.pend) await store._gravar();
+    await store._visto(true);
+    await idbHandle('set', h);
+    if(window.__teste && window.__recarregar) window.__recarregar(h.name); else location.reload();
+  }catch(e){
+    if(e && e.name==='AbortError') return;
+    msg.innerHTML = '<div class="msg err">Não foi possível usar a pasta: '+esc((e && (e.message||e.name)) || e)+'. Confira se o OneDrive está sincronizando.</div>';
+  }
+}
+$('#cfg-pasta-trocar').addEventListener('click', () => trocarPasta(null));
+$('#cfg-pasta-msg').addEventListener('click', e => {
+  const b = e.target.closest('[data-cfg-pasta]'); if(!b) return;
+  if(b.dataset.cfgPasta==='usar') trocarPasta(cfgPastaNova, true); else trocarPasta(null);
 });
 $('#cfg-prov-cancelar').addEventListener('click', () => { $('#cfg-prov').hidden = true; });
 $('#cfg-prov').addEventListener('submit', async e => {

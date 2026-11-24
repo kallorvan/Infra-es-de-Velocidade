@@ -718,6 +718,47 @@ teste('config: administrador altera a senha provisória que esqueceu', async p =
   ok((await historico(p)).some(e => e.tipo === 'senha-redefinida' && e.detalhe.includes('Bruno Lima')), 'histórico');
 });
 
+// troca de pasta: em teste, __recarregar substitui o location.reload (reler o atalho OPFS derruba este Chromium)
+const prepTroca = (p, dir) => p.evaluate(dir => {
+  window.__recarregou = null; window.__recarregar = nome => { window.__recarregou = nome; };
+  window.__escolherPasta = async () => { let d = await navigator.storage.getDirectory(); for(const x of dir.split('/')) d = await d.getDirectoryHandle(x, {create:true}); return d; };
+}, dir);
+teste('config: trocar a pasta conectada', async p => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await abrirCfg(p);
+  ok((await p.textContent('#cfg-pasta-nome')) === 'Sistema', 'mostra a pasta atual');
+  ok((await p.innerText('#cfg-pasta-sit')).startsWith('SharePoint: salvo em'), 'situação');
+  await prepTroca(p, 'Equipe2/Sistema');
+  await p.click('#cfg-pasta-trocar');
+  await p.waitForFunction(() => window.__recarregou === 'Sistema');
+  const pres = JSON.parse(await opfs.ler(p, 'Sistema/presenca/pcana.json'));
+  igual(pres.saiu, true, 'avisa os colegas que saiu da pasta antiga');
+  ok((await historico(p)).some(e => e.tipo === 'pasta-trocada'), 'histórico na pasta antiga');
+});
+
+teste('config: trocar para pasta com outro nome pede confirmação', async p => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await abrirCfg(p);
+  await opfs.escrever(p, 'Outra/x.txt', 'oi');
+  await prepTroca(p, 'Outra');
+  await p.click('#cfg-pasta-trocar');
+  await p.waitForFunction(() => document.querySelector('#cfg-pasta-msg').innerText.includes('A pasta escolhida se chama Outra.'));
+  igual(await p.evaluate(() => window.__recarregou), null, 'ainda não trocou');
+  await p.click('#cfg-pasta-msg [data-cfg-pasta="usar"]');
+  await p.waitForFunction(() => window.__recarregou === 'Outra');
+});
+
+teste('config: cancelar a escolha da pasta não muda nada', async p => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await abrirCfg(p);
+  await p.evaluate(() => { window.__recarregou = null; window.__recarregar = n => { window.__recarregou = n; }; window.__escolherPasta = async () => { throw new DOMException('cancelado', 'AbortError'); }; });
+  await p.click('#cfg-pasta-trocar'); await p.waitForTimeout(400);
+  igual(await p.evaluate(() => [window.__recarregou, __painel.store.mode, !!__painel.sessao()]), [null, 'pasta', true]);
+});
+
 teste('config: único administrador não pode se desativar nem perder o perfil', async p => {
   await novoComUsuarios(p, [ANA]);
   await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});

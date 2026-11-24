@@ -2,7 +2,7 @@
 // Uso: python3 tools/build.py && S=<pasta com fict/ e pdfjs/package/build/> node tools/manual/prints-padrao.js
 //   fict/: backup-completo-exemplo.json, exemplo-dia-seco.xlsx, exemplo-dia-chuva.xlsx, exemplo-cadastro-motoristas.pdf
 //   (gerados por tools/manual/gerar_ficticios.py). A biblioteca de planilhas vem de tools/test/.cache/xlsx.full.min.js.
-// Saída: tools/manual/completo/prints/01-conectar.jpg … 07, 11, 12, 17-usuarios.jpg
+// Saída: tools/manual/completo/prints/01-conectar.jpg … 07, 11, 12, 17-usuarios.jpg, 18-pasta.jpg
 // (08–10 e 13–16 saem de tools/manual/prints-historico.js)
 const {chromium} = require('/opt/node-tools/node_modules/playwright');
 const path = require('path');
@@ -70,7 +70,7 @@ const entrar = async (p, nome, senha, primeiro) => {
   await A.click('#tab-geral'); await A.evaluate(() => scrollTo(0, 0));
   await A.screenshot({path:O+'02-topo-online.jpg', type:'jpeg', quality:88, clip:{x:0, y:0, width:1280, height:118}});
   // Configurações › Usuários e senhas
-  await A.click('#tab-cfg'); await A.waitForTimeout(600); await shot('17-usuarios.jpg', '#cfg-usu-sec');
+  await A.click('#tab-cfg'); await A.waitForTimeout(600); await shot('17-usuarios.jpg', '#cfg-usu-sec'); await shot('18-pasta.jpg', '#cfg-pasta-sec');
   // importação do dia
   await A.click('#tab-imp'); await A.evaluate(() => { document.querySelector('#rest-prev').innerHTML = ''; });
   await A.setInputFiles('#file', [F+'exemplo-dia-seco.xlsx', F+'exemplo-dia-chuva.xlsx']); await A.waitForSelector('#imp-ok');
