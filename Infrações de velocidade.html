@@ -1226,6 +1226,16 @@ function problemaSenha(nova, repetida){
   return '';
 }
 let sessao = null, sessaoBloqueada = false, atividade = Date.now(), pendenteTroca = null;
+// sessão guardada neste navegador: o F5 retoma quem entrou; só "Sair" ou 20 min parado pedem a senha de novo
+const SESSAO_KEY = 'infra-vel-sessao';
+let sessaoSalvaEm = 0;
+function salvarSessao(){
+  if(SEM_LOGIN || !sessao) return;
+  sessaoSalvaEm = Date.now();
+  lsSet(SESSAO_KEY, JSON.stringify({login:sessao.login, nome:sessao.nome, atividade, bloqueada:sessaoBloqueada}));
+}
+function apagarSessao(){ try{ localStorage.removeItem(SESSAO_KEY); }catch(e){} }
+function sessaoSalva(){ try{ const j = JSON.parse(lsGet(SESSAO_KEY) || 'null'); return j && j.login ? j : null; }catch(e){ return null; } }
 const acesso = {
   hashSenha,
   fila: Promise.resolve(),
@@ -1263,11 +1273,12 @@ function renderSessao(){
   $('#tab-cfg').hidden = !sessao;
   if(sessao){ $('#sessao-ini').textContent = iniciais(sessao.nome); $('#sessao-nome').textContent = sessao.nome+(sessao.admin?' · administrador':''); }
 }
-async function entrarComo(u){
+async function entrarComo(u, retomada){
   sessao = {login:u.login, nome:u.nome, admin:!!u.admin}; sessaoBloqueada = false; atividade = Date.now();
   pasta.usuario = u.nome; store.uid = u.nome;
   lsSet('infra-vel-ultimo-usuario', u.login);
-  await acesso.registrar('entrada');
+  salvarSessao();
+  if(!retomada) await acesso.registrar('entrada');
   liberarEntrada();
   renderSessao();
   if(store.mode!=='pasta') await store.iniciarPasta();
@@ -1283,13 +1294,15 @@ async function conferirUsuario(){
 function bloquearSessao(){
   if(!sessao || sessaoBloqueada) return;
   sessaoBloqueada = true;
+  salvarSessao();
   acesso.registrar('bloqueio');
   pasta.registro = ''; store._visto && store._visto();
   mostrarEntrada('bloqueada');
 }
 async function sair(){
+  apagarSessao();
   try{ await acesso.registrar('saida'); if(pasta.pend) await store._gravar(); await store._visto(true); }catch(e){}
-  location.reload();
+  if(window.__teste && window.__recarregar) window.__recarregar(); else location.reload();
 }
 const MSG_PASTA_SALVA = 'O painel não conseguiu reabrir a pasta salva neste navegador. Clique em Conectar a pasta e escolha a pasta Sistema.';
 function abrirJanela(dlg){
@@ -1313,7 +1326,17 @@ async function mostrarEntrada(modo, aviso){
     else if(pasta.estado==='aviso-pasta' && pasta.aviso) modo = 'aviso-pasta';
     else if(!pasta.raiz) modo = pasta.dir ? 'reconectar' : 'pasta';
     else {
-      try{ const us = await acesso.usuarios(); modo = us.arquivos ? 'login' : 'primeiro'; entUi.us = us; }
+      try{
+        const salva = sessaoSalva(), u = salva && await acesso.usuario(salva.login);
+        if(u && u.ativo!==false && !u.trocarSenha){
+          if(!salva.bloqueada && Date.now()-(salva.atividade||0) < T.PARADO_MS){ atividade = salva.atividade; return entrarComo(u, true); }
+          // passou de 20 min (ou estava bloqueada): pede só a senha de quem estava
+          sessao = {login:u.login, nome:u.nome, admin:!!u.admin}; sessaoBloqueada = true; atividade = salva.atividade||0; salvarSessao();
+          return mostrarEntrada('bloqueada');
+        }
+        if(salva) apagarSessao();
+        const us = await acesso.usuarios(); modo = us.arquivos ? 'login' : 'primeiro'; entUi.us = us;
+      }
       catch(e){ modo = 'pasta'; aviso = ['err', 'Não foi possível usar a pasta: '+((e && (e.message||e.name)) || e)+'. Confira se o OneDrive está sincronizando.']; }
     }
     if(!aviso && pasta.erro && (modo==='pasta' || modo==='reconectar')) aviso = ['err', 'Não foi possível usar a pasta: '+pasta.erro+'. Confira se o OneDrive está sincronizando.'];
@@ -1423,13 +1446,16 @@ $('#entCorpo').addEventListener('submit', async e => {
       if(!u || u.ativo===false) return sair();
       if(!(await senhaConfere(u, v('entSenha')))){ await acesso.registrar('senha-errada', u); return erro('Senha incorreta.'); }
       sessaoBloqueada = false; atividade = Date.now(); sessao.admin = !!u.admin;
-      liberarEntrada();
+      pasta.usuario = u.nome; store.uid = u.nome; salvarSessao();
+      liberarEntrada(); renderSessao();
+      if(store.mode!=='pasta') await store.iniciarPasta();
       render();
     }
   }catch(x){ erro('Não foi possível usar a pasta: '+((x && (x.message||x.name)) || x)+'. Confira se o OneDrive está sincronizando.'); }
   finally{ btn.disabled = false; }
 });
-['pointerdown','pointermove','keydown','wheel'].forEach(ev => document.addEventListener(ev, () => { if(!sessaoBloqueada) atividade = Date.now(); }, {passive:true}));
+['pointerdown','pointermove','keydown','wheel'].forEach(ev => document.addEventListener(ev, () => { if(sessaoBloqueada) return; atividade = Date.now(); if(sessao && atividade-sessaoSalvaEm > 15000) salvarSessao(); }, {passive:true}));
+addEventListener('pagehide', () => { if(sessao && !sessaoBloqueada) salvarSessao(); });
 setInterval(() => { if(sessao && !sessaoBloqueada && Date.now()-atividade > T.PARADO_MS) bloquearSessao(); }, T.CHECA_MS);
 
 /* ---------- aba Configurações: minha senha, usuários e senhas, histórico de acessos ---------- */

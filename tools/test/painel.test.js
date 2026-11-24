@@ -705,6 +705,64 @@ teste('login: navegador sem suporte', async p => {
   ok((await p.innerText('#entCorpo')).includes('Abra o sistema no Google Chrome ou no Microsoft Edge. Este navegador não permite usar a pasta do SharePoint, onde ficam os usuários e as senhas.'), 'texto padrão');
 });
 
+/* ---------- sessão: F5 não pede login; só Sair ou 20 min parado ---------- */
+// "F5": outra aba do mesmo navegador (mesmo localStorage) abre o painel e conecta a pasta.
+// Reler o atalho OPFS salvo derruba este Chromium de teste, por isso a aba nova usa outra base e conecta de novo.
+const reabrir = async (ctx, tempos) => {
+  const B = await ctx.newPage(); B.setDefaultTimeout(10000);
+  await rotas(B); await B.addInitScript(() => { window.__teste = true; });
+  await abrirComLogin(B, 'pcana', '-b', {tempos});
+  await ateEntrada(B);
+  return B;
+};
+const tituloEntrada = B => B.waitForFunction(() => !document.querySelector('#dlgEntrada').open || document.querySelector('#entTitulo').innerText !== 'Abrindo o painel').then(() => B.evaluate(() => document.querySelector('#dlgEntrada').open ? document.querySelector('#entTitulo').innerText : 'dentro'));
+
+teste('sessão: F5 dentro de 20 min volta sem pedir senha', async (p, ctx) => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  const B = await reabrir(ctx);
+  await B.waitForFunction(() => __painel.sessao() && !document.querySelector('#dlgEntrada').open);
+  igual(await B.evaluate(() => __painel.sessao().login), 'ana-souza');
+  ok(await B.isVisible('#tab-cfg'), 'painel liberado');
+});
+
+teste('sessão: depois de 20 min parado o F5 pede a senha', async (p, ctx) => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('infra-vel-sessao')); s.atividade = Date.now() - 25*60000; localStorage.setItem('infra-vel-sessao', JSON.stringify(s)); });
+  const B = await reabrir(ctx);
+  await B.waitForFunction(() => document.querySelector('#entTitulo').innerText === 'Sessão bloqueada');
+  await B.fill('#entSenha', 'telemetria1'); await B.click('#dlgEntrada button[type="submit"]');
+  await B.waitForFunction(() => !document.querySelector('#dlgEntrada').open && __painel.store.mode === 'pasta');
+});
+
+teste('sessão: bloqueada por inatividade continua bloqueada no F5', async (p, ctx) => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1', tempos:{PARADO_MS:1200, CHECA_MS:300}});
+  await p.waitForFunction(() => document.querySelector('#entTitulo').innerText === 'Sessão bloqueada' && document.querySelector('#dlgEntrada').open, null, {timeout:6000});
+  const B = await reabrir(ctx);
+  await B.waitForFunction(() => document.querySelector('#entTitulo').innerText === 'Sessão bloqueada');
+});
+
+teste('sessão: Sair exige entrar de novo', async (p, ctx) => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await p.evaluate(() => { window.__recarregou = null; window.__recarregar = n => { window.__recarregou = n || 'sair'; }; });
+  await p.click('#btn-sair');
+  await p.waitForFunction(() => window.__recarregou);
+  const B = await reabrir(ctx);
+  await B.waitForFunction(() => document.querySelector('#entTitulo').innerText === 'Entrar');
+});
+
+teste('sessão: usuário desativado não volta pelo F5', async (p, ctx) => {
+  await novoComUsuarios(p, [ANA, Object.assign({}, BRUNO, {admin:true})]);
+  await entrar(p, {disp:'pcana', nome:'Bruno Lima', senha:'bruno-senha1'});
+  await p.evaluate(() => __painel.acesso.usuario('bruno-lima').then(u => __painel.acesso.gravarUsuario(Object.assign(u, {ativo:false}))));
+  const B = await reabrir(ctx);
+  await B.waitForFunction(() => document.querySelector('#entTitulo').innerText === 'Entrar');
+  igual(await B.evaluate(() => __painel.sessao()), null);
+});
+
 /* ---------- aba Configurações ---------- */
 const BRUNO = {login:'bruno-lima', nome:'Bruno Lima', senha:'bruno-senha1'};
 const usuarioArq = async (p, login) => JSON.parse(await opfs.ler(p, 'Sistema/usuarios/'+login+'.json'));
@@ -845,7 +903,8 @@ const duasPessoas = async (p, ctx, tA = {}, tB = {}) => {
   await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1', tempos:Object.assign({ONLINE_MS:3000}, tA)});
   await p.evaluate(d => __painel.store.put('meses', '2026-09-seco', d).then(__painel.render), mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 36, 92, 'AAA1A11').concat(picos('BIA TESTE', '2026-09', 5, 92, 'BBB2B22'))));
   const B = await ctx.newPage(); B.setDefaultTimeout(15000);
-  await rotas(B); await B.addInitScript(() => { window.__teste = true; });
+  // as duas pessoas são abas do mesmo navegador de teste: na vida real são dois computadores, cada um com a própria sessão
+  await rotas(B); await B.addInitScript(() => { window.__teste = true; if(!sessionStorage.semSessao){ sessionStorage.semSessao = 1; localStorage.removeItem('infra-vel-sessao'); } });
   await entrar(B, {disp:'pcbruno', suf:'-b', nome:'Bruno Lima', senha:'bruno-senha1', tempos:Object.assign({ONLINE_MS:3000}, tB)});
   await B.waitForFunction(() => __painel.A().mot.has('ANA TESTE') && __painel.A().mot.has('BIA TESTE'));
   return B;
