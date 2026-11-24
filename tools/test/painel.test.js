@@ -572,9 +572,46 @@ teste('login: painel fechado até entrar; Esc não fecha', async p => {
   await viaHttp(p); await limparOpfs(p);
   await abrirComLogin(p, 'pcana');
   igual(await p.innerText('#entTitulo'), 'Conectar a pasta do SharePoint');
-  await p.keyboard.press('Escape');
-  ok(await p.evaluate(() => document.querySelector('#dlgEntrada').open), 'continua aberta');
+  // o Chrome fecha um <dialog> no segundo Esc mesmo com preventDefault: a janela precisa voltar
+  for(let i = 0; i < 3; i++){ await p.keyboard.press('Escape'); await p.waitForTimeout(150); }
+  ok(await p.evaluate(() => document.querySelector('#dlgEntrada').open), 'continua aberta depois de 3 Esc');
+  ok(await p.evaluate(() => getComputedStyle(document.querySelector('main')).visibility === 'hidden' && getComputedStyle(document.querySelector('nav.tabs')).visibility === 'hidden'), 'painel escondido antes de entrar');
   igual(await p.evaluate(() => document.querySelector('#dlgEntrada').matches(':modal')), true, 'modal');
+});
+
+teste('login: pasta salva que não responde não deixa a tela vazia', async p => {
+  // simula o navegador travado ao reabrir a pasta salva (IndexedDB que nunca responde)
+  await p.addInitScript(() => { window.__tempos = {ABRIR_MS:1500}; indexedDB.open = () => ({}); });
+  await abrirComLogin(p, 'pcana');
+  igual(await p.innerText('#entTitulo'), 'Abrindo o painel', 'janela na hora');
+  await p.waitForFunction(() => document.querySelector('#entTitulo').innerText === 'Conectar a pasta do SharePoint', null, {timeout:6000});
+  ok((await p.innerText('#entMsg')).includes('não conseguiu reabrir a pasta salva'), await p.innerText('#entMsg'));
+  ok(await p.isVisible('#dlgEntrada [data-ac="conectar"]'), 'botão Conectar a pasta');
+});
+
+teste('login: erro inesperado ao abrir aparece na janela', async p => {
+  p.__erroEsperado = true; // a falha é simulada de propósito
+  await p.addInitScript(() => { window.__teste = true; Object.defineProperty(window, '__quebrarRender', {value:true}); });
+  await abrirComLogin(p, 'pcana');
+  await p.waitForFunction(() => /Erro ao abrir o painel/.test(document.querySelector('#entMsg').innerText), null, {timeout:6000});
+  ok(await p.evaluate(() => document.querySelector('#dlgEntrada').open), 'janela aberta');
+});
+
+teste('login: erro ao ler a pasta mantém a janela aberta com a mensagem', async p => {
+  await viaHttp(p); await limparOpfs(p);
+  await opfs.escrever(p, 'Sistema/usuarios', 'não é pasta'); // "usuarios" como arquivo: a leitura falha
+  await abrirComLogin(p, 'pcana');
+  await ateEntrada(p);
+  await p.waitForFunction(() => /Não foi possível usar a pasta/.test(document.querySelector('#entMsg').innerText));
+  ok(await p.evaluate(() => document.querySelector('#dlgEntrada').open), 'janela aberta');
+  ok(await p.evaluate(() => getComputedStyle(document.querySelector('main')).visibility === 'hidden'), 'painel escondido');
+});
+
+teste('login: depois de entrar o painel aparece', async p => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  ok(await p.evaluate(() => getComputedStyle(document.querySelector('main')).visibility === 'visible'), 'painel visível');
+  ok(await p.isVisible('#tab-cfg'), 'aba Configurações');
 });
 
 teste('login: primeiro acesso cria administrador com senha só em hash', async p => {
@@ -668,6 +705,64 @@ teste('login: navegador sem suporte', async p => {
   ok((await p.innerText('#entCorpo')).includes('Abra o sistema no Google Chrome ou no Microsoft Edge. Este navegador não permite usar a pasta do SharePoint, onde ficam os usuários e as senhas.'), 'texto padrão');
 });
 
+/* ---------- sessão: F5 não pede login; só Sair ou 20 min parado ---------- */
+// "F5": outra aba do mesmo navegador (mesmo localStorage) abre o painel e conecta a pasta.
+// Reler o atalho OPFS salvo derruba este Chromium de teste, por isso a aba nova usa outra base e conecta de novo.
+const reabrir = async (ctx, tempos) => {
+  const B = await ctx.newPage(); B.setDefaultTimeout(10000);
+  await rotas(B); await B.addInitScript(() => { window.__teste = true; });
+  await abrirComLogin(B, 'pcana', '-b', {tempos});
+  await ateEntrada(B);
+  return B;
+};
+const tituloEntrada = B => B.waitForFunction(() => !document.querySelector('#dlgEntrada').open || document.querySelector('#entTitulo').innerText !== 'Abrindo o painel').then(() => B.evaluate(() => document.querySelector('#dlgEntrada').open ? document.querySelector('#entTitulo').innerText : 'dentro'));
+
+teste('sessão: F5 dentro de 20 min volta sem pedir senha', async (p, ctx) => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  const B = await reabrir(ctx);
+  await B.waitForFunction(() => __painel.sessao() && !document.querySelector('#dlgEntrada').open);
+  igual(await B.evaluate(() => __painel.sessao().login), 'ana-souza');
+  ok(await B.isVisible('#tab-cfg'), 'painel liberado');
+});
+
+teste('sessão: depois de 20 min parado o F5 pede a senha', async (p, ctx) => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await p.evaluate(() => { const s = JSON.parse(localStorage.getItem('infra-vel-sessao')); s.atividade = Date.now() - 25*60000; localStorage.setItem('infra-vel-sessao', JSON.stringify(s)); });
+  const B = await reabrir(ctx);
+  await B.waitForFunction(() => document.querySelector('#entTitulo').innerText === 'Sessão bloqueada');
+  await B.fill('#entSenha', 'telemetria1'); await B.click('#dlgEntrada button[type="submit"]');
+  await B.waitForFunction(() => !document.querySelector('#dlgEntrada').open && __painel.store.mode === 'pasta');
+});
+
+teste('sessão: bloqueada por inatividade continua bloqueada no F5', async (p, ctx) => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1', tempos:{PARADO_MS:1200, CHECA_MS:300}});
+  await p.waitForFunction(() => document.querySelector('#entTitulo').innerText === 'Sessão bloqueada' && document.querySelector('#dlgEntrada').open, null, {timeout:6000});
+  const B = await reabrir(ctx);
+  await B.waitForFunction(() => document.querySelector('#entTitulo').innerText === 'Sessão bloqueada');
+});
+
+teste('sessão: Sair exige entrar de novo', async (p, ctx) => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await p.evaluate(() => { window.__recarregou = null; window.__recarregar = n => { window.__recarregou = n || 'sair'; }; });
+  await p.click('#btn-sair');
+  await p.waitForFunction(() => window.__recarregou);
+  const B = await reabrir(ctx);
+  await B.waitForFunction(() => document.querySelector('#entTitulo').innerText === 'Entrar');
+});
+
+teste('sessão: usuário desativado não volta pelo F5', async (p, ctx) => {
+  await novoComUsuarios(p, [ANA, Object.assign({}, BRUNO, {admin:true})]);
+  await entrar(p, {disp:'pcana', nome:'Bruno Lima', senha:'bruno-senha1'});
+  await p.evaluate(() => __painel.acesso.usuario('bruno-lima').then(u => __painel.acesso.gravarUsuario(Object.assign(u, {ativo:false}))));
+  const B = await reabrir(ctx);
+  await B.waitForFunction(() => document.querySelector('#entTitulo').innerText === 'Entrar');
+  igual(await B.evaluate(() => __painel.sessao()), null);
+});
+
 /* ---------- aba Configurações ---------- */
 const BRUNO = {login:'bruno-lima', nome:'Bruno Lima', senha:'bruno-senha1'};
 const usuarioArq = async (p, login) => JSON.parse(await opfs.ler(p, 'Sistema/usuarios/'+login+'.json'));
@@ -716,6 +811,47 @@ teste('config: administrador altera a senha provisória que esqueceu', async p =
   ok(u.trocarSenha && await __senhaOk(p, u, 'nova-prov1'), 'nova provisória gravada e troca exigida');
   ok(!(await opfs.ler(p, 'Sistema/usuarios/bruno-lima.json')).includes('nova-prov1'), 'só o hash');
   ok((await historico(p)).some(e => e.tipo === 'senha-redefinida' && e.detalhe.includes('Bruno Lima')), 'histórico');
+});
+
+// troca de pasta: em teste, __recarregar substitui o location.reload (reler o atalho OPFS derruba este Chromium)
+const prepTroca = (p, dir) => p.evaluate(dir => {
+  window.__recarregou = null; window.__recarregar = nome => { window.__recarregou = nome; };
+  window.__escolherPasta = async () => { let d = await navigator.storage.getDirectory(); for(const x of dir.split('/')) d = await d.getDirectoryHandle(x, {create:true}); return d; };
+}, dir);
+teste('config: trocar a pasta conectada', async p => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await abrirCfg(p);
+  ok((await p.textContent('#cfg-pasta-nome')) === 'Sistema', 'mostra a pasta atual');
+  ok((await p.innerText('#cfg-pasta-sit')).startsWith('SharePoint: salvo em'), 'situação');
+  await prepTroca(p, 'Equipe2/Sistema');
+  await p.click('#cfg-pasta-trocar');
+  await p.waitForFunction(() => window.__recarregou === 'Sistema');
+  const pres = JSON.parse(await opfs.ler(p, 'Sistema/presenca/pcana.json'));
+  igual(pres.saiu, true, 'avisa os colegas que saiu da pasta antiga');
+  ok((await historico(p)).some(e => e.tipo === 'pasta-trocada'), 'histórico na pasta antiga');
+});
+
+teste('config: trocar para pasta com outro nome pede confirmação', async p => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await abrirCfg(p);
+  await opfs.escrever(p, 'Outra/x.txt', 'oi');
+  await prepTroca(p, 'Outra');
+  await p.click('#cfg-pasta-trocar');
+  await p.waitForFunction(() => document.querySelector('#cfg-pasta-msg').innerText.includes('A pasta escolhida se chama Outra.'));
+  igual(await p.evaluate(() => window.__recarregou), null, 'ainda não trocou');
+  await p.click('#cfg-pasta-msg [data-cfg-pasta="usar"]');
+  await p.waitForFunction(() => window.__recarregou === 'Outra');
+});
+
+teste('config: cancelar a escolha da pasta não muda nada', async p => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  await abrirCfg(p);
+  await p.evaluate(() => { window.__recarregou = null; window.__recarregar = n => { window.__recarregou = n; }; window.__escolherPasta = async () => { throw new DOMException('cancelado', 'AbortError'); }; });
+  await p.click('#cfg-pasta-trocar'); await p.waitForTimeout(400);
+  igual(await p.evaluate(() => [window.__recarregou, __painel.store.mode, !!__painel.sessao()]), [null, 'pasta', true]);
 });
 
 teste('config: único administrador não pode se desativar nem perder o perfil', async p => {
@@ -767,7 +903,8 @@ const duasPessoas = async (p, ctx, tA = {}, tB = {}) => {
   await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1', tempos:Object.assign({ONLINE_MS:3000}, tA)});
   await p.evaluate(d => __painel.store.put('meses', '2026-09-seco', d).then(__painel.render), mesDoc('2026-09', 'seco', picos('ANA TESTE', '2026-09', 36, 92, 'AAA1A11').concat(picos('BIA TESTE', '2026-09', 5, 92, 'BBB2B22'))));
   const B = await ctx.newPage(); B.setDefaultTimeout(15000);
-  await rotas(B); await B.addInitScript(() => { window.__teste = true; });
+  // as duas pessoas são abas do mesmo navegador de teste: na vida real são dois computadores, cada um com a própria sessão
+  await rotas(B); await B.addInitScript(() => { window.__teste = true; if(!sessionStorage.semSessao){ sessionStorage.semSessao = 1; localStorage.removeItem('infra-vel-sessao'); } });
   await entrar(B, {disp:'pcbruno', suf:'-b', nome:'Bruno Lima', senha:'bruno-senha1', tempos:Object.assign({ONLINE_MS:3000}, tB)});
   await B.waitForFunction(() => __painel.A().mot.has('ANA TESTE') && __painel.A().mot.has('BIA TESTE'));
   return B;
@@ -911,7 +1048,7 @@ teste('regressão: importar planilha, salvar cadastro, comunicado e RH continuam
     try{
       await p.goto(URL0);
       await t.fn(p, ctx);
-      if(erros.length) throw new Error('erro na página: '+erros[0]);
+      if(erros.length && !p.__erroEsperado) throw new Error('erro na página: '+erros[0]);
       console.log('PASS', t.nome);
     }catch(e){ falhas++; console.log('FAIL', t.nome, '\n   ', e.message.split('\n')[0]); }
     await ctx.close();
