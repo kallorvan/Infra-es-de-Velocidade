@@ -900,7 +900,7 @@ const LS_KEY = c => c==='meses' ? 'infra-vel-meses-v1' : 'infra-vel-'+c+'-v1';
 const PASTA_NOME = 'Sistema', PASTA_SUBS = ['usuarios', 'dados', 'historico'], PASTA_ANTIGA = 'Dados do painel';
 const NOME_SISTEMA = 'Infracoes-de-Velocidade';
 // tempos do padrão; nos testes, window.__tempos pode encurtar qualquer um
-const T = Object.assign({PARADO_MS:20*60000, PULSO_MS:20000, GRAVAR_MS:2000, ONLINE_MS:3*60000, CHECA_MS:30000}, (window.__teste && window.__tempos) || {});
+const T = Object.assign({PARADO_MS:20*60000, PULSO_MS:20000, GRAVAR_MS:2000, ONLINE_MS:3*60000, CHECA_MS:30000, ABRIR_MS:10000, IDB_MS:4000}, (window.__teste && window.__tempos) || {});
 const BACKUP_DIAS = 60;
 const hojeISO = (d = new Date()) => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 // login = nome sem acento, em minúsculas e com hífen
@@ -938,7 +938,10 @@ async function avisoPasta(h){
 const lerDados = j => ({cols:(j && j.cols) || {}, usuario:j && j.usuario});
 const lsGet = k => { try{ return localStorage.getItem(k); }catch(e){ return null; } };
 const lsSet = (k, v) => { try{ localStorage.setItem(k, v); }catch(e){} };
-function idbHandle(op, val){
+// com prazo: se o navegador não responder, segue sem a pasta salva
+const comPrazo = (pr, ms, nome) => Promise.race([pr, new Promise((_, falha) => setTimeout(() => falha({name:'Timeout', message:nome+' não respondeu'}), ms))]);
+function idbHandle(op, val){ return comPrazo(idbHandle0(op, val), T.IDB_MS, 'o armazenamento do navegador'); }
+function idbHandle0(op, val){
   return new Promise((ok, falha) => {
     let rq; try{ rq = indexedDB.open('infra-vel', 1); }catch(e){ falha(e); return; }
     rq.onupgradeneeded = () => rq.result.createObjectStore('kv');
@@ -1023,11 +1026,11 @@ const store = {
       pasta.usuario = SEM_LOGIN ? (lsGet('infra-vel-usuario') || '') : '';
       if(!pasta.suportado()){ pasta.estado = 'sem-api'; onChange(); return; }
       onChange();
-      let h = null; try{ h = await idbHandle('get'); }catch(e){}
+      let h = null; try{ h = await idbHandle('get'); }catch(e){ pasta.idbFalhou = true; }
       if(h){
         pasta.nomePasta = h.name;
         let perm = 'granted';
-        try{ if(typeof h.queryPermission==='function') perm = await h.queryPermission({mode:'readwrite'}); }catch(e){}
+        try{ if(typeof h.queryPermission==='function') perm = await comPrazo(h.queryPermission({mode:'readwrite'}), T.IDB_MS, 'a pasta salva'); }catch(e){ perm = 'prompt'; }
         if(perm==='granted' && (pasta.usuario || !SEM_LOGIN)) await this.conectarPasta(h);
         else { pasta.estado = 'reconectar'; pasta.dir = h; onChange(); }
       }
@@ -1288,6 +1291,19 @@ async function sair(){
   try{ await acesso.registrar('saida'); if(pasta.pend) await store._gravar(); await store._visto(true); }catch(e){}
   location.reload();
 }
+const MSG_PASTA_SALVA = 'O painel não conseguiu reabrir a pasta salva neste navegador. Clique em Conectar a pasta e escolha a pasta Sistema.';
+function abrirJanela(dlg){
+  if(dlg.open) return;
+  try{ dlg.showModal(); }catch(e){ dlg.setAttribute('open', ''); }
+}
+// erro inesperado antes de entrar: a janela continua aberta e mostra o motivo
+function erroNaEntrada(e){
+  if(SEM_LOGIN || sessao) return;
+  const t = 'Erro ao abrir o painel: '+((e && (e.message||e.name)) || e)+'. Recarregue a página (F5); se continuar, avise o responsável pelo painel.';
+  try{ if(!entUi.modo || entUi.modo==='carregando') mostrarEntrada('pasta', ['err', t]); else { $('#entMsg').innerHTML = '<p class="msg err">'+esc(t)+'</p>'; abrirJanela($('#dlgEntrada')); } }catch(x){}
+}
+addEventListener('error', ev => erroNaEntrada(ev.error || ev.message));
+addEventListener('unhandledrejection', ev => erroNaEntrada(ev.reason));
 const campoEnt = (id, rot, tipo, extra) => '<div><label for="'+id+'">'+rot+'</label><input type="'+tipo+'" id="'+id+'"'+(extra||'')+'></div>';
 const entUi = {modo:null, aviso:null};
 async function mostrarEntrada(modo, aviso){
@@ -1305,9 +1321,14 @@ async function mostrarEntrada(modo, aviso){
     try{ entUi.us = await acesso.usuarios(); }
     catch(e){ modo = 'pasta'; aviso = ['err', 'Não foi possível usar a pasta: '+((e && (e.message||e.name)) || e)+'. Confira se o OneDrive está sincronizando.']; }
   }
+  if(!modo) modo = 'pasta';
+  if(modo==='pasta' && !aviso && pasta.idbFalhou) aviso = ['err', MSG_PASTA_SALVA];
   entUi.modo = modo;
   let t = 'Entrar', c = '';
-  if(modo==='sem-suporte'){
+  if(modo==='carregando'){
+    t = 'Abrindo o painel';
+    c = '<p class="dica">Conferindo a pasta Sistema deste computador…</p>';
+  } else if(modo==='sem-suporte'){
     t = 'Navegador sem suporte';
     c = '<p>Abra o sistema no <b>Google Chrome</b> ou no <b>Microsoft Edge</b>. Este navegador não permite usar a pasta do SharePoint, onde ficam os usuários e as senhas.</p>';
   } else if(modo==='pasta'){
@@ -1348,7 +1369,7 @@ async function mostrarEntrada(modo, aviso){
   $('#entTitulo').textContent = t;
   $('#entCorpo').innerHTML = c;
   $('#entMsg').innerHTML = aviso ? '<p class="msg '+aviso[0]+'">'+esc(aviso[1])+'</p>' : '';
-  if(!dlg.open) dlg.showModal();
+  abrirJanela(dlg);
   const f = $('#entCorpo').querySelector('#entNome, #entSenha, .cta'); if(f) f.focus({preventScroll:true});
 }
 $('#dlgEntrada').addEventListener('cancel', e => e.preventDefault()); // Esc não fecha
@@ -1706,6 +1727,7 @@ const ui = { tab:'geral', mes:null, filtro:'todos', q:'', sort:{k:'sit', dir:1},
 try{ const t = localStorage.getItem('infra-vel-tab'); if(t) ui.tab=t; }catch(e){}
 
 function render(){
+  if(window.__teste && window.__quebrarRender) throw new Error('falha simulada');
   A = analisar(store.docs, store.data.anulacoes);
   A.semAnul = Object.keys(store.data.anulacoes||{}).length ? analisar(store.docs, {}).mot : A.mot;
   cadVinc = null;
@@ -3288,10 +3310,15 @@ render();
 // a janela de entrada abre mesmo se a inicialização falhar
 const abrirEntrada = () => {
   if(SEM_LOGIN) return;
-  if(store.mode==='db' || store.mode==='semdb'){ document.body.classList.remove('trancado'); return; }
+  if(store.mode==='db' || store.mode==='semdb'){ liberarEntrada(); return; }
   mostrarEntrada();
 };
-store.init(render).then(abrirEntrada, abrirEntrada);
+if(!SEM_LOGIN){
+  // a janela abre na hora; se a pasta salva não responder, vira "Conectar a pasta"
+  mostrarEntrada('carregando');
+  setTimeout(() => { if(entUi.modo==='carregando') mostrarEntrada('pasta', ['err', MSG_PASTA_SALVA]); }, T.ABRIR_MS);
+}
+store.init(render).then(abrirEntrada, e => { abrirEntrada(); erroNaEntrada(e); });
 $('#btn-sair').addEventListener('click', sair);
 // gancho só para os testes automáticos (tools/test): não existe no uso normal
 if(window.__teste) window.__painel = {A:() => A, store, pasta, acesso, sessao:() => sessao, bloquear:bloquearSessao, analisar, render, dadosCompletos, restaurarCompleto, estadoEnvio, pendencias, limparBackups, emailRH:(n, m) => montarEmailRH(A.mot.get(n), m).corpo, textosImg:async (n, m, t, c) => (await desenharComunicado(A.mot.get(n), m, t, c)).__textos, montarEml};

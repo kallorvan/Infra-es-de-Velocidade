@@ -579,6 +579,24 @@ teste('login: painel fechado até entrar; Esc não fecha', async p => {
   igual(await p.evaluate(() => document.querySelector('#dlgEntrada').matches(':modal')), true, 'modal');
 });
 
+teste('login: pasta salva que não responde não deixa a tela vazia', async p => {
+  // simula o navegador travado ao reabrir a pasta salva (IndexedDB que nunca responde)
+  await p.addInitScript(() => { window.__tempos = {ABRIR_MS:1500}; indexedDB.open = () => ({}); });
+  await abrirComLogin(p, 'pcana');
+  igual(await p.innerText('#entTitulo'), 'Abrindo o painel', 'janela na hora');
+  await p.waitForFunction(() => document.querySelector('#entTitulo').innerText === 'Conectar a pasta do SharePoint', null, {timeout:6000});
+  ok((await p.innerText('#entMsg')).includes('não conseguiu reabrir a pasta salva'), await p.innerText('#entMsg'));
+  ok(await p.isVisible('#dlgEntrada [data-ac="conectar"]'), 'botão Conectar a pasta');
+});
+
+teste('login: erro inesperado ao abrir aparece na janela', async p => {
+  p.__erroEsperado = true; // a falha é simulada de propósito
+  await p.addInitScript(() => { window.__teste = true; Object.defineProperty(window, '__quebrarRender', {value:true}); });
+  await abrirComLogin(p, 'pcana');
+  await p.waitForFunction(() => /Erro ao abrir o painel/.test(document.querySelector('#entMsg').innerText), null, {timeout:6000});
+  ok(await p.evaluate(() => document.querySelector('#dlgEntrada').open), 'janela aberta');
+});
+
 teste('login: erro ao ler a pasta mantém a janela aberta com a mensagem', async p => {
   await viaHttp(p); await limparOpfs(p);
   await opfs.escrever(p, 'Sistema/usuarios', 'não é pasta'); // "usuarios" como arquivo: a leitura falha
@@ -971,7 +989,7 @@ teste('regressão: importar planilha, salvar cadastro, comunicado e RH continuam
     try{
       await p.goto(URL0);
       await t.fn(p, ctx);
-      if(erros.length) throw new Error('erro na página: '+erros[0]);
+      if(erros.length && !p.__erroEsperado) throw new Error('erro na página: '+erros[0]);
       console.log('PASS', t.nome);
     }catch(e){ falhas++; console.log('FAIL', t.nome, '\n   ', e.message.split('\n')[0]); }
     await ctx.close();
