@@ -572,9 +572,28 @@ teste('login: painel fechado até entrar; Esc não fecha', async p => {
   await viaHttp(p); await limparOpfs(p);
   await abrirComLogin(p, 'pcana');
   igual(await p.innerText('#entTitulo'), 'Conectar a pasta do SharePoint');
-  await p.keyboard.press('Escape');
-  ok(await p.evaluate(() => document.querySelector('#dlgEntrada').open), 'continua aberta');
+  // o Chrome fecha um <dialog> no segundo Esc mesmo com preventDefault: a janela precisa voltar
+  for(let i = 0; i < 3; i++){ await p.keyboard.press('Escape'); await p.waitForTimeout(150); }
+  ok(await p.evaluate(() => document.querySelector('#dlgEntrada').open), 'continua aberta depois de 3 Esc');
+  ok(await p.evaluate(() => getComputedStyle(document.querySelector('main')).visibility === 'hidden' && getComputedStyle(document.querySelector('nav.tabs')).visibility === 'hidden'), 'painel escondido antes de entrar');
   igual(await p.evaluate(() => document.querySelector('#dlgEntrada').matches(':modal')), true, 'modal');
+});
+
+teste('login: erro ao ler a pasta mantém a janela aberta com a mensagem', async p => {
+  await viaHttp(p); await limparOpfs(p);
+  await opfs.escrever(p, 'Sistema/usuarios', 'não é pasta'); // "usuarios" como arquivo: a leitura falha
+  await abrirComLogin(p, 'pcana');
+  await ateEntrada(p);
+  await p.waitForFunction(() => /Não foi possível usar a pasta/.test(document.querySelector('#entMsg').innerText));
+  ok(await p.evaluate(() => document.querySelector('#dlgEntrada').open), 'janela aberta');
+  ok(await p.evaluate(() => getComputedStyle(document.querySelector('main')).visibility === 'hidden'), 'painel escondido');
+});
+
+teste('login: depois de entrar o painel aparece', async p => {
+  await novoComUsuarios(p, [ANA]);
+  await entrar(p, {disp:'pcana', nome:'Ana Souza', senha:'telemetria1'});
+  ok(await p.evaluate(() => getComputedStyle(document.querySelector('main')).visibility === 'visible'), 'painel visível');
+  ok(await p.isVisible('#tab-cfg'), 'aba Configurações');
 });
 
 teste('login: primeiro acesso cria administrador com senha só em hash', async p => {
